@@ -74,4 +74,10 @@
 
   "skyblockm-tweaks.config.hideHiddenArmorStands": "Скрытие невидимых стоек для брони",
   "skyblockm-tweaks.config.hideHiddenArmorStands.tooltip": "Скрывает видимые в режиме наблюдения невидимые стойки для брони\nТолько для модерации, которой нравится призраками наблюдать за предметами в трубах с максимальной дистанцией отображения в настройках"
+,
+  "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомные хитбоксы для Item Display",
+  "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberband": "Анти-резиновый отброс (Anti-Rubberband)",
+  "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Максимальная дистанция отброса",
+  "skyblockm-tweaks.config.itemDisplayHitbox.optimizeAsBlocks": "Запекание в геометрию чанка",
+  "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Тип хитбокса"
 }

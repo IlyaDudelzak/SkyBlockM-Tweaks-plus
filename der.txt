@@ -1,0 +1,240 @@
+Compiled from "DisplayEntityRenderer.java"
+public abstract class net.minecraft.client.render.entity.DisplayEntityRenderer<T extends net.minecraft.entity.decoration.DisplayEntity, S> extends net.minecraft.client.render.entity.EntityRenderer<T> {
+  private final net.minecraft.client.render.entity.EntityRenderDispatcher renderDispatcher;
+
+  protected net.minecraft.client.render.entity.DisplayEntityRenderer(net.minecraft.client.render.entity.EntityRendererFactory$Context);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #47                 // Method net/minecraft/client/render/entity/EntityRenderer."<init>":(Lnet/minecraft/client/render/entity/EntityRendererFactory$Context;)V
+       5: aload_0
+       6: aload_1
+       7: invokevirtual #51                 // Method net/minecraft/client/render/entity/EntityRendererFactory$Context.getRenderDispatcher:()Lnet/minecraft/client/render/entity/EntityRenderDispatcher;
+      10: putfield      #53                 // Field renderDispatcher:Lnet/minecraft/client/render/entity/EntityRenderDispatcher;
+      13: return
+
+  public net.minecraft.util.Identifier getTexture(T);
+    Code:
+       0: getstatic     #67                 // Field net/minecraft/client/texture/SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE:Lnet/minecraft/util/Identifier;
+       3: areturn
+
+  public void render(T, float, float, net.minecraft.client.util.math.MatrixStack, net.minecraft.client.render.VertexConsumerProvider, int);
+    Code:
+       0: aload_1
+       1: invokevirtual #81                 // Method net/minecraft/entity/decoration/DisplayEntity.getRenderState:()Lnet/minecraft/entity/decoration/DisplayEntity$RenderState;
+       4: astore        7
+       6: aload         7
+       8: ifnonnull     12
+      11: return
+      12: aload_0
+      13: aload_1
+      14: invokevirtual #85                 // Method getData:(Lnet/minecraft/entity/decoration/DisplayEntity;)Ljava/lang/Object;
+      17: astore        8
+      19: aload         8
+      21: ifnonnull     25
+      24: return
+      25: aload_1
+      26: fload_3
+      27: invokevirtual #91                 // Method net/minecraft/entity/decoration/DisplayEntity.getLerpProgress:(F)F
+      30: fstore        9
+      32: aload_0
+      33: aload         7
+      35: invokevirtual #95                 // Method net/minecraft/entity/decoration/DisplayEntity$RenderState.shadowRadius:()Lnet/minecraft/entity/decoration/DisplayEntity$FloatLerper;
+      38: fload         9
+      40: invokeinterface #98,  2           // InterfaceMethod net/minecraft/entity/decoration/DisplayEntity$FloatLerper.lerp:(F)F
+      45: putfield      #101                // Field shadowRadius:F
+      48: aload_0
+      49: aload         7
+      51: invokevirtual #104                // Method net/minecraft/entity/decoration/DisplayEntity$RenderState.shadowStrength:()Lnet/minecraft/entity/decoration/DisplayEntity$FloatLerper;
+      54: fload         9
+      56: invokeinterface #98,  2           // InterfaceMethod net/minecraft/entity/decoration/DisplayEntity$FloatLerper.lerp:(F)F
+      61: putfield      #107                // Field shadowOpacity:F
+      64: aload         7
+      66: invokevirtual #111                // Method net/minecraft/entity/decoration/DisplayEntity$RenderState.brightnessOverride:()I
+      69: istore        10
+      71: iload         10
+      73: iconst_m1
+      74: if_icmpeq     82
+      77: iload         10
+      79: goto          84
+      82: iload         6
+      84: istore        11
+      86: aload_0
+      87: aload_1
+      88: fload_2
+      89: fload_3
+      90: aload         4
+      92: aload         5
+      94: iload         11
+      96: invokespecial #118                // Method net/minecraft/client/render/entity/EntityRenderer.render:(Lnet/minecraft/entity/Entity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V
+      99: aload         4
+     101: invokevirtual #122                // Method net/minecraft/client/util/math/MatrixStack.push:()V
+     104: aload         4
+     106: aload_0
+     107: aload         7
+     109: aload_1
+     110: fload_3
+     111: new           #124                // class org/joml/Quaternionf
+     114: dup
+     115: invokespecial #126                // Method org/joml/Quaternionf."<init>":()V
+     118: invokevirtual #130                // Method getBillboardRotation:(Lnet/minecraft/entity/decoration/DisplayEntity$RenderState;Lnet/minecraft/entity/decoration/DisplayEntity;FLorg/joml/Quaternionf;)Lorg/joml/Quaternionf;
+     121: invokevirtual #134                // Method net/minecraft/client/util/math/MatrixStack.multiply:(Lorg/joml/Quaternionf;)V
+     124: aload         7
+     126: invokevirtual #138                // Method net/minecraft/entity/decoration/DisplayEntity$RenderState.transformation:()Lnet/minecraft/entity/decoration/DisplayEntity$AbstractInterpolator;
+     129: fload         9
+     131: invokeinterface #142,  2          // InterfaceMethod net/minecraft/entity/decoration/DisplayEntity$AbstractInterpolator.interpolate:(F)Ljava/lang/Object;
+     136: checkcast     #144                // class net/minecraft/util/math/AffineTransformation
+     139: astore        12
+     141: aload         4
+     143: aload         12
+     145: invokevirtual #148                // Method net/minecraft/util/math/AffineTransformation.getMatrix:()Lorg/joml/Matrix4f;
+     148: invokevirtual #152                // Method net/minecraft/client/util/math/MatrixStack.multiplyPositionMatrix:(Lorg/joml/Matrix4f;)V
+     151: aload_0
+     152: aload_1
+     153: aload         8
+     155: aload         4
+     157: aload         5
+     159: iload         11
+     161: fload         9
+     163: invokevirtual #155                // Method render:(Lnet/minecraft/entity/decoration/DisplayEntity;Ljava/lang/Object;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IF)V
+     166: aload         4
+     168: invokevirtual #158                // Method net/minecraft/client/util/math/MatrixStack.pop:()V
+     171: return
+
+  private org.joml.Quaternionf getBillboardRotation(net.minecraft.entity.decoration.DisplayEntity$RenderState, T, float, org.joml.Quaternionf);
+    Code:
+       0: aload_0
+       1: getfield      #53                 // Field renderDispatcher:Lnet/minecraft/client/render/entity/EntityRenderDispatcher;
+       4: getfield      #181                // Field net/minecraft/client/render/entity/EntityRenderDispatcher.camera:Lnet/minecraft/client/render/Camera;
+       7: astore        5
+       9: getstatic     #185                // Field net/minecraft/client/render/entity/DisplayEntityRenderer$1.field_42526:[I
+      12: aload_1
+      13: invokevirtual #189                // Method net/minecraft/entity/decoration/DisplayEntity$RenderState.billboardConstraints:()Lnet/minecraft/entity/decoration/DisplayEntity$BillboardMode;
+      16: invokevirtual #192                // Method net/minecraft/entity/decoration/DisplayEntity$BillboardMode.ordinal:()I
+      19: iaload
+      20: tableswitch   { // 1 to 4
+                     1: 62
+                     2: 87
+                     3: 112
+                     4: 137
+               default: 52
+          }
+      52: new           #194                // class java/lang/MatchException
+      55: dup
+      56: aconst_null
+      57: aconst_null
+      58: invokespecial #197                // Method java/lang/MatchException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+      61: athrow
+      62: aload         4
+      64: ldc           #198                // float -0.017453292f
+      66: aload_2
+      67: fload_3
+      68: invokestatic  #202                // Method lerpYaw:(Lnet/minecraft/entity/decoration/DisplayEntity;F)F
+      71: fmul
+      72: ldc           #203                // float 0.017453292f
+      74: aload_2
+      75: fload_3
+      76: invokestatic  #206                // Method lerpPitch:(Lnet/minecraft/entity/decoration/DisplayEntity;F)F
+      79: fmul
+      80: fconst_0
+      81: invokevirtual #210                // Method org/joml/Quaternionf.rotationYXZ:(FFF)Lorg/joml/Quaternionf;
+      84: goto          159
+      87: aload         4
+      89: ldc           #198                // float -0.017453292f
+      91: aload_2
+      92: fload_3
+      93: invokestatic  #202                // Method lerpYaw:(Lnet/minecraft/entity/decoration/DisplayEntity;F)F
+      96: fmul
+      97: ldc           #203                // float 0.017453292f
+      99: aload         5
+     101: invokestatic  #216                // Method getNegatedPitch:(Lnet/minecraft/client/render/Camera;)F
+     104: fmul
+     105: fconst_0
+     106: invokevirtual #210                // Method org/joml/Quaternionf.rotationYXZ:(FFF)Lorg/joml/Quaternionf;
+     109: goto          159
+     112: aload         4
+     114: ldc           #198                // float -0.017453292f
+     116: aload         5
+     118: invokestatic  #219                // Method getBackwardsYaw:(Lnet/minecraft/client/render/Camera;)F
+     121: fmul
+     122: ldc           #203                // float 0.017453292f
+     124: aload_2
+     125: fload_3
+     126: invokestatic  #206                // Method lerpPitch:(Lnet/minecraft/entity/decoration/DisplayEntity;F)F
+     129: fmul
+     130: fconst_0
+     131: invokevirtual #210                // Method org/joml/Quaternionf.rotationYXZ:(FFF)Lorg/joml/Quaternionf;
+     134: goto          159
+     137: aload         4
+     139: ldc           #198                // float -0.017453292f
+     141: aload         5
+     143: invokestatic  #219                // Method getBackwardsYaw:(Lnet/minecraft/client/render/Camera;)F
+     146: fmul
+     147: ldc           #203                // float 0.017453292f
+     149: aload         5
+     151: invokestatic  #216                // Method getNegatedPitch:(Lnet/minecraft/client/render/Camera;)F
+     154: fmul
+     155: fconst_0
+     156: invokevirtual #210                // Method org/joml/Quaternionf.rotationYXZ:(FFF)Lorg/joml/Quaternionf;
+     159: areturn
+
+  private static float getBackwardsYaw(net.minecraft.client.render.Camera);
+    Code:
+       0: aload_0
+       1: invokevirtual #224                // Method net/minecraft/client/render/Camera.getYaw:()F
+       4: ldc           #225                // float 180.0f
+       6: fsub
+       7: freturn
+
+  private static float getNegatedPitch(net.minecraft.client.render.Camera);
+    Code:
+       0: aload_0
+       1: invokevirtual #228                // Method net/minecraft/client/render/Camera.getPitch:()F
+       4: fneg
+       5: freturn
+
+  private static <T extends net.minecraft.entity.decoration.DisplayEntity> float lerpYaw(T, float);
+    Code:
+       0: fload_1
+       1: aload_0
+       2: getfield      #233                // Field net/minecraft/entity/decoration/DisplayEntity.prevYaw:F
+       5: aload_0
+       6: invokevirtual #234                // Method net/minecraft/entity/decoration/DisplayEntity.getYaw:()F
+       9: invokestatic  #240                // Method net/minecraft/util/math/MathHelper.lerpAngleDegrees:(FFF)F
+      12: freturn
+
+  private static <T extends net.minecraft.entity.decoration.DisplayEntity> float lerpPitch(T, float);
+    Code:
+       0: fload_1
+       1: aload_0
+       2: getfield      #243                // Field net/minecraft/entity/decoration/DisplayEntity.prevPitch:F
+       5: aload_0
+       6: invokevirtual #244                // Method net/minecraft/entity/decoration/DisplayEntity.getPitch:()F
+       9: invokestatic  #246                // Method net/minecraft/util/math/MathHelper.lerp:(FFF)F
+      12: freturn
+
+  protected abstract S getData(T);
+
+  protected abstract void render(T, S, net.minecraft.client.util.math.MatrixStack, net.minecraft.client.render.VertexConsumerProvider, int, float);
+
+  public net.minecraft.util.Identifier getTexture(net.minecraft.entity.Entity);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #27                 // class net/minecraft/entity/decoration/DisplayEntity
+       5: invokevirtual #257                // Method getTexture:(Lnet/minecraft/entity/decoration/DisplayEntity;)Lnet/minecraft/util/Identifier;
+       8: areturn
+
+  public void render(net.minecraft.entity.Entity, float, float, net.minecraft.client.util.math.MatrixStack, net.minecraft.client.render.VertexConsumerProvider, int);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #27                 // class net/minecraft/entity/decoration/DisplayEntity
+       5: fload_2
+       6: fload_3
+       7: aload         4
+       9: aload         5
+      11: iload         6
+      13: invokevirtual #262                // Method render:(Lnet/minecraft/entity/decoration/DisplayEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V
+      16: return
+}

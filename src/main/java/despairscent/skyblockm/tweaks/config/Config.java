@@ -58,6 +58,8 @@ public class Config {
 
     public HideHiddenArmorStandsConfig hideHiddenArmorStands = new HideHiddenArmorStandsConfig();
 
+    public ItemDisplayHitboxConfig itemDisplayHitbox = new ItemDisplayHitboxConfig();
+
     @Deprecated
     private static class Modules {
         public boolean fpsOptimize = true;

@@ -24,4 +24,10 @@ public abstract class EntityMixin {
 		return instance.isSpectator();
 	}
 
+    @org.spongepowered.asm.mixin.injection.Inject(method = "remove", at = @At("HEAD"))
+    private void onRemove(Entity.RemovalReason reason, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if ((Object) this instanceof net.minecraft.entity.decoration.DisplayEntity.ItemDisplayEntity display) {
+            despairscent.skyblockm.tweaks.ItemDisplayBakingManager.onEntityRemoved(display);
+        }
+    }
 }

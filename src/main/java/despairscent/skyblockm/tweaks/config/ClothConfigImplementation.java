@@ -164,6 +164,29 @@ public class ClothConfigImplementation {
                 .setSaveConsumer(value -> CONFIG.hideHiddenArmorStands.enabled = value)
                 .build());
 
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayHitbox"), CONFIG.itemDisplayHitbox.enabled)
+                .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.enabled)
+                .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.enabled = value)
+                .build());
+        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayHitbox.antiRubberband"), CONFIG.itemDisplayHitbox.antiRubberband)
+                        .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.antiRubberband)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.antiRubberband = value)
+                        .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.itemDisplayHitbox.antiRubberbandDistance"), CONFIG.itemDisplayHitbox.antiRubberbandDistance)
+                        .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.antiRubberbandDistance)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.antiRubberbandDistance = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayHitbox.optimizeAsBlocks"), CONFIG.itemDisplayHitbox.optimizeAsBlocks)
+                        .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.optimizeAsBlocks)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.optimizeAsBlocks = value)
+                        .build(),
+                builder.entryBuilder().startEnumSelector(i18n("config.itemDisplayHitbox.hitboxType"), ItemDisplayHitboxConfig.HitboxType.class, CONFIG.itemDisplayHitbox.hitboxType)
+                        .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.hitboxType)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.hitboxType = value)
+                        .build()
+        )).build());
+
         builder.setSavingRunnable(() -> CONFIG.save());
 
         return builder.build();
