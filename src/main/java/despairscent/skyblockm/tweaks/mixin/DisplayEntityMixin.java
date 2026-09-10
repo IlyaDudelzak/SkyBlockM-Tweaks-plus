@@ -30,24 +30,15 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
         this.skyblockm$isBaked = baked;
     }
 
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
+        if (CONFIG == null) return;
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
-            if (CONFIG.itemDisplayBaking.enabled) {
-                if (this.skyblockm$isBaked) {
-                    ci.cancel();
-                    return;
-                }
-
+            if (CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled) {
                 ItemDisplayBakingManager.updateEntity(display);
-                
-                if (this.skyblockm$isBaked) {
-                    ci.cancel();
-                    return;
-                }
             }
 
-            if (CONFIG.itemDisplayHitbox.enabled) {
+            if (CONFIG.itemDisplayHitbox != null && CONFIG.itemDisplayHitbox.enabled) {
                 Box box = ItemDisplayBakingManager.getCachedBox(display);
                 if (box != null) {
                     display.setBoundingBox(box);
@@ -72,28 +63,23 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
         }
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
             ItemDisplayBakingManager.invalidateCache(display);
-            if (this.skyblockm$isBaked) {
-                this.skyblockm$isBaked = false;
-            }
+            ItemDisplayBakingManager.onEntityDataChanged(display);
         }
     }
 
     @Inject(method = "updateTrackedPositionAndAngles(DDDFFI)V", at = @At("TAIL"), require = 0)
     private void onUpdateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int steps, CallbackInfo ci) {
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
-            display.setPosition(x, y, z);
-            display.setYaw(yaw);
-            display.setPitch(pitch);
             ItemDisplayBakingManager.invalidateCache(display);
             if (this.skyblockm$isBaked) {
-                this.skyblockm$isBaked = false;
+                ItemDisplayBakingManager.removeEntity(display);
             }
         }
     }
 
     @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
     private void onShouldRender(double distance, CallbackInfoReturnable<Boolean> cir) {
-        if (CONFIG.itemDisplayBaking.enabled && (Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
+        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled && (Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
             // If it is baked into a chunk, DON'T render it as a dynamic entity!
             if (ItemDisplayBakingManager.shouldHideEntity(display)) {
                 cir.setReturnValue(false);

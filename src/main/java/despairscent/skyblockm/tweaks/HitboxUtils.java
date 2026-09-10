@@ -17,15 +17,18 @@ public class HitboxUtils {
             var data = display.getData();
             if (data == null || data.itemStack().isEmpty()) return null;
             
-            Matrix4f matrix = new Matrix4f();
-            matrix.translate((float)display.getX(), (float)display.getY(), (float)display.getZ());
+            net.minecraft.client.util.math.MatrixStack ms = new net.minecraft.client.util.math.MatrixStack();
             
-            matrix.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(-display.getYaw()));
-            matrix.rotate(RotationAxis.POSITIVE_X.rotationDegrees(display.getPitch()));
+            org.joml.Quaternionf billboardRot = new org.joml.Quaternionf().rotationYXZ(
+                (float) Math.toRadians(-display.getYaw()),
+                (float) Math.toRadians(display.getPitch()),
+                0.0f
+            );
+            ms.multiply(billboardRot);
             
-            matrix.mul(renderState.transformation().interpolate(1.0f).getMatrix());
+            ms.multiplyPositionMatrix(renderState.transformation().interpolate(1.0f).getMatrix());
             
-            matrix.rotate(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
+            ms.multiply(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
             
             Box rawBounds = new Box(0, 0, 0, 1, 1, 1);
             if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
@@ -33,13 +36,12 @@ public class HitboxUtils {
                 
                 net.minecraft.client.render.model.BakedModel itemModel = net.minecraft.client.MinecraftClient.getInstance().getItemRenderer().getModel(data.itemStack(), null, null, 0);
                 if (itemModel != null) {
-                    net.minecraft.client.util.math.MatrixStack ms = new net.minecraft.client.util.math.MatrixStack();
                     itemModel.getTransformation().getTransformation(data.itemTransform()).apply(false, ms);
-                    matrix.mul(ms.peek().getPositionMatrix());
                 }
             }
             
-            matrix.translate(-0.5f, -0.5f, -0.5f);
+            ms.translate(-0.5f, -0.5f, -0.5f);
+            Matrix4f matrix = ms.peek().getPositionMatrix();
             
             Vector3f[] corners = new Vector3f[] {
                 new Vector3f((float) rawBounds.minX, (float) rawBounds.minY, (float) rawBounds.minZ),
@@ -52,17 +54,24 @@ public class HitboxUtils {
                 new Vector3f((float) rawBounds.maxX, (float) rawBounds.maxY, (float) rawBounds.maxZ)
             };
             
-            float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
-            float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+            double dx = display.getX();
+            double dy = display.getY();
+            double dz = display.getZ();
+            
+            double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, minZ = Double.MAX_VALUE;
+            double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
             
             for (Vector3f corner : corners) {
                 corner.mulPosition(matrix);
-                if (corner.x < minX) minX = corner.x;
-                if (corner.y < minY) minY = corner.y;
-                if (corner.z < minZ) minZ = corner.z;
-                if (corner.x > maxX) maxX = corner.x;
-                if (corner.y > maxY) maxY = corner.y;
-                if (corner.z > maxZ) maxZ = corner.z;
+                double cx = corner.x + dx;
+                double cy = corner.y + dy;
+                double cz = corner.z + dz;
+                if (cx < minX) minX = cx;
+                if (cy < minY) minY = cy;
+                if (cz < minZ) minZ = cz;
+                if (cx > maxX) maxX = cx;
+                if (cy > maxY) maxY = cy;
+                if (cz > maxZ) maxZ = cz;
             }
 
             return new Box(minX, minY, minZ, maxX, maxY, maxZ);
