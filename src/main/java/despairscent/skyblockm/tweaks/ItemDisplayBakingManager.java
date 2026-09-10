@@ -104,6 +104,7 @@ public class ItemDisplayBakingManager {
     }
 
     private static final ConcurrentHashMap<BlockPos, CopyOnWriteArrayList<BakedEntityInfo>> STATIC_DISPLAYS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, BlockPos> ENTITY_ID_TO_POS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
@@ -190,6 +191,7 @@ public class ItemDisplayBakingManager {
         }
 
         list.add(new BakedEntityInfo(display, pos));
+        ENTITY_ID_TO_POS.put(display.getId(), pos);
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
@@ -204,8 +206,27 @@ public class ItemDisplayBakingManager {
         }
         BlockPos pos = display.getBlockPos();
         CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
-        list.removeIf(info -> info.matches(display));
+        BakedEntityInfo existing = null;
+        for (BakedEntityInfo info : list) {
+            if (info.matches(display)) {
+                existing = info;
+                break;
+            }
+        }
+
+        if (existing != null && existing.hasSameVisual(display)) {
+            if (display instanceof IBakedDisplay baked) {
+                baked.skyblockm$setBaked(true);
+            }
+            return;
+        }
+
+        if (existing != null) {
+            list.remove(existing);
+        }
+
         list.add(new BakedEntityInfo(display, pos));
+        ENTITY_ID_TO_POS.put(display.getId(), pos);
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
@@ -232,8 +253,12 @@ public class ItemDisplayBakingManager {
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(false);
         }
+        int id = display.getId();
         invalidateCache(display);
-        BlockPos pos = display.getBlockPos();
+        BlockPos pos = ENTITY_ID_TO_POS.remove(id);
+        if (pos == null) {
+            pos = display.getBlockPos();
+        }
         CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.get(pos);
         if (list != null) {
             if (list.removeIf(info -> info.matches(display))) {
@@ -247,14 +272,17 @@ public class ItemDisplayBakingManager {
 
     public static void removeEntityById(int entityId) {
         BOX_CACHE.remove(entityId);
-        for (var entry : STATIC_DISPLAYS.entrySet()) {
-            CopyOnWriteArrayList<BakedEntityInfo> list = entry.getValue();
-            if (list != null && list.removeIf(info -> info.entityId == entityId)) {
+        BlockPos pos = ENTITY_ID_TO_POS.remove(entityId);
+        if (pos == null) {
+            return;
+        }
+        CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.get(pos);
+        if (list != null) {
+            if (list.removeIf(info -> info.entityId == entityId)) {
                 if (list.isEmpty()) {
-                    STATIC_DISPLAYS.remove(entry.getKey());
+                    STATIC_DISPLAYS.remove(pos);
                 }
-                markSectionDirty(entry.getKey());
-                break;
+                markSectionDirty(pos);
             }
         }
     }
@@ -265,7 +293,11 @@ public class ItemDisplayBakingManager {
 
     public static void onBlockChanged(BlockPos pos, BlockState newState) {
         if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
-            if (STATIC_DISPLAYS.remove(pos) != null) {
+            CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.remove(pos);
+            if (list != null) {
+                for (BakedEntityInfo info : list) {
+                    ENTITY_ID_TO_POS.remove(info.entityId);
+                }
                 markSectionDirty(pos);
             }
         }
@@ -302,9 +334,11 @@ public class ItemDisplayBakingManager {
 
     public static void clear() {
         STATIC_DISPLAYS.clear();
+        ENTITY_ID_TO_POS.clear();
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        ModelBoundsCache.clear();
     }
 
     public static List<BakedEntityInfo> getStaticDisplaysAt(BlockPos pos) {

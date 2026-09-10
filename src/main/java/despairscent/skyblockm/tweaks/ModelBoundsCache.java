@@ -9,19 +9,38 @@ import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
 
 import java.util.List;
-import net.minecraft.util.math.random.Random;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Environment(EnvType.CLIENT)
 public class ModelBoundsCache {
+    private static final Map<BakedModel, Box> CACHE = new ConcurrentHashMap<>();
+
+    public static void clear() {
+        CACHE.clear();
+    }
+
     public static Box getBounds(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) return new Box(0,0,0,0,0,0);
+        if (stack == null || stack.isEmpty()) return new Box(0, 0, 0, 0, 0, 0);
         
         try {
             ItemRenderer itemRenderer = MinecraftClient.getInstance().getItemRenderer();
             BakedModel model = itemRenderer.getModel(stack, null, null, 0);
+            if (model == null) return new Box(0, 0, 0, 1, 1, 1);
             
+            return CACHE.computeIfAbsent(model, ModelBoundsCache::computeBounds);
+        } catch (Exception e) {
+            // fallback
+        }
+        
+        return new Box(0, 0, 0, 1, 1, 1);
+    }
+
+    private static Box computeBounds(BakedModel model) {
+        try {
             float minX = Float.MAX_VALUE;
             float minY = Float.MAX_VALUE;
             float minZ = Float.MAX_VALUE;
@@ -35,10 +54,10 @@ public class ModelBoundsCache {
             Direction[] dirs = new Direction[]{null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
             for (Direction dir : dirs) {
                 List<BakedQuad> quads = model.getQuads(null, dir, random);
+                if (quads == null) continue;
                 for (BakedQuad quad : quads) {
                     int[] vertexData = quad.getVertexData();
-                    // Each vertex is typically 8 ints (32 bytes). X,Y,Z are the first 3 floats.
-                    // So indices 0, 8, 16, 24 are X. 1, 9, 17, 25 are Y. 2, 10, 18, 26 are Z.
+                    if (vertexData == null || vertexData.length < 32) continue;
                     for (int i = 0; i < 4; i++) {
                         float x = Float.intBitsToFloat(vertexData[i * 8 + 0]);
                         float y = Float.intBitsToFloat(vertexData[i * 8 + 1]);
@@ -55,18 +74,12 @@ public class ModelBoundsCache {
                 }
             }
             
-            if (found) {
-                // Item models are usually defined in 0-16 voxel space, where 1 unit = 1/16th of a block.
-                // Actually, the floats are usually 0.0 to 1.0!
-                // But wait, the display transformation centers it?
-                // Typically a standard item display centers the model at 0.5, 0.5, 0.5.
-                // Let's just return the raw box and offset it in HitboxUtils.
+            if (found && minX <= maxX && minY <= maxY && minZ <= maxZ) {
                 return new Box(minX, minY, minZ, maxX, maxY, maxZ);
             }
-        } catch (Exception e) {
-            // fallback
-        }
+        } catch (Exception ignored) {}
         
         return new Box(0, 0, 0, 1, 1, 1);
     }
 }
+

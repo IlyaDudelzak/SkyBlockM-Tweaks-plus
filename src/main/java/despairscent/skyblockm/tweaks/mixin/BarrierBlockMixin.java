@@ -37,31 +37,35 @@ public class BarrierBlockMixin {
     private void handleShape(BlockState state, BlockView world, BlockPos pos, CallbackInfoReturnable<VoxelShape> cir, boolean isCollision) {
         if (!CONFIG.itemDisplayHitbox.enabled) return;
         
-        if (state.isOf(Blocks.BARRIER) && world instanceof World w) {
-            List<DisplayEntity.ItemDisplayEntity> entities = w.getEntitiesByClass(DisplayEntity.ItemDisplayEntity.class, new Box(pos), e -> true);
-            if (!entities.isEmpty()) {
-                if (CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.VOXEL_SHAPE) {
-                    DisplayEntity.ItemDisplayEntity entity = entities.get(0);
-                    Box box = entity.getBoundingBox();
-                    
-                    if (box.getAverageSideLength() > 0.01) {
-                        VoxelShape shape = VoxelShapes.cuboid(
-                                box.minX - pos.getX(),
-                                box.minY - pos.getY(),
-                                box.minZ - pos.getZ(),
-                                box.maxX - pos.getX(),
-                                box.maxY - pos.getY(),
-                                box.maxZ - pos.getZ()
-                        );
-                        cir.setReturnValue(shape);
-                    }
-                } else if (CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.ENTITY_AABB) {
+        if (state.isOf(Blocks.BARRIER)) {
+            if (CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.ENTITY_AABB) {
+                if (despairscent.skyblockm.tweaks.ItemDisplayBakingManager.getStaticDisplaysAt(pos) != null) {
                     cir.setReturnValue(VoxelShapes.empty());
+                    return;
                 }
-            } else if (isCollision && CONFIG.itemDisplayHitbox.antiRubberband) {
-                // If they want to walk through all barriers, wait no... 
-                // Only if there is an item_display nearby?
-                // Actually, the above logic already makes it empty for ENTITY_AABB, or matching shape for VOXEL_SHAPE.
+            }
+            if (world instanceof World w) {
+                List<DisplayEntity.ItemDisplayEntity> entities = w.getEntitiesByClass(DisplayEntity.ItemDisplayEntity.class, new Box(pos), e -> true);
+                if (!entities.isEmpty()) {
+                    if (CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.VOXEL_SHAPE) {
+                        DisplayEntity.ItemDisplayEntity entity = entities.get(0);
+                        Box box = entity.getBoundingBox();
+                        
+                        if (box.getAverageSideLength() > 0.01) {
+                            VoxelShape shape = VoxelShapes.cuboid(
+                                    box.minX - pos.getX(),
+                                    box.minY - pos.getY(),
+                                    box.minZ - pos.getZ(),
+                                    box.maxX - pos.getX(),
+                                    box.maxY - pos.getY(),
+                                    box.maxZ - pos.getZ()
+                            );
+                            cir.setReturnValue(shape);
+                        }
+                    } else if (CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.ENTITY_AABB) {
+                        cir.setReturnValue(VoxelShapes.empty());
+                    }
+                }
             }
         }
     }
