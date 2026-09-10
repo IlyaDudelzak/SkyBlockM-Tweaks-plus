@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
 
 @Mixin(DisplayEntity.class)
-public class DisplayEntityMixin implements IBakedDisplay {
+public abstract class DisplayEntityMixin implements IBakedDisplay {
 
     @Unique
     private boolean skyblockm$isBaked = false;
@@ -56,10 +56,18 @@ public class DisplayEntityMixin implements IBakedDisplay {
         }
     }
 
+    @org.spongepowered.asm.mixin.Shadow
+    protected abstract void refreshData(boolean interpolate, float lerpProgress);
+
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet(net.minecraft.entity.data.TrackedData<?> data, CallbackInfo ci) {
-        if (CONFIG.itemDisplayBaking.enabled) {
-            if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
+        if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
+            this.skyblockm$isBaked = false;
+            try {
+                this.refreshData(false, 0.0f);
+            } catch (Exception ignored) {}
+            ItemDisplayBakingManager.invalidateCache(display);
+            if (CONFIG.itemDisplayBaking.enabled) {
                 ItemDisplayBakingManager.onEntityDataChanged(display);
             }
         }
