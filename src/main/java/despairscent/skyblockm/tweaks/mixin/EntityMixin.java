@@ -30,4 +30,24 @@ public abstract class EntityMixin {
             despairscent.skyblockm.tweaks.ItemDisplayBakingManager.onEntityRemoved(display);
         }
     }
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "setYaw", at = @At("RETURN"), require = 0)
+    private void onSetYaw(float yaw, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if ((Object) this instanceof net.minecraft.entity.decoration.DisplayEntity.ItemDisplayEntity display) {
+            despairscent.skyblockm.tweaks.ItemDisplayBakingManager.invalidateCache(display);
+            if (CONFIG.itemDisplayBaking.enabled && display instanceof despairscent.skyblockm.tweaks.IBakedDisplay baked && baked.skyblockm$isBaked()) {
+                despairscent.skyblockm.tweaks.ItemDisplayBakingManager.onEntityDataChanged(display);
+            }
+        }
+    }
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "setPitch", at = @At("RETURN"), require = 0)
+    private void onSetPitch(float pitch, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if ((Object) this instanceof net.minecraft.entity.decoration.DisplayEntity.ItemDisplayEntity display) {
+            despairscent.skyblockm.tweaks.ItemDisplayBakingManager.invalidateCache(display);
+            if (CONFIG.itemDisplayBaking.enabled && display instanceof despairscent.skyblockm.tweaks.IBakedDisplay baked && baked.skyblockm$isBaked()) {
+                despairscent.skyblockm.tweaks.ItemDisplayBakingManager.onEntityDataChanged(display);
+            }
+        }
+    }
 }

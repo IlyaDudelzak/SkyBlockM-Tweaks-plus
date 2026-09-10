@@ -57,21 +57,46 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
     }
 
     @org.spongepowered.asm.mixin.Shadow
-    protected boolean renderingDataSet;
+    @org.spongepowered.asm.mixin.Final
+    private static net.minecraft.entity.data.TrackedData<Float> WIDTH;
+
+    @org.spongepowered.asm.mixin.Shadow
+    @org.spongepowered.asm.mixin.Final
+    private static net.minecraft.entity.data.TrackedData<Float> HEIGHT;
+
+    @org.spongepowered.asm.mixin.Shadow
+    private DisplayEntity.RenderState renderState;
+
+    @org.spongepowered.asm.mixin.Shadow
+    protected abstract DisplayEntity.RenderState copyRenderState();
 
     @org.spongepowered.asm.mixin.Shadow
     protected abstract void refreshData(boolean interpolate, float lerpProgress);
 
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet(net.minecraft.entity.data.TrackedData<?> data, CallbackInfo ci) {
-        // Only react if actual visual/rendering data changed (skip WIDTH, HEIGHT, culling, glow, name, etc.)
-        if (!this.renderingDataSet) {
+        // Skip hitbox dimension updates (e.g. from EntityCulling)
+        if (WIDTH.equals(data) || HEIGHT.equals(data)) {
             return;
         }
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
             try {
+                this.renderState = this.copyRenderState();
                 this.refreshData(false, 0.0f);
             } catch (Exception ignored) {}
+            ItemDisplayBakingManager.invalidateCache(display);
+            if (CONFIG.itemDisplayBaking.enabled) {
+                ItemDisplayBakingManager.onEntityDataChanged(display);
+            }
+        }
+    }
+
+    @Inject(method = "updateTrackedPositionAndAngles(DDDFFI)V", at = @At("TAIL"), require = 0)
+    private void onUpdateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int steps, CallbackInfo ci) {
+        if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
+            display.setPosition(x, y, z);
+            display.setYaw(yaw);
+            display.setPitch(pitch);
             ItemDisplayBakingManager.invalidateCache(display);
             if (CONFIG.itemDisplayBaking.enabled) {
                 ItemDisplayBakingManager.onEntityDataChanged(display);
