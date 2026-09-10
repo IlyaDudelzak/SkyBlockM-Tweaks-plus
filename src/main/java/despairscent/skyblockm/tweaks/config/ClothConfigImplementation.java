@@ -164,6 +164,61 @@ public class ClothConfigImplementation {
                 .setSaveConsumer(value -> CONFIG.hideHiddenArmorStands.enabled = value)
                 .build());
 
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayBaking"), CONFIG.itemDisplayBaking.enabled)
+                .setTooltip(i18n("config.itemDisplayBaking.tooltip"))
+                .setDefaultValue(Config.DEFAULT.itemDisplayBaking.enabled)
+                .setSaveConsumer(value -> CONFIG.itemDisplayBaking.enabled = value)
+                .build());
+        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.maxBakeSize"), CONFIG.itemDisplayBaking.maxBakeSize)
+                        .setTooltip(i18n("config.itemDisplayBaking.maxBakeSize.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.maxBakeSize)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.maxBakeSize = value)
+                        .build(),
+                builder.entryBuilder().startIntField(i18n("config.itemDisplayBaking.bakeDelayTicks"), CONFIG.itemDisplayBaking.bakeDelayTicks)
+                        .setTooltip(i18n("config.itemDisplayBaking.bakeDelayTicks.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.bakeDelayTicks)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.bakeDelayTicks = value)
+                        .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.chunkSettleTime"), CONFIG.itemDisplayBaking.chunkSettleTime)
+                        .setTooltip(i18n("config.itemDisplayBaking.chunkSettleTime.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.chunkSettleTime)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.chunkSettleTime = value)
+                        .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.chunkRebuildCooldown"), CONFIG.itemDisplayBaking.chunkRebuildCooldown)
+                        .setTooltip(i18n("config.itemDisplayBaking.chunkRebuildCooldown.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.chunkRebuildCooldown)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.chunkRebuildCooldown = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayBaking.hideBakeableEntities"), CONFIG.itemDisplayBaking.hideBakeableEntities)
+                        .setTooltip(i18n("config.itemDisplayBaking.hideBakeableEntities.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.hideBakeableEntities)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.hideBakeableEntities = value)
+                        .build()
+        )).build());
+
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayHitbox"), CONFIG.itemDisplayHitbox.enabled)
+                .setTooltip(i18n("config.itemDisplayHitbox.tooltip"))
+                .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.enabled)
+                .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.enabled = value)
+                .build());
+        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startEnumSelector(i18n("config.itemDisplayHitbox.hitboxType"), ItemDisplayHitboxConfig.HitboxType.class, CONFIG.itemDisplayHitbox.hitboxType)
+                        .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.hitboxType)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.hitboxType = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayHitbox.antiRubberband"), CONFIG.itemDisplayHitbox.antiRubberband)
+                        .setTooltip(i18n("config.itemDisplayHitbox.antiRubberband.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.antiRubberband)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.antiRubberband = value)
+                        .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.itemDisplayHitbox.antiRubberbandDistance"), CONFIG.itemDisplayHitbox.antiRubberbandDistance)
+                        .setTooltip(i18n("config.itemDisplayHitbox.antiRubberbandDistance.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.antiRubberbandDistance)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.antiRubberbandDistance = value)
+                        .build()
+        )).build());
+
         builder.setSavingRunnable(() -> CONFIG.save());
 
         return builder.build();
