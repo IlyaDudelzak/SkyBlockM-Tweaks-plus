@@ -19,6 +19,7 @@ import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
 
 public class ItemDisplayBakingManager {
     public static class BakedEntityInfo {
+        public final int entityId;
         public final BlockPos pos;
         public final ItemStack itemStack;
         public final BakedModel itemModel;
@@ -27,6 +28,7 @@ public class ItemDisplayBakingManager {
         public final Object data;
 
         public BakedEntityInfo(DisplayEntity.ItemDisplayEntity display, BlockPos pos) {
+            this.entityId = display.getId();
             this.pos = pos;
             this.renderState = display.getRenderState();
             this.data = display.getData();
@@ -77,11 +79,15 @@ public class ItemDisplayBakingManager {
         }
 
         public boolean matches(DisplayEntity.ItemDisplayEntity display) {
+            return this.entityId == display.getId();
+        }
+
+        public boolean hasSameVisual(DisplayEntity.ItemDisplayEntity display) {
             var d = display.getData();
             if (d == null) return false;
             ItemStack otherStack = d.itemStack();
             if (otherStack.isEmpty()) return false;
-            return ItemStack.areEqual(this.itemStack, otherStack);
+            return ItemStack.areEqual(this.itemStack, otherStack) && this.renderState == display.getRenderState();
         }
     }
 
@@ -150,25 +156,35 @@ public class ItemDisplayBakingManager {
         return false;
     }
 
+    public static void invalidateCache(DisplayEntity.ItemDisplayEntity display) {
+        if (display != null) {
+            BOX_CACHE.remove(display.getId());
+        }
+    }
+
     public static void updateEntity(DisplayEntity.ItemDisplayEntity display) {
         if (!isBakeable(display)) {
             return;
         }
 
         BlockPos pos = display.getBlockPos();
-        
         CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
         for (BakedEntityInfo info : list) {
             if (info.matches(display)) {
-                // Already baked with matching model!
-                if (display instanceof IBakedDisplay baked) {
-                    baked.skyblockm$setBaked(true);
+                if (info.hasSameVisual(display)) {
+                    // Already baked with matching model and transform!
+                    if (display instanceof IBakedDisplay baked) {
+                        baked.skyblockm$setBaked(true);
+                    }
+                    return;
+                } else {
+                    // Visual changed (e.g. wire connected): replace
+                    list.remove(info);
+                    break;
                 }
-                return;
             }
         }
 
-        // New entity at this pos: add to list and schedule section settle timer
         list.add(new BakedEntityInfo(display, pos));
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
@@ -177,6 +193,7 @@ public class ItemDisplayBakingManager {
     }
 
     public static void onEntityDataChanged(DisplayEntity.ItemDisplayEntity display) {
+        invalidateCache(display);
         if (!isBakeable(display)) {
             removeEntity(display);
             return;
@@ -198,19 +215,20 @@ public class ItemDisplayBakingManager {
         long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
         
         long now = System.currentTimeMillis();
-        long settleDelayMs = Math.max(50, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
+        long settleDelayMs = Math.max(20, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
         long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
         long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
         long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
         
-        PENDING_SECTION_REBUILDS.putIfAbsent(sectionLong, targetTime);
+        PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(false);
         }
+        invalidateCache(display);
         BlockPos pos = display.getBlockPos();
         CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.get(pos);
         if (list != null) {
@@ -223,16 +241,22 @@ public class ItemDisplayBakingManager {
         }
     }
 
-    public static void onEntityRemoved(DisplayEntity.ItemDisplayEntity display) {
-        BlockPos pos = display.getBlockPos();
-        if (display.getWorld() != null) {
-            BlockState state = display.getWorld().getBlockState(pos);
-            if (!state.isOf(net.minecraft.block.Blocks.BARRIER)) {
-                // Barrier was actually destroyed/removed from world!
-                removeEntity(display);
+    public static void removeEntityById(int entityId) {
+        BOX_CACHE.remove(entityId);
+        for (var entry : STATIC_DISPLAYS.entrySet()) {
+            CopyOnWriteArrayList<BakedEntityInfo> list = entry.getValue();
+            if (list != null && list.removeIf(info -> info.entityId == entityId)) {
+                if (list.isEmpty()) {
+                    STATIC_DISPLAYS.remove(entry.getKey());
+                }
+                markSectionDirty(entry.getKey());
+                break;
             }
         }
-        BOX_CACHE.remove(display.getId());
+    }
+
+    public static void onEntityRemoved(DisplayEntity.ItemDisplayEntity display) {
+        removeEntity(display);
     }
 
     public static void onBlockChanged(BlockPos pos, BlockState newState) {

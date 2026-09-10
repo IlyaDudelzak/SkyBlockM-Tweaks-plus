@@ -24,4 +24,9 @@ public class ClientWorldMixin {
             ci.cancel();
         }
     }
+
+    @Inject(method = "removeEntity", at = @At("HEAD"))
+    private void onRemoveEntity(int entityId, Entity.RemovalReason reason, CallbackInfo ci) {
+        ItemDisplayBakingManager.removeEntityById(entityId);
+    }
 }
