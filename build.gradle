@@ -28,7 +28,7 @@ dependencies {
 }
 
 remapJar {
-    archiveBaseName = "${mod_id}-${mod_version}+mc${minecraft_version}"
+    archiveBaseName = "${archive_name}-${mod_version}+mc${minecraft_version}"
     archiveVersion = ""
 }
 
