@@ -17,7 +17,8 @@
     "ClientPlayerEntityMixin",
     "BarrierBlockMixin",
     "DisplayEntityMixin",
-    "BarrierBlockRenderTypeMixin"
+    "BarrierBlockRenderTypeMixin",
+    "ClientWorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1

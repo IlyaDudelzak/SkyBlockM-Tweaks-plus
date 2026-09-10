@@ -23,4 +23,9 @@ public class MinecraftClientMixin {
         }
     }
 
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void onTick(CallbackInfo ci) {
+        despairscent.skyblockm.tweaks.ItemDisplayBakingManager.tickRebuilds();
+    }
+
 }

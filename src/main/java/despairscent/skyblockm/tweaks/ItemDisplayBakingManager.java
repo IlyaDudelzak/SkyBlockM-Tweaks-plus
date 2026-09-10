@@ -1,187 +1,281 @@
 package despairscent.skyblockm.tweaks;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.entity.decoration.DisplayEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.RotationAxis;
+import org.joml.Matrix4f;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
+
 public class ItemDisplayBakingManager {
     public static class BakedEntityInfo {
-        public final DisplayEntity.ItemDisplayEntity entity;
+        public final BlockPos pos;
+        public final ItemStack itemStack;
+        public final BakedModel itemModel;
+        public final Matrix4f matrix;
         public final Object renderState;
         public final Object data;
-        public final BakedModel itemModel;
 
-        public BakedEntityInfo(DisplayEntity.ItemDisplayEntity entity) {
-            this.entity = entity;
-            this.renderState = entity.getRenderState();
-            this.data = entity.getData();
+        public BakedEntityInfo(DisplayEntity.ItemDisplayEntity display, BlockPos pos) {
+            this.pos = pos;
+            this.renderState = display.getRenderState();
+            this.data = display.getData();
             
+            ItemStack stack = ItemStack.EMPTY;
             BakedModel model = null;
             try {
-                var d = entity.getData();
+                var d = display.getData();
                 if (d != null && !d.itemStack().isEmpty()) {
-                    model = MinecraftClient.getInstance().getItemRenderer().getModel(d.itemStack(), null, null, 0);
+                    stack = d.itemStack().copy();
+                    model = MinecraftClient.getInstance().getItemRenderer().getModel(stack, null, null, 0);
                 }
             } catch (Exception e) {
                 // ignore
             }
+            this.itemStack = stack;
             this.itemModel = model;
+
+            Matrix4f m = new Matrix4f();
+            try {
+                float rx = (float) (display.getX() - pos.getX());
+                float ry = (float) (display.getY() - pos.getY());
+                float rz = (float) (display.getZ() - pos.getZ());
+                m.translate(rx, ry, rz);
+                
+                m.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(-display.getYaw()));
+                m.rotate(RotationAxis.POSITIVE_X.rotationDegrees(display.getPitch()));
+                
+                var rs = display.getRenderState();
+                if (rs != null) {
+                    m.mul(rs.transformation().interpolate(1.0f).getMatrix());
+                }
+                
+                m.rotate(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
+                
+                var d = display.getData();
+                if (d != null && model != null) {
+                    net.minecraft.client.util.math.MatrixStack ms = new net.minecraft.client.util.math.MatrixStack();
+                    model.getTransformation().getTransformation(d.itemTransform()).apply(false, ms);
+                    m.mul(ms.peek().getPositionMatrix());
+                }
+                
+                m.translate(-0.5f, -0.5f, -0.5f);
+            } catch (Exception e) {
+                // ignore
+            }
+            this.matrix = m;
         }
 
-        public boolean isUpToDate() {
-            // We NO LONGER check this during rendering, we trust the tracker's isBaked!
-            return true; 
+        public boolean matches(DisplayEntity.ItemDisplayEntity display) {
+            var d = display.getData();
+            if (d == null) return false;
+            ItemStack otherStack = d.itemStack();
+            if (otherStack.isEmpty()) return false;
+            return ItemStack.areEqual(this.itemStack, otherStack);
         }
     }
 
-    private static class StateTracker {
+    private static class BoxCacheEntry {
         Object renderState;
         Object data;
-        int lastChangeAge;
-        boolean isBaked;
-        
-        boolean isPendingUnbake;
-        int pendingUnbakeStartAge;
-        
-        Box cachedBox;
         double x, y, z;
         float yaw, pitch;
+        Box cachedBox;
     }
 
     private static final ConcurrentHashMap<BlockPos, CopyOnWriteArrayList<BakedEntityInfo>> STATIC_DISPLAYS = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<DisplayEntity.ItemDisplayEntity, StateTracker> TRACKERS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
-        StateTracker tracker = TRACKERS.computeIfAbsent(display, k -> new StateTracker());
+        int id = display.getId();
+        BoxCacheEntry entry = BOX_CACHE.computeIfAbsent(id, k -> new BoxCacheEntry());
         
-        boolean posChanged = tracker.x != display.getX() || tracker.y != display.getY() || tracker.z != display.getZ() ||
-                             tracker.yaw != display.getYaw() || tracker.pitch != display.getPitch();
+        boolean posChanged = entry.x != display.getX() || entry.y != display.getY() || entry.z != display.getZ() ||
+                             entry.yaw != display.getYaw() || entry.pitch != display.getPitch();
         
-        boolean stateChanged = tracker.renderState != display.getRenderState() || tracker.data != display.getData();
+        boolean stateChanged = entry.renderState != display.getRenderState() || entry.data != display.getData();
         
-        if (stateChanged || posChanged || tracker.cachedBox == null) {
-            tracker.cachedBox = HitboxUtils.calculateDisplayBox(display);
-            tracker.x = display.getX();
-            tracker.y = display.getY();
-            tracker.z = display.getZ();
-            tracker.yaw = display.getYaw();
-            tracker.pitch = display.getPitch();
+        if (stateChanged || posChanged || entry.cachedBox == null) {
+            entry.cachedBox = HitboxUtils.calculateDisplayBox(display);
+            entry.x = display.getX();
+            entry.y = display.getY();
+            entry.z = display.getZ();
+            entry.yaw = display.getYaw();
+            entry.pitch = display.getPitch();
+            entry.renderState = display.getRenderState();
+            entry.data = display.getData();
         }
         
-        return tracker.cachedBox;
+        return entry.cachedBox;
+    }
+
+    public static boolean isBakeable(DisplayEntity.ItemDisplayEntity display) {
+        if (!CONFIG.itemDisplayBaking.enabled) {
+            return false;
+        }
+        BlockPos pos = display.getBlockPos();
+        if (display.getWorld() == null || !display.getWorld().getBlockState(pos).isOf(net.minecraft.block.Blocks.BARRIER)) {
+            return false;
+        }
+        Box box = getCachedBox(display);
+        if (box == null) return false;
+        double maxSize = CONFIG.itemDisplayBaking.maxBakeSize;
+        return (box.maxX - box.minX) <= maxSize && 
+               (box.maxY - box.minY) <= maxSize && 
+               (box.maxZ - box.minZ) <= maxSize;
+    }
+
+    public static boolean shouldHideEntity(DisplayEntity.ItemDisplayEntity display) {
+        if (!CONFIG.itemDisplayBaking.enabled) {
+            return false;
+        }
+        if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
+            return true;
+        }
+        if (CONFIG.itemDisplayBaking.hideBakeableEntities) {
+            return isBakeable(display);
+        }
+        return false;
     }
 
     public static void updateEntity(DisplayEntity.ItemDisplayEntity display) {
-        StateTracker tracker = TRACKERS.computeIfAbsent(display, k -> new StateTracker());
-        
-        boolean posChanged = tracker.x != display.getX() || tracker.y != display.getY() || tracker.z != display.getZ() ||
-                             tracker.yaw != display.getYaw() || tracker.pitch != display.getPitch();
-                             
-        boolean stateChanged = tracker.renderState != display.getRenderState() || tracker.data != display.getData();
-        
-        if (posChanged) {
-            // If it physically moved, unbake immediately! No debounce!
-            tracker.renderState = display.getRenderState();
-            tracker.data = display.getData();
-            tracker.lastChangeAge = display.age;
-            tracker.isPendingUnbake = false;
-            removeEntity(display);
-        } else if (stateChanged) {
-            if (tracker.isBaked) {
-                if (!tracker.isPendingUnbake) {
-                    tracker.isPendingUnbake = true;
-                    tracker.pendingUnbakeStartAge = display.age;
-                }
-                
-                // If it has been changed for > 100 ticks (5 seconds), unbake it!
-                if (display.age - tracker.pendingUnbakeStartAge > 100) {
-                    tracker.renderState = display.getRenderState();
-                    tracker.data = display.getData();
-                    tracker.lastChangeAge = display.age;
-                    tracker.isPendingUnbake = false;
-                    removeEntity(display);
-                }
-            } else {
-                tracker.renderState = display.getRenderState();
-                tracker.data = display.getData();
-                tracker.lastChangeAge = display.age;
-                tracker.isPendingUnbake = false;
-            }
-        } else {
-            tracker.isPendingUnbake = false;
+        if (!isBakeable(display)) {
+            return;
         }
-        
+
         BlockPos pos = display.getBlockPos();
         
-        Box box = getCachedBox(display);
-        boolean isSmall = false;
-        if (box != null) {
-            isSmall = (box.maxX - box.minX) <= 1.6 && 
-                      (box.maxY - box.minY) <= 1.6 && 
-                      (box.maxZ - box.minZ) <= 1.6;
+        CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
+        for (BakedEntityInfo info : list) {
+            if (info.matches(display)) {
+                // Already baked with matching model!
+                if (display instanceof IBakedDisplay baked) {
+                    baked.skyblockm$setBaked(true);
+                }
+                return;
+            }
         }
-        
-        if (!isSmall || display.getWorld() == null || !display.getWorld().getBlockState(pos).isOf(net.minecraft.block.Blocks.BARRIER)) {
-            tracker.lastChangeAge = display.age;
+
+        // New entity at this pos: add to list and schedule section settle timer
+        list.add(new BakedEntityInfo(display, pos));
+        if (display instanceof IBakedDisplay baked) {
+            baked.skyblockm$setBaked(true);
+        }
+        markSectionDirty(pos);
+    }
+
+    public static void onEntityDataChanged(DisplayEntity.ItemDisplayEntity display) {
+        if (!isBakeable(display)) {
             removeEntity(display);
             return;
         }
-        
-        if (display.getVelocity().lengthSquared() < 0.0001 && display.getLerpProgress(1.0f) >= 1.0f) {
-            if (display.age - tracker.lastChangeAge > 40) {
-                if (!tracker.isBaked) {
-                    CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
-                    list.add(new BakedEntityInfo(display));
-                    tracker.isBaked = true;
-                    triggerRebuild(display, pos);
-                }
-            }
-        } else {
-            tracker.lastChangeAge = display.age;
-            removeEntity(display);
+        BlockPos pos = display.getBlockPos();
+        CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
+        list.removeIf(info -> info.matches(display));
+        list.add(new BakedEntityInfo(display, pos));
+        if (display instanceof IBakedDisplay baked) {
+            baked.skyblockm$setBaked(true);
         }
+        markSectionDirty(pos);
+    }
+
+    public static void markSectionDirty(BlockPos pos) {
+        int cx = pos.getX() >> 4;
+        int cy = pos.getY() >> 4;
+        int cz = pos.getZ() >> 4;
+        long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+        
+        long now = System.currentTimeMillis();
+        long settleDelayMs = Math.max(50, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
+        long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
+        
+        long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
+        long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
+        
+        PENDING_SECTION_REBUILDS.putIfAbsent(sectionLong, targetTime);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
-        StateTracker tracker = TRACKERS.get(display);
-        boolean wasBaked = false;
-        if (tracker != null) {
-            wasBaked = tracker.isBaked;
-            tracker.isBaked = false;
+        if (display instanceof IBakedDisplay baked) {
+            baked.skyblockm$setBaked(false);
         }
-        
         BlockPos pos = display.getBlockPos();
         CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.get(pos);
         if (list != null) {
-            boolean removed = list.removeIf(info -> info.entity == display);
-            if (removed || wasBaked) {
+            if (list.removeIf(info -> info.matches(display))) {
                 if (list.isEmpty()) {
                     STATIC_DISPLAYS.remove(pos);
                 }
-                triggerRebuild(display, pos);
+                markSectionDirty(pos);
             }
         }
     }
 
     public static void onEntityRemoved(DisplayEntity.ItemDisplayEntity display) {
-        removeEntity(display);
-        TRACKERS.remove(display);
+        BlockPos pos = display.getBlockPos();
+        if (display.getWorld() != null) {
+            BlockState state = display.getWorld().getBlockState(pos);
+            if (!state.isOf(net.minecraft.block.Blocks.BARRIER)) {
+                // Barrier was actually destroyed/removed from world!
+                removeEntity(display);
+            }
+        }
+        BOX_CACHE.remove(display.getId());
     }
 
-    private static void triggerRebuild(DisplayEntity.ItemDisplayEntity display, BlockPos pos) {
-        if (display.getWorld() != null && display.getWorld().isClient) {
-            MinecraftClient.getInstance().execute(() -> {
-                if (MinecraftClient.getInstance().worldRenderer != null) {
-                    MinecraftClient.getInstance().worldRenderer.scheduleBlockRenders(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
-                }
-            });
+    public static void onBlockChanged(BlockPos pos, BlockState newState) {
+        if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
+            if (STATIC_DISPLAYS.remove(pos) != null) {
+                markSectionDirty(pos);
+            }
         }
+    }
+
+    public static void tickRebuilds() {
+        if (PENDING_SECTION_REBUILDS.isEmpty()) return;
+        long now = System.currentTimeMillis();
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.worldRenderer == null) return;
+        
+        var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
+        int processed = 0;
+        while (iterator.hasNext() && processed < 8) {
+            var entry = iterator.next();
+            if (now >= entry.getValue()) {
+                long sectionLong = entry.getKey();
+                int cx = ChunkSectionPos.unpackX(sectionLong);
+                int cy = ChunkSectionPos.unpackY(sectionLong);
+                int cz = ChunkSectionPos.unpackZ(sectionLong);
+                
+                int minX = cx << 4;
+                int minY = cy << 4;
+                int minZ = cz << 4;
+                client.worldRenderer.scheduleBlockRenders(minX, minY, minZ, minX + 15, minY + 15, minZ + 15);
+                SECTION_LAST_REBUILD.put(sectionLong, now);
+                
+                iterator.remove();
+                processed++;
+            }
+        }
+    }
+
+    public static void clear() {
+        STATIC_DISPLAYS.clear();
+        BOX_CACHE.clear();
+        PENDING_SECTION_REBUILDS.clear();
+        SECTION_LAST_REBUILD.clear();
     }
 
     public static List<BakedEntityInfo> getStaticDisplaysAt(BlockPos pos) {
@@ -189,7 +283,9 @@ public class ItemDisplayBakingManager {
     }
     
     public static boolean isBaked(DisplayEntity.ItemDisplayEntity display) {
-        StateTracker tracker = TRACKERS.get(display);
-        return tracker != null && tracker.isBaked;
+        if (display instanceof IBakedDisplay baked) {
+            return baked.skyblockm$isBaked();
+        }
+        return false;
     }
 }

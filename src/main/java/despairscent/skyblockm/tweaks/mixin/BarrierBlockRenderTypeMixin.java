@@ -15,7 +15,7 @@ import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
 public class BarrierBlockRenderTypeMixin {
     @Inject(method = "getRenderType", at = @At("HEAD"), cancellable = true)
     private void onGetRenderType(BlockState state, CallbackInfoReturnable<BlockRenderType> cir) {
-        if (CONFIG.itemDisplayHitbox.enabled) { // Maybe add a config for optimization
+        if (CONFIG.itemDisplayBaking.enabled) {
             cir.setReturnValue(BlockRenderType.MODEL);
         }
     }

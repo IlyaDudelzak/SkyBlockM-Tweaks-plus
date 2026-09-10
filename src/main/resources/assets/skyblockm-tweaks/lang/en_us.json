@@ -75,9 +75,24 @@
   "skyblockm-tweaks.config.hideHiddenArmorStands": "Скрытие невидимых стоек для брони",
   "skyblockm-tweaks.config.hideHiddenArmorStands.tooltip": "Скрывает видимые в режиме наблюдения невидимые стойки для брони\nТолько для модерации, которой нравится призраками наблюдать за предметами в трубах с максимальной дистанцией отображения в настройках"
 ,
-  "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомные хитбоксы для Item Display",
+  "skyblockm-tweaks.config.itemDisplayBaking": "Запекание Item Display в чанки (FPS)",
+  "skyblockm-tweaks.config.itemDisplayBaking.tooltip": "Оптимизирует сотни тысяч кастомных блоков, запекая их геометрию прямо в чанки и отключая лишние тики сущностей",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxBakeSize": "Макс. размер запекания (в блоках)",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxBakeSize.tooltip": "Максимальный размер сущности в блоках для запекания в геометрию (большие мультиблочки останутся динамическими)",
+  "skyblockm-tweaks.config.itemDisplayBaking.bakeDelayTicks": "Время до запекания (в тиках)",
+  "skyblockm-tweaks.config.itemDisplayBaking.bakeDelayTicks.tooltip": "Время в тиках без изменений перед запеканием в геометрию (20 тиков = 1 сек)",
+  "skyblockm-tweaks.config.itemDisplayBaking.chunkSettleTime": "Время стабилизации чанка (сек)",
+  "skyblockm-tweaks.config.itemDisplayBaking.chunkSettleTime.tooltip": "Время в секундах без новых блоков в чанке перед его пересборкой (устраняет фризы на границе)",
+  "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown": "Кулдаун пересборки того же чанка (сек)",
+  "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown.tooltip": "Минимальный интервал между повторными пересборками одного и того же чанка (предотвращает спам от активных механизмов)",
+  "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Скрывать сущности до запекания",
+  "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Полностью отключает динамический рендер запекаемых сущностей, устраняя просадку FPS при приближении к базе",
+
+  "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомные хитбоксы барьеров",
+  "skyblockm-tweaks.config.itemDisplayHitbox.tooltip": "Изменяет хитбокс барьеров под форму кастомных блоков для удобного взаимодействия сквозь трубы и провода",
+  "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Тип хитбокса",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberband": "Анти-резиновый отброс (Anti-Rubberband)",
+  "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberband.tooltip": "Предотвращает дергание экрана при касании барьера (Внимание: пролёт сквозь барьер вызовет рассинхрон с сервером!)",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Максимальная дистанция отброса",
-  "skyblockm-tweaks.config.itemDisplayHitbox.optimizeAsBlocks": "Запекание в геометрию чанка",
-  "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Тип хитбокса"
+  "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance.tooltip": "Максимальная дистанция коррекции позиции сервером, которую клиент попытается проигнорировать"
 }

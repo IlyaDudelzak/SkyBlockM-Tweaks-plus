@@ -26,7 +26,7 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "onPlayerPositionLook", at = @At("HEAD"), cancellable = true)
     private void onPlayerPositionLookInject(PlayerPositionLookS2CPacket packet, CallbackInfo ci) {
-        if (CONFIG.itemDisplayHitbox.antiRubberband && CLIENT.player != null) {
+        if (CONFIG.itemDisplayHitbox.enabled && CONFIG.itemDisplayHitbox.antiRubberband && CLIENT.player != null) {
             double dx = CLIENT.player.getX() - packet.getX();
             double dy = CLIENT.player.getY() - packet.getY();
             double dz = CLIENT.player.getZ() - packet.getZ();
@@ -44,5 +44,10 @@ public class ClientPlayNetworkHandlerMixin {
                 ci.cancel();
             }
         }
+    }
+
+    @Inject(method = "clearWorld", at = @At("HEAD"))
+    private void onClearWorld(CallbackInfo ci) {
+        despairscent.skyblockm.tweaks.ItemDisplayBakingManager.clear();
     }
 }

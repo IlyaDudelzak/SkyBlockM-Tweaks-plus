@@ -58,6 +58,8 @@ public class Config {
 
     public HideHiddenArmorStandsConfig hideHiddenArmorStands = new HideHiddenArmorStandsConfig();
 
+    public ItemDisplayBakingConfig itemDisplayBaking = new ItemDisplayBakingConfig();
+
     public ItemDisplayHitboxConfig itemDisplayHitbox = new ItemDisplayHitboxConfig();
 
     @Deprecated
@@ -184,6 +186,13 @@ public class Config {
                 config.esTerminalScroll.enabled = config.modules.esTerminalScroll;
                 config.compactGenome.enabled = config.modules.compactGenome;
                 config.hideHiddenArmorStands.enabled = config.modules.hideHiddenArmorStands;
+            }
+
+            if (config.itemDisplayBaking == null) {
+                config.itemDisplayBaking = new ItemDisplayBakingConfig();
+            }
+            if (config.itemDisplayHitbox == null) {
+                config.itemDisplayHitbox = new ItemDisplayHitboxConfig();
             }
 
             return config;
