@@ -27,11 +27,23 @@ public class ItemDisplayBakingManager {
         public final Object itemTransform;
         public final Object renderState;
         public final Object data;
+        public final float yaw;
+        public final float pitch;
+        public final double x, y, z;
+        public final Object transformation;
 
         public BakedEntityInfo(DisplayEntity.ItemDisplayEntity display, BlockPos pos) {
             this.entityId = display.getId();
             this.pos = pos;
-            this.renderState = display.getRenderState();
+            this.yaw = display.getYaw();
+            this.pitch = display.getPitch();
+            this.x = display.getX();
+            this.y = display.getY();
+            this.z = display.getZ();
+
+            var rs = display.getRenderState();
+            this.renderState = rs;
+            this.transformation = rs != null ? rs.transformation() : null;
             this.data = display.getData();
             
             ItemStack stack = ItemStack.EMPTY;
@@ -61,7 +73,6 @@ public class ItemDisplayBakingManager {
                 m.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(-display.getYaw()));
                 m.rotate(RotationAxis.POSITIVE_X.rotationDegrees(display.getPitch()));
                 
-                var rs = display.getRenderState();
                 if (rs != null) {
                     m.mul(rs.transformation().interpolate(1.0f).getMatrix());
                 }
@@ -87,11 +98,25 @@ public class ItemDisplayBakingManager {
         }
 
         public boolean hasSameVisual(DisplayEntity.ItemDisplayEntity display) {
+            if (this.yaw != display.getYaw() || this.pitch != display.getPitch()) {
+                return false;
+            }
+            if (this.x != display.getX() || this.y != display.getY() || this.z != display.getZ()) {
+                return false;
+            }
             var d = display.getData();
             if (d == null) return false;
             ItemStack otherStack = d.itemStack();
             if (otherStack.isEmpty()) return false;
-            return ItemStack.areEqual(this.itemStack, otherStack) && java.util.Objects.equals(this.itemTransform, d.itemTransform());
+            if (!ItemStack.areEqual(this.itemStack, otherStack) || !java.util.Objects.equals(this.itemTransform, d.itemTransform())) {
+                return false;
+            }
+            var currentRs = display.getRenderState();
+            Object currentTransform = currentRs != null ? currentRs.transformation() : null;
+            if (!java.util.Objects.equals(this.transformation, currentTransform)) {
+                return false;
+            }
+            return true;
         }
     }
 
@@ -205,6 +230,17 @@ public class ItemDisplayBakingManager {
             return;
         }
         BlockPos pos = display.getBlockPos();
+        BlockPos oldPos = ENTITY_ID_TO_POS.get(display.getId());
+        if (oldPos != null && !oldPos.equals(pos)) {
+            CopyOnWriteArrayList<BakedEntityInfo> oldList = STATIC_DISPLAYS.get(oldPos);
+            if (oldList != null) {
+                oldList.removeIf(info -> info.matches(display));
+                if (oldList.isEmpty()) {
+                    STATIC_DISPLAYS.remove(oldPos);
+                }
+                markSectionDirty(oldPos);
+            }
+        }
         CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
         BakedEntityInfo existing = null;
         for (BakedEntityInfo info : list) {
