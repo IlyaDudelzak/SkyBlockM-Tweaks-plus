@@ -24,6 +24,7 @@ public class ItemDisplayBakingManager {
         public final ItemStack itemStack;
         public final BakedModel itemModel;
         public final Matrix4f matrix;
+        public final Object itemTransform;
         public final Object renderState;
         public final Object data;
 
@@ -35,10 +36,12 @@ public class ItemDisplayBakingManager {
             
             ItemStack stack = ItemStack.EMPTY;
             BakedModel model = null;
+            Object transform = null;
             try {
                 var d = display.getData();
                 if (d != null && !d.itemStack().isEmpty()) {
                     stack = d.itemStack().copy();
+                    transform = d.itemTransform();
                     model = MinecraftClient.getInstance().getItemRenderer().getModel(stack, null, null, 0);
                 }
             } catch (Exception e) {
@@ -46,6 +49,7 @@ public class ItemDisplayBakingManager {
             }
             this.itemStack = stack;
             this.itemModel = model;
+            this.itemTransform = transform;
 
             Matrix4f m = new Matrix4f();
             try {
@@ -87,7 +91,7 @@ public class ItemDisplayBakingManager {
             if (d == null) return false;
             ItemStack otherStack = d.itemStack();
             if (otherStack.isEmpty()) return false;
-            return ItemStack.areEqual(this.itemStack, otherStack) && this.renderState == display.getRenderState();
+            return ItemStack.areEqual(this.itemStack, otherStack) && java.util.Objects.equals(this.itemTransform, d.itemTransform());
         }
     }
 
@@ -275,7 +279,8 @@ public class ItemDisplayBakingManager {
         
         var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
-        while (iterator.hasNext() && processed < 8) {
+        // Process at most 2 sections per frame to eliminate any frame drops/freezes
+        while (iterator.hasNext() && processed < 2) {
             var entry = iterator.next();
             if (now >= entry.getValue()) {
                 long sectionLong = entry.getKey();
@@ -283,10 +288,8 @@ public class ItemDisplayBakingManager {
                 int cy = ChunkSectionPos.unpackY(sectionLong);
                 int cz = ChunkSectionPos.unpackZ(sectionLong);
                 
-                int minX = cx << 4;
-                int minY = cy << 4;
-                int minZ = cz << 4;
-                client.worldRenderer.scheduleBlockRenders(minX, minY, minZ, minX + 15, minY + 15, minZ + 15);
+                // Directly schedule only this single chunk section without looping or invalidating neighbors
+                client.worldRenderer.scheduleBlockRender(cx, cy, cz);
                 SECTION_LAST_REBUILD.put(sectionLong, now);
                 
                 iterator.remove();
