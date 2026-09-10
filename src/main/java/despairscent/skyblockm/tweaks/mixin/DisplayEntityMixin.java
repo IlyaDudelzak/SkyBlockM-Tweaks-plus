@@ -57,12 +57,18 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
     }
 
     @org.spongepowered.asm.mixin.Shadow
+    protected boolean renderingDataSet;
+
+    @org.spongepowered.asm.mixin.Shadow
     protected abstract void refreshData(boolean interpolate, float lerpProgress);
 
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet(net.minecraft.entity.data.TrackedData<?> data, CallbackInfo ci) {
+        // Only react if actual visual/rendering data changed (skip WIDTH, HEIGHT, culling, glow, name, etc.)
+        if (!this.renderingDataSet) {
+            return;
+        }
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
-            this.skyblockm$isBaked = false;
             try {
                 this.refreshData(false, 0.0f);
             } catch (Exception ignored) {}

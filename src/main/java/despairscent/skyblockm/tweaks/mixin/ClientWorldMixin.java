@@ -11,7 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ClientWorld.class)
+import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
+
+@Mixin(value = ClientWorld.class, priority = 100)
 public class ClientWorldMixin {
     @Inject(method = "handleBlockUpdate", at = @At("HEAD"))
     private void onHandleBlockUpdate(BlockPos pos, BlockState state, int flags, CallbackInfo ci) {
@@ -20,7 +22,7 @@ public class ClientWorldMixin {
 
     @Inject(method = "tickEntity", at = @At("HEAD"), cancellable = true)
     private void onTickEntity(Entity entity, CallbackInfo ci) {
-        if (entity instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
+        if (CONFIG.itemDisplayBaking.enabled && entity instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
             ci.cancel();
         }
     }
