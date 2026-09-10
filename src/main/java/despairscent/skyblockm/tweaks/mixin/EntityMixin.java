@@ -18,7 +18,7 @@ public abstract class EntityMixin {
 	@Redirect(method = "isInvisibleTo",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isSpectator()Z"))
 	private boolean redirectSpectatorCheck(PlayerEntity instance) {
-		if (CONFIG.hideHiddenArmorStands.enabled && this.getType() == EntityType.ARMOR_STAND) {
+		if (CONFIG != null && CONFIG.hideHiddenArmorStands != null && CONFIG.hideHiddenArmorStands.enabled && this.getType() == EntityType.ARMOR_STAND) {
 			return false;
 		}
 		return instance.isSpectator();
@@ -35,7 +35,7 @@ public abstract class EntityMixin {
     private void onSetYaw(float yaw, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
         if ((Object) this instanceof net.minecraft.entity.decoration.DisplayEntity.ItemDisplayEntity display) {
             despairscent.skyblockm.tweaks.ItemDisplayBakingManager.invalidateCache(display);
-            if (CONFIG.itemDisplayBaking.enabled && display instanceof despairscent.skyblockm.tweaks.IBakedDisplay baked && baked.skyblockm$isBaked()) {
+            if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled && display instanceof despairscent.skyblockm.tweaks.IBakedDisplay baked && baked.skyblockm$isBaked()) {
                 despairscent.skyblockm.tweaks.ItemDisplayBakingManager.onEntityDataChanged(display);
             }
         }
@@ -45,7 +45,7 @@ public abstract class EntityMixin {
     private void onSetPitch(float pitch, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
         if ((Object) this instanceof net.minecraft.entity.decoration.DisplayEntity.ItemDisplayEntity display) {
             despairscent.skyblockm.tweaks.ItemDisplayBakingManager.invalidateCache(display);
-            if (CONFIG.itemDisplayBaking.enabled && display instanceof despairscent.skyblockm.tweaks.IBakedDisplay baked && baked.skyblockm$isBaked()) {
+            if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled && display instanceof despairscent.skyblockm.tweaks.IBakedDisplay baked && baked.skyblockm$isBaked()) {
                 despairscent.skyblockm.tweaks.ItemDisplayBakingManager.onEntityDataChanged(display);
             }
         }

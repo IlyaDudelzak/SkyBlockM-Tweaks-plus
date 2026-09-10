@@ -63,34 +63,36 @@ public class ItemDisplayBakingManager {
             this.itemModel = model;
             this.itemTransform = transform;
 
-            Matrix4f m = new Matrix4f();
+            net.minecraft.client.util.math.MatrixStack ms = new net.minecraft.client.util.math.MatrixStack();
             try {
                 float rx = (float) (display.getX() - pos.getX());
                 float ry = (float) (display.getY() - pos.getY());
                 float rz = (float) (display.getZ() - pos.getZ());
-                m.translate(rx, ry, rz);
+                ms.translate(rx, ry, rz);
                 
-                m.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(-display.getYaw()));
-                m.rotate(RotationAxis.POSITIVE_X.rotationDegrees(display.getPitch()));
+                org.joml.Quaternionf billboardRot = new org.joml.Quaternionf().rotationYXZ(
+                    (float) Math.toRadians(-display.getYaw()),
+                    (float) Math.toRadians(display.getPitch()),
+                    0.0f
+                );
+                ms.multiply(billboardRot);
                 
                 if (rs != null) {
-                    m.mul(rs.transformation().interpolate(1.0f).getMatrix());
+                    ms.multiplyPositionMatrix(rs.transformation().interpolate(1.0f).getMatrix());
                 }
                 
-                m.rotate(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
+                ms.multiply(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
                 
                 var d = display.getData();
                 if (d != null && model != null) {
-                    net.minecraft.client.util.math.MatrixStack ms = new net.minecraft.client.util.math.MatrixStack();
                     model.getTransformation().getTransformation(d.itemTransform()).apply(false, ms);
-                    m.mul(ms.peek().getPositionMatrix());
                 }
                 
-                m.translate(-0.5f, -0.5f, -0.5f);
+                ms.translate(-0.5f, -0.5f, -0.5f);
             } catch (Exception e) {
                 // ignore
             }
-            this.matrix = m;
+            this.matrix = ms.peek().getPositionMatrix();
         }
 
         public boolean matches(DisplayEntity.ItemDisplayEntity display) {
@@ -158,11 +160,26 @@ public class ItemDisplayBakingManager {
     }
 
     public static boolean isBakeable(DisplayEntity.ItemDisplayEntity display) {
-        if (!CONFIG.itemDisplayBaking.enabled) {
+        if (CONFIG == null || CONFIG.itemDisplayBaking == null || !CONFIG.itemDisplayBaking.enabled) {
+            return false;
+        }
+        if (display.getWorld() == null) {
             return false;
         }
         BlockPos pos = display.getBlockPos();
-        if (display.getWorld() == null || !display.getWorld().getBlockState(pos).isOf(net.minecraft.block.Blocks.BARRIER)) {
+        if (!display.getWorld().getBlockState(pos).isOf(net.minecraft.block.Blocks.BARRIER)) {
+            return false;
+        }
+        var rs = display.getRenderState();
+        if (rs != null && rs.billboardConstraints() != DisplayEntity.BillboardMode.FIXED) {
+            return false;
+        }
+        var d = display.getData();
+        if (d == null || d.itemStack().isEmpty()) {
+            return false;
+        }
+        BakedModel model = MinecraftClient.getInstance().getItemRenderer().getModel(d.itemStack(), null, null, 0);
+        if (model == null || model.isBuiltin()) {
             return false;
         }
         Box box = getCachedBox(display);
@@ -174,14 +191,14 @@ public class ItemDisplayBakingManager {
     }
 
     public static boolean shouldHideEntity(DisplayEntity.ItemDisplayEntity display) {
-        if (!CONFIG.itemDisplayBaking.enabled) {
+        if (CONFIG == null || CONFIG.itemDisplayBaking == null || !CONFIG.itemDisplayBaking.enabled) {
+            return false;
+        }
+        if (!CONFIG.itemDisplayBaking.hideBakeableEntities) {
             return false;
         }
         if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
             return true;
-        }
-        if (CONFIG.itemDisplayBaking.hideBakeableEntities) {
-            return isBakeable(display);
         }
         return false;
     }
@@ -194,6 +211,9 @@ public class ItemDisplayBakingManager {
 
     public static void updateEntity(DisplayEntity.ItemDisplayEntity display) {
         if (!isBakeable(display)) {
+            if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
+                removeEntity(display);
+            }
             return;
         }
 
@@ -270,6 +290,7 @@ public class ItemDisplayBakingManager {
     }
 
     public static void markSectionDirty(BlockPos pos) {
+        if (CONFIG == null || CONFIG.itemDisplayBaking == null) return;
         int cx = pos.getX() >> 4;
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
