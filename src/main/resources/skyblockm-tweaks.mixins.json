@@ -6,11 +6,18 @@
   "mixins": [],
   "client": [
     "AnvilScreenMixin",
+    "BarrierBlockMixin",
+    "BarrierBlockRenderTypeMixin",
     "ClientPlayNetworkHandlerMixin",
+    "ClientPlayerEntityMixin",
+    "ClientWorldMixin",
+    "DisplayEntityMixin",
     "DrawContextMixin",
     "EntityMixin",
     "GameRendererMixin",
     "InGameHudMixin",
+    "ItemDisplayEntityMixin",
+    "MinecraftClientInteractionMixin",
     "MinecraftClientMixin",
     "MouseMixin"
   ],
