@@ -288,8 +288,10 @@ public class ItemDisplayBakingManager {
                 int cy = ChunkSectionPos.unpackY(sectionLong);
                 int cz = ChunkSectionPos.unpackZ(sectionLong);
                 
-                // Directly schedule only this single chunk section without looping or invalidating neighbors
-                client.worldRenderer.scheduleBlockRender(cx, cy, cz);
+                int bx = (cx << 4) + 8;
+                int by = (cy << 4) + 8;
+                int bz = (cz << 4) + 8;
+                client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
                 SECTION_LAST_REBUILD.put(sectionLong, now);
                 
                 iterator.remove();
