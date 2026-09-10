@@ -64,15 +64,6 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
     @org.spongepowered.asm.mixin.Final
     private static net.minecraft.entity.data.TrackedData<Float> HEIGHT;
 
-    @org.spongepowered.asm.mixin.Shadow
-    private DisplayEntity.RenderState renderState;
-
-    @org.spongepowered.asm.mixin.Shadow
-    protected abstract DisplayEntity.RenderState copyRenderState();
-
-    @org.spongepowered.asm.mixin.Shadow
-    protected abstract void refreshData(boolean interpolate, float lerpProgress);
-
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet(net.minecraft.entity.data.TrackedData<?> data, CallbackInfo ci) {
         // Skip hitbox dimension updates (e.g. from EntityCulling)
@@ -80,13 +71,9 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
             return;
         }
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
-            try {
-                this.renderState = this.copyRenderState();
-                this.refreshData(false, 0.0f);
-            } catch (Exception ignored) {}
             ItemDisplayBakingManager.invalidateCache(display);
-            if (CONFIG.itemDisplayBaking.enabled) {
-                ItemDisplayBakingManager.onEntityDataChanged(display);
+            if (this.skyblockm$isBaked) {
+                this.skyblockm$isBaked = false;
             }
         }
     }
@@ -98,8 +85,8 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
             display.setYaw(yaw);
             display.setPitch(pitch);
             ItemDisplayBakingManager.invalidateCache(display);
-            if (CONFIG.itemDisplayBaking.enabled) {
-                ItemDisplayBakingManager.onEntityDataChanged(display);
+            if (this.skyblockm$isBaked) {
+                this.skyblockm$isBaked = false;
             }
         }
     }
