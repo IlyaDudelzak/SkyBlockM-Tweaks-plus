@@ -35,7 +35,7 @@ public class BarrierBlockMixin {
     }
 
     private void handleShape(BlockState state, BlockView world, BlockPos pos, CallbackInfoReturnable<VoxelShape> cir, boolean isCollision) {
-        if (!CONFIG.itemDisplayHitbox.enabled) return;
+        if (CONFIG == null || CONFIG.itemDisplayHitbox == null || !CONFIG.itemDisplayHitbox.enabled) return;
         
         if (state.isOf(Blocks.BARRIER)) {
             if (CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.ENTITY_AABB) {

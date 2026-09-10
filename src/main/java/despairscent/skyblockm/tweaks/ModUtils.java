@@ -24,7 +24,7 @@ public class ModUtils {
 
     public static final MinecraftClient CLIENT = MinecraftClient.getInstance();
 
-    public static Config CONFIG;
+    public static Config CONFIG = new Config();
 
     public static MutableText i18n(String key, Object... args) {
         return Text.translatable("skyblockm-tweaks." + key, args);
