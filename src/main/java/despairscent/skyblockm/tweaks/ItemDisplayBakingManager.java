@@ -240,7 +240,7 @@ public class ItemDisplayBakingManager {
         long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
         
         long now = System.currentTimeMillis();
-        long settleDelayMs = Math.max(20, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
+        long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
         long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
         long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
