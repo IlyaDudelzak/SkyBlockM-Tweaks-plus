@@ -50,4 +50,14 @@ public abstract class EntityMixin {
             }
         }
     }
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "setRotation", at = @At("RETURN"), require = 0)
+    private void onSetRotation(float yaw, float pitch, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if ((Object) this instanceof net.minecraft.entity.decoration.DisplayEntity.ItemDisplayEntity display) {
+            despairscent.skyblockm.tweaks.ItemDisplayBakingManager.invalidateCache(display);
+            if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled && display instanceof despairscent.skyblockm.tweaks.IBakedDisplay baked && baked.skyblockm$isBaked()) {
+                despairscent.skyblockm.tweaks.ItemDisplayBakingManager.onEntityDataChanged(display);
+            }
+        }
+    }
 }
