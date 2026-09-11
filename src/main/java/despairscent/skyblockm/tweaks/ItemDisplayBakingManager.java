@@ -30,7 +30,7 @@ public class ItemDisplayBakingManager {
         public final float yaw;
         public final float pitch;
         public final double x, y, z;
-        public final Object transformation;
+        public final net.minecraft.util.math.AffineTransformation affineTransformation;
 
         public BakedEntityInfo(DisplayEntity.ItemDisplayEntity display, BlockPos pos) {
             this.entityId = display.getId();
@@ -43,7 +43,13 @@ public class ItemDisplayBakingManager {
 
             var rs = display.getRenderState();
             this.renderState = rs;
-            this.transformation = rs != null ? rs.transformation() : null;
+            net.minecraft.util.math.AffineTransformation affine = null;
+            if (rs != null) {
+                try {
+                    affine = rs.transformation().interpolate(1.0f);
+                } catch (Exception ignored) {}
+            }
+            this.affineTransformation = affine;
             this.data = display.getData();
             
             ItemStack stack = ItemStack.EMPTY;
@@ -77,8 +83,8 @@ public class ItemDisplayBakingManager {
                 );
                 ms.multiply(billboardRot);
                 
-                if (rs != null) {
-                    ms.multiplyPositionMatrix(rs.transformation().interpolate(1.0f).getMatrix());
+                if (affine != null) {
+                    ms.multiplyPositionMatrix(affine.getMatrix());
                 }
                 
                 ms.multiply(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
@@ -100,10 +106,11 @@ public class ItemDisplayBakingManager {
         }
 
         public boolean hasSameVisual(DisplayEntity.ItemDisplayEntity display) {
-            if (this.yaw != display.getYaw() || this.pitch != display.getPitch()) {
+            if (Math.abs(net.minecraft.util.math.MathHelper.wrapDegrees(this.yaw - display.getYaw())) > 0.01f ||
+                Math.abs(net.minecraft.util.math.MathHelper.wrapDegrees(this.pitch - display.getPitch())) > 0.01f) {
                 return false;
             }
-            if (this.x != display.getX() || this.y != display.getY() || this.z != display.getZ()) {
+            if (Math.abs(this.x - display.getX()) > 0.001 || Math.abs(this.y - display.getY()) > 0.001 || Math.abs(this.z - display.getZ()) > 0.001) {
                 return false;
             }
             var d = display.getData();
@@ -114,8 +121,13 @@ public class ItemDisplayBakingManager {
                 return false;
             }
             var currentRs = display.getRenderState();
-            Object currentTransform = currentRs != null ? currentRs.transformation() : null;
-            if (!java.util.Objects.equals(this.transformation, currentTransform)) {
+            net.minecraft.util.math.AffineTransformation currentAffine = null;
+            if (currentRs != null) {
+                try {
+                    currentAffine = currentRs.transformation().interpolate(1.0f);
+                } catch (Exception ignored) {}
+            }
+            if (!java.util.Objects.equals(this.affineTransformation, currentAffine)) {
                 return false;
             }
             return true;
@@ -182,10 +194,7 @@ public class ItemDisplayBakingManager {
         if (model == null || model.isBuiltin()) {
             return false;
         }
-        if (display.getYaw() != display.getLerpTargetYaw() || display.getPitch() != display.getLerpTargetPitch() ||
-            display.getX() != display.getLerpTargetX() || display.getY() != display.getLerpTargetY() || display.getZ() != display.getLerpTargetZ()) {
-            return false;
-        }
+
         Box box = getCachedBox(display);
         if (box == null) return false;
         double maxSize = CONFIG.itemDisplayBaking.maxBakeSize;
@@ -249,48 +258,9 @@ public class ItemDisplayBakingManager {
 
     public static void onEntityDataChanged(DisplayEntity.ItemDisplayEntity display) {
         invalidateCache(display);
-        if (!isBakeable(display)) {
+        if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
             removeEntity(display);
-            return;
         }
-        BlockPos pos = display.getBlockPos();
-        BlockPos oldPos = ENTITY_ID_TO_POS.get(display.getId());
-        if (oldPos != null && !oldPos.equals(pos)) {
-            CopyOnWriteArrayList<BakedEntityInfo> oldList = STATIC_DISPLAYS.get(oldPos);
-            if (oldList != null) {
-                oldList.removeIf(info -> info.matches(display));
-                if (oldList.isEmpty()) {
-                    STATIC_DISPLAYS.remove(oldPos);
-                }
-                markSectionDirty(oldPos);
-            }
-        }
-        CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
-        BakedEntityInfo existing = null;
-        for (BakedEntityInfo info : list) {
-            if (info.matches(display)) {
-                existing = info;
-                break;
-            }
-        }
-
-        if (existing != null && existing.hasSameVisual(display)) {
-            if (display instanceof IBakedDisplay baked) {
-                baked.skyblockm$setBaked(true);
-            }
-            return;
-        }
-
-        if (existing != null) {
-            list.remove(existing);
-        }
-
-        list.add(new BakedEntityInfo(display, pos));
-        ENTITY_ID_TO_POS.put(display.getId(), pos);
-        if (display instanceof IBakedDisplay baked) {
-            baked.skyblockm$setBaked(true);
-        }
-        markSectionDirty(pos);
     }
 
     public static void markSectionDirty(BlockPos pos) {
@@ -302,12 +272,8 @@ public class ItemDisplayBakingManager {
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
-        long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
-        long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
-        long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
-        
-        PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
+        PENDING_SECTION_REBUILDS.put(sectionLong, now + settleDelayMs);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -372,8 +338,8 @@ public class ItemDisplayBakingManager {
         
         var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
-        // Process at most 2 sections per frame to eliminate any frame drops/freezes
-        while (iterator.hasNext() && processed < 2) {
+        // Process up to 8 sections per frame to eliminate any rebuild delays
+        while (iterator.hasNext() && processed < 8) {
             var entry = iterator.next();
             if (now >= entry.getValue()) {
                 long sectionLong = entry.getKey();
