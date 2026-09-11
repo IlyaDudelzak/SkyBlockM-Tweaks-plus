@@ -20,12 +20,7 @@ public class ClientWorldMixin {
         ItemDisplayBakingManager.onBlockChanged(pos, state);
     }
 
-    @Inject(method = "tickEntity", at = @At("HEAD"), cancellable = true)
-    private void onTickEntity(Entity entity, CallbackInfo ci) {
-        if (CONFIG.itemDisplayBaking.enabled && entity instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
-            ci.cancel();
-        }
-    }
+
 
     @Inject(method = "removeEntity", at = @At("HEAD"))
     private void onRemoveEntity(int entityId, Entity.RemovalReason reason, CallbackInfo ci) {

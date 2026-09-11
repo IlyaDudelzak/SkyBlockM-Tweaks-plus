@@ -63,7 +63,9 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
         }
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
             ItemDisplayBakingManager.invalidateCache(display);
-            ItemDisplayBakingManager.onEntityDataChanged(display);
+            if (this.skyblockm$isBaked) {
+                ItemDisplayBakingManager.removeEntity(display);
+            }
         }
     }
 
