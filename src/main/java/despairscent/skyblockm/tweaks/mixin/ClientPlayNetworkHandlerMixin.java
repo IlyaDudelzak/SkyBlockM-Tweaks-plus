@@ -1,9 +1,18 @@
 package despairscent.skyblockm.tweaks.mixin;
 
+import despairscent.skyblockm.tweaks.ModUtils;
+import despairscent.skyblockm.tweaks.SkyBlockPackManager;
 import despairscent.skyblockm.tweaks.modules.inventorydesyncfix.InventoryDesyncFixModule;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ServerInfo;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket;
+import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
 import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -13,6 +22,30 @@ import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin {
+
+    @Shadow @Nullable private ServerInfo serverInfo;
+
+    @Shadow @Final private ClientConnection connection;
+
+    @Inject(method = "onResourcePackSend", at = @At("HEAD"), cancellable = true)
+    public void onResourcePackSend(ResourcePackSendS2CPacket packet, CallbackInfo ci) {
+        if (CONFIG != null && CONFIG.serverPackUnlocker != null && CONFIG.serverPackUnlocker.enabled && this.serverInfo != null && this.serverInfo.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.DISABLED) {
+            this.connection.send(new ResourcePackStatusC2SPacket(ResourcePackStatusC2SPacket.Status.SUCCESSFULLY_LOADED));
+            ci.cancel();
+            return;
+        }
+
+        String serverAddress = this.serverInfo != null ? this.serverInfo.address : null;
+        if (SkyBlockPackManager.shouldBypassServerPack(packet, serverAddress)) {
+            ModUtils.LOGGER.info("SkyBlockM Tweaks: Bypassing duplicate server pack download because SkyBlockM pack is already active.");
+            this.connection.send(new ResourcePackStatusC2SPacket(ResourcePackStatusC2SPacket.Status.ACCEPTED));
+            this.connection.send(new ResourcePackStatusC2SPacket(ResourcePackStatusC2SPacket.Status.SUCCESSFULLY_LOADED));
+            ci.cancel();
+            return;
+        }
+
+        SkyBlockPackManager.onServerPackSend(packet, serverAddress);
+    }
 
     @Inject(method = "onUpdateSelectedSlot",
             at = @At("TAIL"))

@@ -19,7 +19,9 @@
     "ItemDisplayEntityMixin",
     "MinecraftClientInteractionMixin",
     "MinecraftClientMixin",
-    "MouseMixin"
+    "MouseMixin",
+    "ResourcePackProfileInsertionPositionMixin",
+    "ResourcePackProfileMixin"
   ],
   "injectors": {
     "defaultRequire": 1

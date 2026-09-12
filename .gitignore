@@ -42,4 +42,5 @@ replay_*.log
 # resource pack testing
 SkyBlockM.zip
 SkyBlockM/
+SkyBlockM-Resoucepack/
 /assets/

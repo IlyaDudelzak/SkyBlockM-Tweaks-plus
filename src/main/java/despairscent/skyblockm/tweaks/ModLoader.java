@@ -18,6 +18,24 @@ public class ModLoader implements ClientModInitializer {
         CompactGenomeModule.init();
         EsTerminalScrollModule.init();
         InventoryDesyncFixModule.init();
+
+        net.fabricmc.fabric.api.resource.ResourceManagerHelper.get(net.minecraft.resource.ResourceType.CLIENT_RESOURCES).registerReloadListener(
+            new net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener() {
+                @Override
+                public net.minecraft.util.Identifier getFabricId() {
+                    return new net.minecraft.util.Identifier("skyblockm-tweaks", "baking_reload_listener");
+                }
+
+                @Override
+                public void reload(net.minecraft.resource.ResourceManager manager) {
+                    ItemDisplayBakingManager.onResourceReload();
+                }
+            }
+        );
+
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            SkyBlockPackManager.onClientStarted(client);
+        });
     }
 
 }

@@ -368,6 +368,21 @@ public class ItemDisplayBakingManager {
         ModelBoundsCache.clear();
     }
 
+    public static void onResourceReload() {
+        clear();
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.world != null) {
+            for (net.minecraft.entity.Entity entity : client.world.getEntities()) {
+                if (entity instanceof IBakedDisplay baked) {
+                    baked.skyblockm$setBaked(false);
+                }
+            }
+            if (client.worldRenderer != null) {
+                client.worldRenderer.reload();
+            }
+        }
+    }
+
     public static List<BakedEntityInfo> getStaticDisplaysAt(BlockPos pos) {
         return STATIC_DISPLAYS.get(pos);
     }
