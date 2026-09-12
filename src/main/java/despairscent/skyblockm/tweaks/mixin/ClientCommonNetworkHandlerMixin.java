@@ -34,7 +34,8 @@ public abstract class ClientCommonNetworkHandlerMixin {
         
         String serverAddress = this.serverInfo != null ? this.serverInfo.address : null;
         if (SkyBlockPackManager.shouldBypassServerPack(packet, serverAddress)) {
-            ModUtils.LOGGER.info("SkyBlockM Tweaks: Bypassing server pack download because SkyBlockM pack is already loaded.");
+            ModUtils.LOGGER.info("SkyBlockM Tweaks: Bypassing duplicate server pack download because SkyBlockM pack is already active.");
+            this.connection.send(new ResourcePackStatusC2SPacket(packet.id(), ResourcePackStatusC2SPacket.Status.ACCEPTED));
             this.connection.send(new ResourcePackStatusC2SPacket(packet.id(), ResourcePackStatusC2SPacket.Status.SUCCESSFULLY_LOADED));
             ci.cancel();
             return;

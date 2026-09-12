@@ -124,22 +124,49 @@ public class SkyBlockPackManager {
         });
     }
 
+    public static boolean isSkyBlockM(String serverAddress, String packetUrl) {
+        if (serverAddress != null) {
+            String addr = serverAddress.toLowerCase();
+            if (addr.contains("justmc.ru") || addr.contains("justmc.io") || addr.contains("skyblock")) {
+                return true;
+            }
+        }
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.getCurrentServerEntry() != null) {
+            String addr = client.getCurrentServerEntry().address.toLowerCase();
+            if (addr.contains("justmc.ru") || addr.contains("justmc.io") || addr.contains("skyblock")) {
+                return true;
+            }
+        }
+        if (packetUrl != null) {
+            String url = packetUrl.toLowerCase();
+            if (url.contains("justmc") || url.contains("skyblock") || url.contains("worldm") || url.contains("gitlab")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean shouldBypassServerPack(ResourcePackSendS2CPacket packet, String serverAddress) {
         if (CONFIG == null || CONFIG.skyblockPackOptimization == null || !CONFIG.skyblockPackOptimization.isEnabled()) {
             return false;
         }
-        if (serverAddress == null) return false;
-        String address = serverAddress.toLowerCase();
-        if (!address.contains("justmc.ru") && !address.contains("justmc.io")) {
+        if (!isSkyBlockM(serverAddress, packet.url())) {
             return false;
         }
 
         MinecraftClient client = MinecraftClient.getInstance();
         Path packPath = client.getResourcePackDir().resolve(PACK_FILENAME);
-        boolean isApplied = client.getResourcePackManager().getEnabledIds().contains(PACK_ID);
-        if (!Files.exists(packPath) || !isApplied) {
+        try {
+            if (!Files.exists(packPath) || Files.size(packPath) < 1000) {
+                return false;
+            }
+        } catch (Exception e) {
             return false;
         }
+
+        // SkyBlockM.zip is already present locally! Ensure it's enabled in options if not already
+        ensurePackEnabled(client, packPath);
 
         if (CONFIG.skyblockPackOptimization.mode == despairscent.skyblockm.tweaks.config.Config.AutoLoadMode.GITLAB) {
             return true;
@@ -147,7 +174,11 @@ public class SkyBlockPackManager {
 
         if (CONFIG.skyblockPackOptimization.mode == despairscent.skyblockm.tweaks.config.Config.AutoLoadMode.SERVER) {
             String expectedHash = packet.hash();
-            return expectedHash != null && !expectedHash.isEmpty() && expectedHash.equalsIgnoreCase(CONFIG.skyblockPackOptimization.lastHash);
+            if (expectedHash != null && !expectedHash.isEmpty() && !expectedHash.equalsIgnoreCase(CONFIG.skyblockPackOptimization.lastHash)) {
+                // If the hash changed on server, allow downloading the new version
+                return false;
+            }
+            return true;
         }
 
         return false;
