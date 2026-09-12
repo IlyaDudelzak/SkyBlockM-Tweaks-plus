@@ -22,7 +22,7 @@ public class ModUtils {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("skyblockm-tweaks");
 
-    public static final MinecraftClient CLIENT = MinecraftClient.getInstance();
+    public static MinecraftClient CLIENT = MinecraftClient.getInstance();
 
     public static Config CONFIG = new Config();
 
@@ -78,11 +78,13 @@ public class ModUtils {
     }
 
     public static boolean isKeyPressed(int key) {
-        return key != Config.KEY_UNDEFINED && InputUtil.isKeyPressed(CLIENT.getWindow().getHandle(), key);
+        MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
+        return key != Config.KEY_UNDEFINED && client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key);
     }
 
     public static boolean isKeyPressedOrUndefined(int key) {
-        return key == Config.KEY_UNDEFINED || InputUtil.isKeyPressed(CLIENT.getWindow().getHandle(), key);
+        MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
+        return key == Config.KEY_UNDEFINED || (client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key));
     }
 
     public static <K, V> Map<K, V> generateConvertMap(V[] values, Function<V, K> keyGetter) {

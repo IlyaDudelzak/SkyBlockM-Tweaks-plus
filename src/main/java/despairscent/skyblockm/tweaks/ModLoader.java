@@ -40,6 +40,7 @@ public class ModLoader implements ClientModInitializer {
         );
 
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            despairscent.skyblockm.tweaks.ModUtils.CLIENT = client;
             SkyBlockPackManager.onClientStarted(client);
         });
     }
