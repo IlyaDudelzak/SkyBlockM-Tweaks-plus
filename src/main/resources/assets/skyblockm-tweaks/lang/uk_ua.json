@@ -79,8 +79,16 @@
   "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType.VOXEL_SHAPE": "Воксельний контур",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberband": "Анти-гумовий відкат (Anti-Rubberband)",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberband.tooltip": "Запобігає смиканню екрана при торканні бар'єра (Увага: проліт крізь бар'єр викличе розсинхрон із сервером!)",
-  "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Максимальна дистанція відкату",
+  "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Максимальна дистанция відкату",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance.tooltip": "Максимальна дистанція корекції позиції сервером, яку клієнт спробує проігнорувати",
+
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode": "Автоматичне завантаження ресурспаку",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.tooltip": "Ні: Вимкнено\nЗ GitLab: Автоматично завантажує свіжий офіційний ресурспак з GitLab\nЗ сервера: Автоматично застосовує ресурспак, отриманий під час входу на сервер",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.none": "Ні",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.gitlab": "З GitLab",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.server": "З сервера",
+  "skyblockm-tweaks.config.serverPackUnlocker": "Розблокування серверних ресурспаків",
+  "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Відкріплює серверні ресурспаки, дозволяючи вам ставити інші ресурспаки поверх них, та запобігає кікам при відключених серверних ресурспаках",
 
   "skyblockm-tweaks.compactGenome.type.temperature": "Біоми",
   "skyblockm-tweaks.compactGenome.type.humidity": "Вологість",

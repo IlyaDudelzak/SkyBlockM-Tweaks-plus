@@ -69,12 +69,16 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
         }
     }
 
-    @Inject(method = "updateTrackedPositionAndAngles(DDDFFI)V", at = @At("TAIL"), require = 0)
+    @Inject(method = "updateTrackedPositionAndAngles(DDDFFI)V", at = @At("HEAD"), require = 0)
     private void onUpdateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int steps, CallbackInfo ci) {
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
-            ItemDisplayBakingManager.invalidateCache(display);
-            if (this.skyblockm$isBaked) {
-                ItemDisplayBakingManager.removeEntity(display);
+            if (Math.abs(display.getX() - x) > 0.01 || Math.abs(display.getY() - y) > 0.01 || Math.abs(display.getZ() - z) > 0.01 ||
+                Math.abs(net.minecraft.util.math.MathHelper.wrapDegrees(display.getYaw() - yaw)) > 0.05f ||
+                Math.abs(net.minecraft.util.math.MathHelper.wrapDegrees(display.getPitch() - pitch)) > 0.05f) {
+                ItemDisplayBakingManager.invalidateCache(display);
+                if (this.skyblockm$isBaked) {
+                    ItemDisplayBakingManager.removeEntity(display);
+                }
             }
         }
     }
