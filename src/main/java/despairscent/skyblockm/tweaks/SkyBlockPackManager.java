@@ -30,6 +30,52 @@ public class SkyBlockPackManager {
             .connectTimeout(Duration.ofSeconds(15))
             .build();
 
+    public static void addDefaultServersIfFirstLaunch(MinecraftClient client) {
+        if (CONFIG == null) return;
+        if (!CONFIG.firstLaunchServersAdded) {
+            CONFIG.firstLaunchServersAdded = true;
+            CONFIG.save();
+
+            try {
+                net.minecraft.client.option.ServerList serverList = new net.minecraft.client.option.ServerList(client);
+                serverList.loadFile();
+
+                boolean hasJustMC = false;
+                boolean hasSkyblock = false;
+
+                for (int i = 0; i < serverList.size(); i++) {
+                    net.minecraft.client.network.ServerInfo info = serverList.get(i);
+                    if (info.address != null) {
+                        String addr = info.address.toLowerCase();
+                        if (addr.contains("join.justmc.io") || (addr.contains("justmc.io") && !addr.contains("skyblock"))) {
+                            hasJustMC = true;
+                        }
+                        if (addr.contains("skyblock.justmc.ru") || addr.contains("skyblockm")) {
+                            hasSkyblock = true;
+                        }
+                    }
+                }
+
+                boolean added = false;
+                if (!hasJustMC) {
+                    serverList.add(new net.minecraft.client.network.ServerInfo("JustMC", "join.justmc.io", net.minecraft.client.network.ServerInfo.ServerType.OTHER), false);
+                    added = true;
+                }
+                if (!hasSkyblock) {
+                    serverList.add(new net.minecraft.client.network.ServerInfo("SkyBlockM", "skyblock.justmc.ru", net.minecraft.client.network.ServerInfo.ServerType.OTHER), false);
+                    added = true;
+                }
+
+                if (added) {
+                    serverList.saveFile();
+                    LOGGER.info("SkyBlockM Tweaks: Added default JustMC and SkyBlockM servers to server list.");
+                }
+            } catch (Exception e) {
+                LOGGER.error("SkyBlockM Tweaks: Failed to add default servers", e);
+            }
+        }
+    }
+
     public static void onClientStarted(MinecraftClient client) {
         if (CONFIG == null || CONFIG.skyblockPackOptimization == null || !CONFIG.skyblockPackOptimization.isEnabled()) {
             return;
