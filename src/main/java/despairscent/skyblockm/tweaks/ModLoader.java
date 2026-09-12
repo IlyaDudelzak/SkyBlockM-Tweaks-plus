@@ -24,6 +24,20 @@ public class ModLoader implements ClientModInitializer {
 
         net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new despairscent.skyblockm.tweaks.BarrierModelPlugin());
         BlockRenderLayerMap.INSTANCE.putBlock(Blocks.BARRIER, RenderLayer.getTranslucent());
+
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            if (CONFIG.skyblockPackOptimization.enabled) {
+                java.nio.file.Path packPath = client.runDirectory.toPath().resolve("resourcepacks").resolve("SkyBlockM.zip");
+                if (java.nio.file.Files.exists(packPath)) {
+                    java.util.List<String> enabled = new java.util.ArrayList<>(client.getResourcePackManager().getEnabledIds());
+                    if (!enabled.contains("file/SkyBlockM.zip")) {
+                        enabled.add("file/SkyBlockM.zip");
+                        client.getResourcePackManager().setEnabledProfiles(enabled);
+                        client.reloadResources();
+                    }
+                }
+            }
+        });
     }
 
 }

@@ -82,6 +82,11 @@
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Максимальная дистанция отброса",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance.tooltip": "Максимальная дистанция коррекции позиции сервером, которую клиент попытается проигнорировать",
 
+  "skyblockm-tweaks.config.skyblockPackOptimization": "Автоматическая загрузка ресурспака",
+  "skyblockm-tweaks.config.skyblockPackOptimization.tooltip": "Автоматически применяет ресурспак SkyBlockM при запуске для предотвращения зависания при входе и пропускает его повторную загрузку, если он не изменился",
+  "skyblockm-tweaks.config.serverPackUnlocker": "Разблокировка серверных ресурспаков",
+  "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Открепляет серверные ресурспаки, позволяя вам ставить другие ресурспаки поверх них, и предотвращает кики при отключенных серверных ресурспаках",
+
   "skyblockm-tweaks.compactGenome.type.temperature": "Биомы",
   "skyblockm-tweaks.compactGenome.type.humidity": "Влажность",
   "skyblockm-tweaks.compactGenome.type.flowers": "Цветы",

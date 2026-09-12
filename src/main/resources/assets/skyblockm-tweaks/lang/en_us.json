@@ -82,6 +82,11 @@
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Max Rubberband Distance",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance.tooltip": "Maximum server position correction distance that the client will attempt to ignore",
 
+  "skyblockm-tweaks.config.skyblockPackOptimization": "SkyBlockM Resource Pack Optimization",
+  "skyblockm-tweaks.config.skyblockPackOptimization.tooltip": "Automatically applies the SkyBlockM resource pack at startup to prevent connection lag and instantly bypasses redundant reloads on join",
+  "skyblockm-tweaks.config.serverPackUnlocker": "Server Pack Unlocker",
+  "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Unpins server resource packs, letting you place custom packs above them and avoids kicks for disabled policies",
+
   "skyblockm-tweaks.compactGenome.type.temperature": "Biomes",
   "skyblockm-tweaks.compactGenome.type.humidity": "Humidity",
   "skyblockm-tweaks.compactGenome.type.flowers": "Flowers",

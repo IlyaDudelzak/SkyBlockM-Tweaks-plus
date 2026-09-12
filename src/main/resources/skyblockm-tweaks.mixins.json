@@ -18,7 +18,10 @@
     "BarrierBlockMixin",
     "DisplayEntityMixin",
     "BarrierBlockRenderTypeMixin",
-    "ClientWorldMixin"
+    "ClientWorldMixin",
+    "ResourcePackProfileMixin",
+    "ResourcePackProfileInsertionPositionMixin",
+    "ClientCommonNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

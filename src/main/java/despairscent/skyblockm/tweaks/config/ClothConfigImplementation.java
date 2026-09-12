@@ -220,6 +220,18 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.skyblockPackOptimization"), CONFIG.skyblockPackOptimization.enabled)
+                .setTooltip(i18n("config.skyblockPackOptimization.tooltip"))
+                .setDefaultValue(Config.DEFAULT.skyblockPackOptimization.enabled)
+                .setSaveConsumer(value -> CONFIG.skyblockPackOptimization.enabled = value)
+                .build());
+
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.serverPackUnlocker"), CONFIG.serverPackUnlocker.enabled)
+                .setTooltip(i18n("config.serverPackUnlocker.tooltip"))
+                .setDefaultValue(Config.DEFAULT.serverPackUnlocker.enabled)
+                .setSaveConsumer(value -> CONFIG.serverPackUnlocker.enabled = value)
+                .build());
+
         builder.setSavingRunnable(() -> CONFIG.save());
 
         return builder.build();

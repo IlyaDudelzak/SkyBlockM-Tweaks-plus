@@ -62,6 +62,10 @@ public class Config {
 
     public ItemDisplayHitboxConfig itemDisplayHitbox = new ItemDisplayHitboxConfig();
 
+    public SkyblockPackOptimizationConfig skyblockPackOptimization = new SkyblockPackOptimizationConfig();
+
+    public ServerPackUnlockerConfig serverPackUnlocker = new ServerPackUnlockerConfig();
+
     @Deprecated
     private static class Modules {
         public boolean fpsOptimize = true;
@@ -173,6 +177,15 @@ public class Config {
         public boolean enabled = false;
     }
 
+    public static class SkyblockPackOptimizationConfig {
+        public boolean enabled = false;
+        public String lastHash = "";
+    }
+
+    public static class ServerPackUnlockerConfig {
+        public boolean enabled = false;
+    }
+
     public static Config load() {
         try (FileReader reader = new FileReader(FabricLoader.getInstance().getConfigDir().resolve(FILENAME).toFile())) {
             Config config = GSON.fromJson(reader, Config.class);
@@ -193,6 +206,12 @@ public class Config {
             }
             if (config.itemDisplayHitbox == null) {
                 config.itemDisplayHitbox = new ItemDisplayHitboxConfig();
+            }
+            if (config.skyblockPackOptimization == null) {
+                config.skyblockPackOptimization = new SkyblockPackOptimizationConfig();
+            }
+            if (config.serverPackUnlocker == null) {
+                config.serverPackUnlocker = new ServerPackUnlockerConfig();
             }
 
             return config;
