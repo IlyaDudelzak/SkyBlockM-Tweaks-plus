@@ -19,6 +19,9 @@ public class ModLoader implements ClientModInitializer {
         EsTerminalScrollModule.init();
         InventoryDesyncFixModule.init();
 
+        net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new BarrierModelPlugin());
+        net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap.INSTANCE.putBlock(net.minecraft.block.Blocks.BARRIER, net.minecraft.client.render.RenderLayer.getTranslucent());
+
         net.fabricmc.fabric.api.resource.ResourceManagerHelper.get(net.minecraft.resource.ResourceType.CLIENT_RESOURCES).registerReloadListener(
             new net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener() {
                 @Override
@@ -35,6 +38,7 @@ public class ModLoader implements ClientModInitializer {
 
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             despairscent.skyblockm.tweaks.ModUtils.CLIENT = client;
+            SkyBlockPackManager.addDefaultServersIfFirstLaunch(client);
             SkyBlockPackManager.onClientStarted(client);
         });
     }

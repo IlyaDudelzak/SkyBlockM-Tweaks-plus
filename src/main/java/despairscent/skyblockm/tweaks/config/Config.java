@@ -66,6 +66,8 @@ public class Config {
 
     public ServerPackUnlockerConfig serverPackUnlocker = new ServerPackUnlockerConfig();
 
+    public boolean firstLaunchServersAdded = false;
+
     @Deprecated
     private static class Modules {
         public boolean fpsOptimize = true;
