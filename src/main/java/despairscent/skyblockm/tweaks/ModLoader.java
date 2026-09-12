@@ -40,29 +40,7 @@ public class ModLoader implements ClientModInitializer {
         );
 
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            if (CONFIG != null && CONFIG.skyblockPackOptimization != null && CONFIG.skyblockPackOptimization.enabled) {
-                java.nio.file.Path packPath = client.getResourcePackDir().resolve("SkyBlockM.zip");
-                if (java.nio.file.Files.exists(packPath)) {
-                    java.util.List<String> enabled = new java.util.ArrayList<>(client.options.resourcePacks);
-                    if (!enabled.contains("file/SkyBlockM.zip")) {
-                        int insertIdx = 0;
-                        for (int i = 0; i < enabled.size(); i++) {
-                            String id = enabled.get(i);
-                            if (id.equals("vanilla") || id.equals("fabric")) {
-                                insertIdx = i + 1;
-                            }
-                        }
-                        enabled.add(insertIdx, "file/SkyBlockM.zip");
-                        client.options.resourcePacks.clear();
-                        client.options.resourcePacks.addAll(enabled);
-                        client.options.write();
-
-                        client.getResourcePackManager().scanPacks();
-                        client.getResourcePackManager().setEnabledProfiles(enabled);
-                        client.reloadResources();
-                    }
-                }
-            }
+            SkyBlockPackManager.onClientStarted(client);
         });
     }
 

@@ -177,9 +177,27 @@ public class Config {
         public boolean enabled = false;
     }
 
+    public enum AutoLoadMode {
+        NONE(i18n("config.skyblockPackOptimization.mode.none")),
+        GITLAB(i18n("config.skyblockPackOptimization.mode.gitlab")),
+        SERVER(i18n("config.skyblockPackOptimization.mode.server"));
+
+        public final Text optionName;
+
+        AutoLoadMode(Text optionName) {
+            this.optionName = optionName;
+        }
+    }
+
     public static class SkyblockPackOptimizationConfig {
+        public AutoLoadMode mode = AutoLoadMode.GITLAB;
         public boolean enabled = true;
         public String lastHash = "4fe5bd8aafcdd4d75ce672121371c5f112443c64";
+        public String lastGitLabEtag = "";
+
+        public boolean isEnabled() {
+            return mode != null && mode != AutoLoadMode.NONE;
+        }
     }
 
     public static class ServerPackUnlockerConfig {
@@ -209,6 +227,8 @@ public class Config {
             }
             if (config.skyblockPackOptimization == null) {
                 config.skyblockPackOptimization = new SkyblockPackOptimizationConfig();
+            } else if (config.skyblockPackOptimization.mode == null) {
+                config.skyblockPackOptimization.mode = config.skyblockPackOptimization.enabled ? AutoLoadMode.GITLAB : AutoLoadMode.NONE;
             }
             if (config.serverPackUnlocker == null) {
                 config.serverPackUnlocker = new ServerPackUnlockerConfig();

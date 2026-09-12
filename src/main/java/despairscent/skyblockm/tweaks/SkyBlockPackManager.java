@@ -1,0 +1,207 @@
+package despairscent.skyblockm.tweaks;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
+
+import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
+import static despairscent.skyblockm.tweaks.ModUtils.LOGGER;
+
+public class SkyBlockPackManager {
+    public static final String GITLAB_URL = "https://gitlab.com/worldm/storage/skyblock-resourcepack/-/raw/actual/SkyBlockM.zip?ref_type=heads&inline=false";
+    public static final String PACK_FILENAME = "SkyBlockM.zip";
+    public static final String PACK_ID = "file/SkyBlockM.zip";
+
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .followRedirects(HttpClient.Redirect.ALWAYS)
+            .connectTimeout(Duration.ofSeconds(15))
+            .build();
+
+    public static void onClientStarted(MinecraftClient client) {
+        if (CONFIG == null || CONFIG.skyblockPackOptimization == null || !CONFIG.skyblockPackOptimization.isEnabled()) {
+            return;
+        }
+
+        Path packPath = client.getResourcePackDir().resolve(PACK_FILENAME);
+
+        if (CONFIG.skyblockPackOptimization.mode == despairscent.skyblockm.tweaks.config.Config.AutoLoadMode.GITLAB) {
+            checkAndDownloadGitLabPack(client, packPath);
+        }
+
+        // Ensure pack is in enabled list if it exists
+        ensurePackEnabled(client, packPath);
+    }
+
+    public static void ensurePackEnabled(MinecraftClient client, Path packPath) {
+        if (!Files.exists(packPath)) return;
+
+        List<String> enabled = new ArrayList<>(client.options.resourcePacks);
+        if (!enabled.contains(PACK_ID)) {
+            int insertIdx = 0;
+            for (int i = 0; i < enabled.size(); i++) {
+                String id = enabled.get(i);
+                if (id.equals("vanilla") || id.equals("fabric")) {
+                    insertIdx = i + 1;
+                }
+            }
+            enabled.add(insertIdx, PACK_ID);
+            client.options.resourcePacks.clear();
+            client.options.resourcePacks.addAll(enabled);
+            client.options.write();
+
+            client.getResourcePackManager().scanPacks();
+            client.getResourcePackManager().setEnabledProfiles(enabled);
+            client.reloadResources();
+            LOGGER.info("SkyBlockM Tweaks: Enabled and loaded SkyBlockM.zip at startup.");
+        }
+    }
+
+    private static void checkAndDownloadGitLabPack(MinecraftClient client, Path packPath) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                HttpRequest headRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(GITLAB_URL))
+                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<Void> headResponse = HTTP_CLIENT.send(headRequest, HttpResponse.BodyHandlers.discarding());
+                String etag = headResponse.headers().firstValue("etag").orElse("");
+
+                boolean exists = Files.exists(packPath) && Files.size(packPath) > 1000;
+                boolean sameEtag = !etag.isEmpty() && etag.equals(CONFIG.skyblockPackOptimization.lastGitLabEtag);
+
+                if (exists && sameEtag) {
+                    LOGGER.info("SkyBlockM Tweaks: SkyBlockM pack is already up to date with GitLab (ETag: {}).", etag);
+                    return;
+                }
+
+                LOGGER.info("SkyBlockM Tweaks: Downloading updated SkyBlockM pack from GitLab...");
+                HttpRequest getRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(GITLAB_URL))
+                        .GET()
+                        .timeout(Duration.ofMinutes(2))
+                        .build();
+
+                HttpResponse<InputStream> getResponse = HTTP_CLIENT.send(getRequest, HttpResponse.BodyHandlers.ofInputStream());
+                if (getResponse.statusCode() == 200) {
+                    Path tmpPath = client.getResourcePackDir().resolve(PACK_FILENAME + ".tmp");
+                    try (InputStream in = getResponse.body()) {
+                        Files.copy(in, tmpPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    Files.move(tmpPath, packPath, StandardCopyOption.REPLACE_EXISTING);
+
+                    String sha1 = calculateSha1(packPath);
+                    CONFIG.skyblockPackOptimization.lastGitLabEtag = etag;
+                    if (!sha1.isEmpty()) {
+                        CONFIG.skyblockPackOptimization.lastHash = sha1;
+                    }
+                    CONFIG.save();
+                    LOGGER.info("SkyBlockM Tweaks: Successfully downloaded SkyBlockM pack from GitLab (SHA1: {}).", sha1);
+
+                    client.execute(() -> {
+                        ensurePackEnabled(client, packPath);
+                        client.getResourcePackManager().scanPacks();
+                        client.reloadResources();
+                    });
+                }
+            } catch (Exception e) {
+                LOGGER.error("SkyBlockM Tweaks: Failed to download pack from GitLab", e);
+            }
+        });
+    }
+
+    public static boolean shouldBypassServerPack(ResourcePackSendS2CPacket packet, String serverAddress) {
+        if (CONFIG == null || CONFIG.skyblockPackOptimization == null || !CONFIG.skyblockPackOptimization.isEnabled()) {
+            return false;
+        }
+        if (serverAddress == null) return false;
+        String address = serverAddress.toLowerCase();
+        if (!address.contains("justmc.ru") && !address.contains("justmc.io")) {
+            return false;
+        }
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        Path packPath = client.getResourcePackDir().resolve(PACK_FILENAME);
+        boolean isApplied = client.getResourcePackManager().getEnabledIds().contains(PACK_ID);
+        if (!Files.exists(packPath) || !isApplied) {
+            return false;
+        }
+
+        if (CONFIG.skyblockPackOptimization.mode == despairscent.skyblockm.tweaks.config.Config.AutoLoadMode.GITLAB) {
+            return true;
+        }
+
+        if (CONFIG.skyblockPackOptimization.mode == despairscent.skyblockm.tweaks.config.Config.AutoLoadMode.SERVER) {
+            String expectedHash = packet.hash();
+            return expectedHash != null && !expectedHash.isEmpty() && expectedHash.equalsIgnoreCase(CONFIG.skyblockPackOptimization.lastHash);
+        }
+
+        return false;
+    }
+
+    public static void onServerPackSend(ResourcePackSendS2CPacket packet, String serverAddress) {
+        if (CONFIG == null || CONFIG.skyblockPackOptimization == null) return;
+        if (CONFIG.skyblockPackOptimization.mode != despairscent.skyblockm.tweaks.config.Config.AutoLoadMode.SERVER) return;
+        if (serverAddress == null) return;
+        String address = serverAddress.toLowerCase();
+        if (!address.contains("justmc.ru") && !address.contains("justmc.io")) return;
+
+        String expectedHash = packet.hash();
+        if (expectedHash == null || expectedHash.isEmpty()) return;
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        Path packPath = client.getResourcePackDir().resolve(PACK_FILENAME);
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                Path downloaded = client.runDirectory.toPath().resolve("downloads").resolve(packet.id().toString()).resolve(expectedHash);
+                for (int i = 0; i < 120; i++) {
+                    Thread.sleep(500);
+                    if (Files.exists(downloaded) && Files.size(downloaded) > 1000) {
+                        Thread.sleep(1000);
+                        Files.copy(downloaded, packPath, StandardCopyOption.REPLACE_EXISTING);
+                        CONFIG.skyblockPackOptimization.lastHash = expectedHash;
+                        CONFIG.save();
+                        LOGGER.info("SkyBlockM Tweaks: Cached downloaded server pack to SkyBlockM.zip (hash: {}).", expectedHash);
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("SkyBlockM Tweaks: Failed to cache server resource pack", e);
+            }
+        });
+    }
+
+    public static String calculateSha1(Path file) {
+        try (InputStream in = Files.newInputStream(file)) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                digest.update(buffer, 0, n);
+            }
+            byte[] hash = digest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+}
