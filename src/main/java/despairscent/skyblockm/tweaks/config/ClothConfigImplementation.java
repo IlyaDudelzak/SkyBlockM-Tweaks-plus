@@ -222,6 +222,22 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
+        base.addEntry(builder.entryBuilder().startEnumSelector(i18n("config.skyblockPackOptimization.mode"), Config.AutoLoadMode.class, CONFIG.skyblockPackOptimization.mode)
+                .setTooltip(i18n("config.skyblockPackOptimization.mode.tooltip"))
+                .setEnumNameProvider(v -> ((Config.AutoLoadMode) v).optionName)
+                .setDefaultValue(Config.DEFAULT.skyblockPackOptimization.mode)
+                .setSaveConsumer(value -> {
+                    CONFIG.skyblockPackOptimization.mode = value;
+                    CONFIG.skyblockPackOptimization.enabled = value != Config.AutoLoadMode.NONE;
+                })
+                .build());
+
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.serverPackUnlocker"), CONFIG.serverPackUnlocker.enabled)
+                .setTooltip(i18n("config.serverPackUnlocker.tooltip"))
+                .setDefaultValue(Config.DEFAULT.serverPackUnlocker.enabled)
+                .setSaveConsumer(value -> CONFIG.serverPackUnlocker.enabled = value)
+                .build());
+
         builder.setSavingRunnable(() -> CONFIG.save());
 
         return builder.build();

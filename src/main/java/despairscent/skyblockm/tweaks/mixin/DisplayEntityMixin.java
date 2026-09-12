@@ -69,16 +69,6 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
         }
     }
 
-    @Inject(method = "updateTrackedPositionAndAngles(DDDFFI)V", at = @At("TAIL"), require = 0)
-    private void onUpdateTrackedPositionAndAngles(double x, double y, double z, float yaw, float pitch, int steps, CallbackInfo ci) {
-        if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
-            ItemDisplayBakingManager.invalidateCache(display);
-            if (this.skyblockm$isBaked) {
-                ItemDisplayBakingManager.removeEntity(display);
-            }
-        }
-    }
-
     @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
     private void onShouldRender(double distance, CallbackInfoReturnable<Boolean> cir) {
         if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled && (Object) this instanceof DisplayEntity.ItemDisplayEntity display) {

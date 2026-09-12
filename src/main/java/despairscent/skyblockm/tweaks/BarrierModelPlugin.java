@@ -9,7 +9,7 @@ public class BarrierModelPlugin implements ModelLoadingPlugin {
     @Override
     public void onInitializeModelLoader(Context pluginContext) {
         pluginContext.modifyModelAfterBake().register((model, context) -> {
-            if (context.id() != null && context.id().getNamespace().equals("minecraft") && context.id().getPath().equals("barrier")) {
+            if (context.id() != null && context.id().getNamespace().equals("minecraft") && (context.id().getPath().equals("barrier") || context.id().getPath().equals("block/barrier"))) {
                 return new BarrierBakedModel(model);
             }
             return model;
