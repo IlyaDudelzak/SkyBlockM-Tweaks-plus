@@ -17,7 +17,14 @@ public abstract class ResourcePackProfileMixin {
 
     @Inject(method = "isPinned", at = @At("HEAD"), cancellable = true)
     public void unpinServerPacks(CallbackInfoReturnable<Boolean> cir) {
-        if (CONFIG.serverPackUnlocker.enabled && this.getSource() == ResourcePackSource.SERVER) {
+        if (CONFIG != null && CONFIG.serverPackUnlocker != null && CONFIG.serverPackUnlocker.enabled && this.getSource() == ResourcePackSource.SERVER) {
+            cir.setReturnValue(false);
+        }
+    }
+
+    @Inject(method = "isRequired", at = @At("HEAD"), cancellable = true)
+    public void unrequireServerPacks(CallbackInfoReturnable<Boolean> cir) {
+        if (CONFIG != null && CONFIG.serverPackUnlocker != null && CONFIG.serverPackUnlocker.enabled && this.getSource() == ResourcePackSource.SERVER) {
             cir.setReturnValue(false);
         }
     }

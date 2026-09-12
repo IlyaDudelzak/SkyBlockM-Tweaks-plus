@@ -178,12 +178,12 @@ public class Config {
     }
 
     public static class SkyblockPackOptimizationConfig {
-        public boolean enabled = false;
-        public String lastHash = "";
+        public boolean enabled = true;
+        public String lastHash = "4fe5bd8aafcdd4d75ce672121371c5f112443c64";
     }
 
     public static class ServerPackUnlockerConfig {
-        public boolean enabled = false;
+        public boolean enabled = true;
     }
 
     public static Config load() {
