@@ -90,6 +90,9 @@
   "skyblockm-tweaks.config.serverPackUnlocker": "Server Pack Unlocker",
   "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Unpins server resource packs, letting you place custom packs above them and avoids kicks for disabled policies",
 
+  "skyblockm-tweaks.config.missing_cloth.title": "Cloth Config API Required",
+  "skyblockm-tweaks.config.missing_cloth.desc": "In-game configuration GUI requires Cloth Config API to be installed.\n\nYou can also configure all settings manually in:\n.minecraft/config/skyblockm-tweaks.json",
+
   "skyblockm-tweaks.compactGenome.type.temperature": "Biomes",
   "skyblockm-tweaks.compactGenome.type.humidity": "Humidity",
   "skyblockm-tweaks.compactGenome.type.flowers": "Flowers",
