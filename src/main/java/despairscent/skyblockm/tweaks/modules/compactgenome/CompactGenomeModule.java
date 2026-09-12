@@ -1,6 +1,7 @@
 package despairscent.skyblockm.tweaks.modules.compactgenome;
 
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -27,6 +28,20 @@ public class CompactGenomeModule {
             Genomes.FLOWERS
     };
 
+    private static boolean isGenomeHeader(String line) {
+        if (line == null) return false;
+        String trimmed = line.trim();
+        return trimmed.equals("Изученные гены:") ||
+               trimmed.equals("Вивчені гени:") ||
+               trimmed.equals("Досліджені гени:") ||
+               trimmed.equals("Researched genes:") ||
+               trimmed.equals("Discovered genes:") ||
+               trimmed.equals("Analyzed genes:") ||
+               trimmed.toLowerCase().contains("гены:") ||
+               trimmed.toLowerCase().contains("гени:") ||
+               trimmed.toLowerCase().contains("genes:");
+    }
+
     public static void init() {
         ItemTooltipCallback.EVENT.register((stack, context, lines) -> {
             if (!CONFIG.compactGenome.enabled) {
@@ -35,7 +50,7 @@ public class CompactGenomeModule {
 
             int start = 0;
             for (; start < lines.size(); start++) {
-                if ("Изученные гены:".equals(getLiteralNested(lines.get(start), 0))) {
+                if (isGenomeHeader(getLiteralNested(lines.get(start), 0))) {
                     break;
                 }
             }
@@ -111,8 +126,16 @@ public class CompactGenomeModule {
             writingSection = true;
 
             GenomePair<?> pair = genomeSet.get(type);
-            lines.add(Text.literal(Formatting.GOLD + GenomeCompacter.get(type) + ": " + Formatting.WHITE + GenomeCompacter.get(type, pair.first()) +
-                    (pair.first() != pair.second() ? Formatting.GRAY + " (" + GenomeCompacter.get(type, pair.second()) + Formatting.RESET + Formatting.GRAY + ")" : "")));
+            MutableText line = Text.empty()
+                    .append(GenomeCompacter.get(type).copy().formatted(Formatting.GOLD))
+                    .append(Text.literal(": ").formatted(Formatting.GOLD))
+                    .append(GenomeCompacter.get(type, pair.first()).copy().formatted(Formatting.WHITE));
+            if (pair.first() != pair.second()) {
+                line.append(Text.literal(" (").formatted(Formatting.GRAY))
+                    .append(GenomeCompacter.get(type, pair.second()).copy().formatted(Formatting.GRAY))
+                    .append(Text.literal(")").formatted(Formatting.GRAY));
+            }
+            lines.add(line);
         }
 
         if (!lines.isEmpty() && lines.get(lines.size() - 1) == empty) {
