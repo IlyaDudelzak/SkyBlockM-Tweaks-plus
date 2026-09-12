@@ -182,8 +182,8 @@
 |---|---|
 | **Платформа** | Fabric Loader |
 | **Поддерживаемые версии MC** | `1.20.1`, `1.20.4`, `1.21.1`, `1.21.3` |
-| **Обязательные зависимости** | [Fabric API](https://modrinth.com/mod/fabric-api), [Cloth Config v15+](https://modrinth.com/mod/cloth-config) |
-| **Рекомендуемые моды** | [Mod Menu](https://modrinth.com/mod/modmenu) (для входа в настройки мода) |
+| **Обязательные зависимости** | [Fabric API](https://modrinth.com/mod/fabric-api) |
+| **Опционально (для меню настроек)** | [Mod Menu](https://modrinth.com/mod/modmenu) и [Cloth Config](https://modrinth.com/mod/cloth-config) (нужны только для красивого графического меню настроек в игре; без них мод работает полноценно) |
 | **Графические оптимизации** | Полная совместимость с **Sodium** и **Iris**. Для версий с Sodium требуется установленный [Indium](https://modrinth.com/mod/indium) для поддержки Fabric Rendering API. |
 
 ---
@@ -192,10 +192,10 @@
 
 1. Установите **Fabric Loader** для вашей версии Minecraft.
 2. Скачайте и поместите в папку `.minecraft/mods`:
-   * `Fabric API`
-   * `Cloth Config API`
-   * `Mod Menu` *(рекомендуется)*
-   * `Indium` *(если используете Sodium)*
+   * `Fabric API` *(обязательно)*
+   * `Indium` *(обязательно, если используется Sodium)*
+   * `Cloth Config API` *(опционально, для внутриигрового меню настроек)*
+   * `Mod Menu` *(опционально, для доступа к настройкам из игры)*
    * Скачанный файл **SkyBlockM-Tweaks-plus-X.X.X.jar**
 3. Запустите игру.
 
@@ -203,9 +203,8 @@
 
 ## ⚙️ Настройка
 
-Открыть меню конфигурации мода можно:
-* Через список модов в **Mod Menu** (`Настройки` → `Моды` → `SkyBlockM Tweaks` → иконка шестерёнки).
-* Файл настроек хранится по пути: `.minecraft/config/skyblockm-tweaks.json`.
+* **В игре:** Через список модов в **Mod Menu** (`Настройки` → `Моды` → `SkyBlockM Tweaks` → иконка шестерёнки). *Требуется установленный Cloth Config API.*
+* **Вручную:** Файл настроек хранится по пути `.minecraft/config/skyblockm-tweaks.json` и создаётся автоматически. Мод можно настраивать через этот файл даже без Mod Menu и Cloth Config.
 
 ---
 

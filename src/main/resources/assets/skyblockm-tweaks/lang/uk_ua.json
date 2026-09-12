@@ -90,6 +90,9 @@
   "skyblockm-tweaks.config.serverPackUnlocker": "Розблокування серверних ресурспаків",
   "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Відкріплює серверні ресурспаки, дозволяючи вам ставити інші ресурспаки поверх них, та запобігає кікам при відключених серверних ресурспаках",
 
+  "skyblockm-tweaks.config.missing_cloth.title": "Потрібен Cloth Config API",
+  "skyblockm-tweaks.config.missing_cloth.desc": "Для відкриття внутрішньоігрового меню налаштувань потрібно встановити Cloth Config API.\n\nУсі параметри також можна налаштувати вручну у файлі:\n.minecraft/config/skyblockm-tweaks.json",
+
   "skyblockm-tweaks.compactGenome.type.temperature": "Біоми",
   "skyblockm-tweaks.compactGenome.type.humidity": "Вологість",
   "skyblockm-tweaks.compactGenome.type.flowers": "Квіти",
