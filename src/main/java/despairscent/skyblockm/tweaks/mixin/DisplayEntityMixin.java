@@ -83,7 +83,7 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
         }
     }
 
-    @Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "shouldRender(D)Z", at = @At("HEAD"), cancellable = true)
     private void onShouldRender(double distance, CallbackInfoReturnable<Boolean> cir) {
         if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled && (Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
             // If it is baked into a chunk, DON'T render it as a dynamic entity!
