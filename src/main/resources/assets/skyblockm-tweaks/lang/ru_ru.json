@@ -82,6 +82,17 @@
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Максимальная дистанция отброса",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance.tooltip": "Максимальная дистанция коррекции позиции сервером, которую клиент попытается проигнорировать",
 
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode": "Автоматическая загрузка ресурспака",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.tooltip": "Нет: Отключено\nС GitLab: Автоматически скачивает свежий официальный ресурспак с GitLab\nС сервера: Автоматически применяет ресурспак, полученный при входе на сервер",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.none": "Нет",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.gitlab": "С GitLab",
+  "skyblockm-tweaks.config.skyblockPackOptimization.mode.server": "С сервера",
+  "skyblockm-tweaks.config.serverPackUnlocker": "Разблокировка серверных ресурспаков",
+  "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Открепляет серверные ресурспаки, позволяя вам ставить другие ресурспаки поверх них, и предотвращает кики при отключенных серверных ресурспаках",
+
+  "skyblockm-tweaks.config.missing_cloth.title": "Требуется Cloth Config API",
+  "skyblockm-tweaks.config.missing_cloth.desc": "Для открытия внутриигрового меню настроек требуется установить Cloth Config API.\n\nВсе параметры также можно настроить вручную в файле:\n.minecraft/config/skyblockm-tweaks.json",
+
   "skyblockm-tweaks.compactGenome.type.temperature": "Биомы",
   "skyblockm-tweaks.compactGenome.type.humidity": "Влажность",
   "skyblockm-tweaks.compactGenome.type.flowers": "Цветы",
