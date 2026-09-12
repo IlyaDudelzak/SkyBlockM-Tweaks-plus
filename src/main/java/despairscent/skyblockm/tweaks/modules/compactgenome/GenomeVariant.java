@@ -8,9 +8,9 @@ enum GenomeVariant {
         if (name == null) {
             return null;
         }
-        return switch (name) {
-            case "Доминантный" -> DOMINANT;
-            case "Рецессивный" -> RECESSIVE;
+        return switch (name.trim()) {
+            case "Доминантный", "Домінантний", "Dominant" -> DOMINANT;
+            case "Рецессивный", "Рецесивний", "Recessive" -> RECESSIVE;
             default -> null;
         };
     }

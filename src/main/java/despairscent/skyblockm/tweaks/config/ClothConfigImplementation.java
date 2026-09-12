@@ -204,6 +204,7 @@ public class ClothConfigImplementation {
                 .build());
         base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startEnumSelector(i18n("config.itemDisplayHitbox.hitboxType"), ItemDisplayHitboxConfig.HitboxType.class, CONFIG.itemDisplayHitbox.hitboxType)
+                        .setEnumNameProvider(v -> i18n("config.itemDisplayHitbox.hitboxType." + ((ItemDisplayHitboxConfig.HitboxType) v).name()))
                         .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.hitboxType)
                         .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.hitboxType = value)
                         .build(),
