@@ -4,6 +4,7 @@ import despairscent.skyblockm.tweaks.SplashManager;
 import net.minecraft.client.gui.screen.SplashTextRenderer;
 import net.minecraft.client.resource.SplashTextResourceSupplier;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.text.Text;
 import net.minecraft.util.profiler.Profiler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,12 +30,6 @@ public class SplashTextResourceSupplierMixin {
     @Inject(method = "apply(Ljava/util/List;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V", at = @At("TAIL"))
     private void onApply(List<String> list, ResourceManager manager, Profiler profiler, CallbackInfo ci) {
         SplashManager.loadSplashes(manager);
-        if (CONFIG != null && CONFIG.splashes != null && CONFIG.splashes.enabled) {
-            List<String> custom = SplashManager.getSplashes();
-            if (custom != null && !custom.isEmpty()) {
-                this.splashTexts.addAll(custom);
-            }
-        }
     }
 
     @Inject(method = "get", at = @At("HEAD"), cancellable = true)
