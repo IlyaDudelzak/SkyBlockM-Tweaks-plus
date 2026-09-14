@@ -1,8 +1,7 @@
 package despairscent.skyblockm.tweaks.mixin;
 
-import net.minecraft.client.font.BakedGlyph;
-import net.minecraft.client.font.EmptyBakedGlyph;
 import net.minecraft.client.font.FontStorage;
+import net.minecraft.client.font.GlyphBaker;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,15 +17,19 @@ public class FontStorageMixin {
 
     @Shadow
     @Final
-    private Identifier id;
+    GlyphBaker glyphBaker;
 
-    @Inject(method = "getBaked(I)Lnet/minecraft/client/font/BakedGlyph;", at = @At("HEAD"), cancellable = true)
-    private void onGetBaked(int codePoint, CallbackInfoReturnable<BakedGlyph> cir) {
+    @Shadow
+    @Final
+    private FontStorage.GlyphPair blankBakedGlyphPair;
+
+    @Inject(method = "getBaked", at = @At("HEAD"), cancellable = true)
+    private void onGetBaked(int codePoint, CallbackInfoReturnable<FontStorage.GlyphPair> cir) {
         if (CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled && CONFIG.terminalStackCount.cleanTitle) {
-            if (this.id != null && "electric_storage".equals(this.id.getNamespace())) {
-                String path = this.id.getPath();
+            if (this.glyphBaker != null && this.glyphBaker.fontId != null && "electric_storage".equals(this.glyphBaker.fontId.getNamespace())) {
+                String path = this.glyphBaker.fontId.getPath();
                 if (path.contains("ascii_row") || path.contains("background")) {
-                    cir.setReturnValue(EmptyBakedGlyph.INSTANCE);
+                    cir.setReturnValue(this.blankBakedGlyphPair);
                 }
             }
         }

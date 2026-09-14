@@ -80,12 +80,18 @@ public class ModUtils {
 
     public static boolean isKeyPressed(int key) {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
-        return key != Config.KEY_UNDEFINED && client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key);
+        return key != Config.KEY_UNDEFINED && client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow(), key);
     }
 
     public static boolean isKeyPressedOrUndefined(int key) {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
-        return key == Config.KEY_UNDEFINED || (client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key));
+        return key == Config.KEY_UNDEFINED || (client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow(), key));
+    }
+
+    public static boolean hasShiftDown() {
+        MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
+        if (client == null || client.getWindow() == null) return false;
+        return InputUtil.isKeyPressed(client.getWindow(), 340) || InputUtil.isKeyPressed(client.getWindow(), 344);
     }
 
     public static <K, V> Map<K, V> generateConvertMap(V[] values, Function<V, K> keyGetter) {

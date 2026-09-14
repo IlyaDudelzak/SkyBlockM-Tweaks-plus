@@ -58,7 +58,7 @@ public abstract class DrawContextMixin {
 
         CustomModelDataComponent cmd = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA);
         int modelId = (cmd != null && cmd.getFloat(0) != null) ? Math.round(cmd.getFloat(0)) : 0;
-        NbtCompound customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).getNbt();
+        NbtCompound customData = itemStack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
 
         ItemStack itemInside;
         boolean drawOriginal;
@@ -132,7 +132,7 @@ public abstract class DrawContextMixin {
     @Unique
     private static boolean testRender(Config.RenderItemInsideItemSetup itemSetup) {
         return itemSetup.enabled && (itemSetup.renderAlways ||
-                (CLIENT.currentScreen != null && Screen.hasShiftDown()) ||
+                (CLIENT.currentScreen != null && ModUtils.hasShiftDown()) ||
                 (itemSetup instanceof Config.RenderItemInsideItemSetupEsPattern itemSetupEsPattern &&
                         itemSetupEsPattern.forceRenderInsideInterface && ModUtils.testCustomScreen(CLIENT.currentScreen, "electric_storage:interfaces", "\u0003")));
     }

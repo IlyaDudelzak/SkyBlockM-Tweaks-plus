@@ -56,7 +56,7 @@ public class SplashTextResourceSupplierMixin {
             if (pickCustom || (this.splashTexts != null && this.splashTexts.isEmpty())) {
                 String splash = SplashManager.getRandomSplash();
                 if (splash != null && !splash.isEmpty()) {
-                    cir.setReturnValue(new SplashTextRenderer(splash));
+                    cir.setReturnValue(new SplashTextRenderer(net.minecraft.text.Text.literal(splash)));
                 }
             }
         }

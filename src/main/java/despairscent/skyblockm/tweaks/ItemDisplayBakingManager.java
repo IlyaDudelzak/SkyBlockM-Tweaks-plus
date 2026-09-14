@@ -5,7 +5,7 @@ import despairscent.skyblockm.tweaks.mixininner.ILayerRenderStateAccessor;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BlockRenderLayer;
-import net.minecraft.client.render.RenderLayers;
+import net.minecraft.client.render.BlockRenderLayers;
 import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.util.math.MatrixStack;
@@ -125,9 +125,9 @@ public class ItemDisplayBakingManager {
                                     }
                                     Matrix4f layerMatrix = new Matrix4f(layerMs.peek().getPositionMatrix());
 
-                                    BlockRenderLayer layerBlockRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
+                                    BlockRenderLayer layerBlockRenderLayer = BlockRenderLayer.CUTOUT;
                                     if (stack.getItem() instanceof BlockItem blockItem) {
-                                        layerBlockRenderLayer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+                                        layerBlockRenderLayer = BlockRenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
                                     }
                                     int[] tints = layerAccessor.skyblockm$getTints();
                                     List<BakedQuad> layerQuads = layer.getQuads();
@@ -228,11 +228,11 @@ public class ItemDisplayBakingManager {
         if (CONFIG == null || CONFIG.itemDisplayBaking == null || !CONFIG.itemDisplayBaking.enabled) {
             return false;
         }
-        if (display.getWorld() == null) {
+        if (display.getEntityWorld() == null) {
             return false;
         }
         BlockPos pos = display.getBlockPos();
-        if (!display.getWorld().getBlockState(pos).isOf(net.minecraft.block.Blocks.BARRIER)) {
+        if (!display.getEntityWorld().getBlockState(pos).isOf(net.minecraft.block.Blocks.BARRIER)) {
             return false;
         }
         var rs = display.getRenderState();

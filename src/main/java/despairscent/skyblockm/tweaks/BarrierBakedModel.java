@@ -39,7 +39,7 @@ public class BarrierBakedModel extends WrapperBlockStateModel {
                 if (info.quads == null || info.quads.isEmpty()) continue;
 
                 for (ItemDisplayBakingManager.BakedQuadInfo quadInfo : info.quads) {
-                    BlockRenderLayer layer = quadInfo.renderLayer != null ? quadInfo.renderLayer : BlockRenderLayer.CUTOUT_MIPPED;
+                    BlockRenderLayer layer = quadInfo.renderLayer != null ? quadInfo.renderLayer : BlockRenderLayer.CUTOUT;
 
                     emitter.pushTransform(quad -> {
                         // 1. Transform vertex positions

@@ -137,7 +137,8 @@ public class StoredCountUtils {
     }
 
     private static boolean containsInterfacesFont(Text text) {
-        net.minecraft.util.Identifier font = text.getStyle().getFont();
+        net.minecraft.text.StyleSpriteSource fontSource = text.getStyle().getFont();
+        net.minecraft.util.Identifier font = fontSource instanceof net.minecraft.text.StyleSpriteSource.Font fontImpl ? fontImpl.id() : null;
         if (font != null && "electric_storage".equals(font.getNamespace()) && "interfaces".equals(font.getPath())) {
             return true;
         }
