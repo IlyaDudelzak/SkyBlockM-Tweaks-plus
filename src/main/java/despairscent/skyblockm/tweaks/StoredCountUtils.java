@@ -15,10 +15,35 @@ public class StoredCountUtils {
             return null;
         }
         Long count = getStoredCount(stack);
-        if (count == null || count <= 1) {
+        if (count != null) {
+            if (count > 1) {
+                return formatCount(count);
+            } else if (count == 1) {
+                return "1";
+            }
             return null;
         }
-        return formatCount(count);
+        if (isCraftable(stack)) {
+            return "+";
+        }
+        return null;
+    }
+
+    public static boolean isCraftable(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        LoreComponent lore = stack.get(DataComponentTypes.LORE);
+        if (lore == null) {
+            return false;
+        }
+        for (Text line : lore.lines()) {
+            String str = line.getString().toLowerCase(java.util.Locale.ROOT);
+            if (str.contains("создать предмет") || str.contains("створити предмет") || str.contains("craft item") || (str.contains("создать") && str.contains("лкм"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static Long getStoredCount(ItemStack stack) {
