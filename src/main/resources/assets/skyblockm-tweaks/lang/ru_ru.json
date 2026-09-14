@@ -114,5 +114,9 @@
   "skyblockm-tweaks.config.terminalStackCount.scaleDigits": "Масштаб шрифта количеств",
   "skyblockm-tweaks.config.terminalStackCount.scaleDigits.tooltip": "Масштаб текста с количеством предметов в слотах (по умолчанию 0.58)",
   "skyblockm-tweaks.config.terminalStackCount.scalePlus": "Масштаб знака «+» автокрафта",
-  "skyblockm-tweaks.config.terminalStackCount.scalePlus.tooltip": "Масштаб знака «+» для предметов, доступных для автокрафта (по умолчанию 1.0)"
+  "skyblockm-tweaks.config.terminalStackCount.scalePlus.tooltip": "Масштаб знака «+» для предметов, доступных для автокрафта (по умолчанию 1.0)",
+  "skyblockm-tweaks.config.splashes": "Кастомные сплеши SkyBlockM",
+  "skyblockm-tweaks.config.splashes.tooltip": "Отображает тематические фразы и шутки SkyBlockM в главном меню",
+  "skyblockm-tweaks.config.splashes.onlyCustomSplashes": "Только сплеши SkyBlockM",
+  "skyblockm-tweaks.config.splashes.onlyCustomSplashes.tooltip": "Показывать исключительно сплеши мода, скрывая стандартные ванильные"
 }

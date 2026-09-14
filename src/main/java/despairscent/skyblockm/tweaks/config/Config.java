@@ -70,6 +70,8 @@ public class Config {
 
     public TerminalStackCountConfig terminalStackCount = new TerminalStackCountConfig();
 
+    public SplashesConfig splashes = new SplashesConfig();
+
     public boolean firstLaunchServersAdded = false;
 
     @Deprecated
@@ -221,6 +223,11 @@ public class Config {
         public double scalePlus = 1.0;
     }
 
+    public static class SplashesConfig {
+        public boolean enabled = true;
+        public boolean onlyCustomSplashes = false;
+    }
+
     public static Config load() {
         try (FileReader reader = new FileReader(FabricLoader.getInstance().getConfigDir().resolve(FILENAME).toFile())) {
             Config config = GSON.fromJson(reader, Config.class);
@@ -262,6 +269,9 @@ public class Config {
                 if (config.terminalStackCount.scalePlus <= 0.05) {
                     config.terminalStackCount.scalePlus = 1.0;
                 }
+            }
+            if (config.splashes == null) {
+                config.splashes = new SplashesConfig();
             }
 
             return config;
