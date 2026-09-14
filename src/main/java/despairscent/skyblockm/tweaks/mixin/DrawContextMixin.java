@@ -248,12 +248,12 @@ public class DrawContextMixin {
         if (CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled && !stack.isEmpty()) {
             String count = despairscent.skyblockm.tweaks.StoredCountUtils.getStoredCountFormatted(stack);
             if (count != null) {
-                float scale = 0.58f;
+                float scale = "+".equals(count) ? 1.0f : 0.58f;
                 this.matrices.push();
                 this.matrices.translate(x, y, 200.0f);
                 this.matrices.scale(scale, scale, 1.0f);
-                int textX = (int) ((16.0f / scale) - textRenderer.getWidth(count) - 0.5f);
-                int textY = (int) ((16.0f / scale) - textRenderer.fontHeight + 0.5f);
+                int textX = "+".equals(count) ? (17 - textRenderer.getWidth(count)) : (int) ((16.0f / scale) - textRenderer.getWidth(count) - 0.5f);
+                int textY = "+".equals(count) ? 9 : (int) ((16.0f / scale) - textRenderer.fontHeight + 0.5f);
                 ((DrawContext) (Object) this).drawText(textRenderer, count, textX, textY, 0xFFFFFF, true);
                 this.matrices.pop();
             }
