@@ -251,4 +251,20 @@ public class DrawContextMixin {
         return stack;
     }
 
+    @org.spongepowered.asm.mixin.injection.ModifyVariable(
+            method = "drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V",
+            at = @org.spongepowered.asm.mixin.injection.At("HEAD"),
+            argsOnly = true,
+            ordinal = 0
+    )
+    private String modifyStackCountText(String stackCountText, net.minecraft.client.font.TextRenderer textRenderer, ItemStack stack, int x, int y) {
+        if (stackCountText == null && CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled) {
+            String count = despairscent.skyblockm.tweaks.StoredCountUtils.getStoredCountFormatted(stack);
+            if (count != null) {
+                return count;
+            }
+        }
+        return stackCountText;
+    }
+
 }
