@@ -13,6 +13,7 @@
     "DrawContextMixin",
     "EntityMixin",
     "GameRendererMixin",
+    "HandledScreenMixin",
     "InGameHudMixin",
     "MinecraftClientMixin",
     "MouseMixin",

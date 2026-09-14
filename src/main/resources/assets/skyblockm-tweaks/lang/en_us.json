@@ -105,6 +105,8 @@
   "skyblockm-tweaks.compactGenome.value.effect.experience": "exp",
   "skyblockm-tweaks.compactGenome.value.effect.freeze": "freeze",
   "skyblockm-tweaks.compactGenome.value.effect.flame": "flame",
-  "config.adBlocker": "Block Server Ads (Very Important Announcements)",
-  "config.adBlocker.tooltip": "Hides the multi-line ad messages in the chat."
+  "skyblockm-tweaks.config.adBlocker": "Block Server Advertisements",
+  "skyblockm-tweaks.config.adBlocker.tooltip": "Hides multi-line [ Очень важное объявление ] ad announcements in chat",
+  "skyblockm-tweaks.config.terminalStackCount": "Terminal Item Stack Count",
+  "skyblockm-tweaks.config.terminalStackCount.tooltip": "Displays compact stack counts (e.g. 413K, 3.1K) on items in the terminal and removes floating junk from inventory titles"
 }

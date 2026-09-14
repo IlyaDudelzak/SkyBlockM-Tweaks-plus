@@ -105,6 +105,8 @@
   "skyblockm-tweaks.compactGenome.value.effect.experience": "досвід",
   "skyblockm-tweaks.compactGenome.value.effect.freeze": "лід",
   "skyblockm-tweaks.compactGenome.value.effect.flame": "підпал",
-  "config.adBlocker": "Блокування серверної реклами",
-  "config.adBlocker.tooltip": "Приховує багаторядкові повідомлення [ Очень важное объявление ] в чаті."
+  "skyblockm-tweaks.config.adBlocker": "Блокування серверної реклами",
+  "skyblockm-tweaks.config.adBlocker.tooltip": "Приховує багаторядкові повідомлення [ Очень важное объявление ] в чаті",
+  "skyblockm-tweaks.config.terminalStackCount": "Кількість предметів у терміналі",
+  "skyblockm-tweaks.config.terminalStackCount.tooltip": "Відображає компактну кількість (напр. 413K, 3.1K) у слотах термінала та прибирає сміття з назви інвентаря"
 }

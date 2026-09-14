@@ -68,6 +68,8 @@ public class Config {
 
     public AdBlockerConfig adBlocker = new AdBlockerConfig();
 
+    public TerminalStackCountConfig terminalStackCount = new TerminalStackCountConfig();
+
     public boolean firstLaunchServersAdded = false;
 
     @Deprecated
@@ -212,6 +214,11 @@ public class Config {
         public boolean enabled = true;
     }
 
+    public static class TerminalStackCountConfig {
+        public boolean enabled = true;
+        public boolean cleanTitle = true;
+    }
+
     public static Config load() {
         try (FileReader reader = new FileReader(FabricLoader.getInstance().getConfigDir().resolve(FILENAME).toFile())) {
             Config config = GSON.fromJson(reader, Config.class);
@@ -243,6 +250,9 @@ public class Config {
             }
             if (config.adBlocker == null) {
                 config.adBlocker = new AdBlockerConfig();
+            }
+            if (config.terminalStackCount == null) {
+                config.terminalStackCount = new TerminalStackCountConfig();
             }
 
             return config;
