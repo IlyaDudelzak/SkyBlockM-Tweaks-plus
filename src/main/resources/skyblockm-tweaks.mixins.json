@@ -23,7 +23,8 @@
     "MinecraftClientMixin",
     "MouseMixin",
     "ResourcePackProfileInsertionPositionMixin",
-    "ResourcePackProfileMixin"
+    "ResourcePackProfileMixin",
+    "SplashTextResourceSupplierMixin"
   ],
   "injectors": {
     "defaultRequire": 1

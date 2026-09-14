@@ -267,6 +267,19 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.splashes"), CONFIG.splashes.enabled)
+                .setTooltip(i18n("config.splashes.tooltip"))
+                .setDefaultValue(Config.DEFAULT.splashes.enabled)
+                .setSaveConsumer(value -> CONFIG.splashes.enabled = value)
+                .build());
+        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.splashes.onlyCustomSplashes"), CONFIG.splashes.onlyCustomSplashes)
+                        .setTooltip(i18n("config.splashes.onlyCustomSplashes.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.splashes.onlyCustomSplashes)
+                        .setSaveConsumer(value -> CONFIG.splashes.onlyCustomSplashes = value)
+                        .build()
+        )).build());
+
         builder.setSavingRunnable(() -> CONFIG.save());
 
         return builder.build();
