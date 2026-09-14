@@ -105,6 +105,8 @@
   "skyblockm-tweaks.compactGenome.value.effect.experience": "опыт",
   "skyblockm-tweaks.compactGenome.value.effect.freeze": "лёд",
   "skyblockm-tweaks.compactGenome.value.effect.flame": "поджог",
-  "config.adBlocker": "Блокировка серверной рекламы",
-  "config.adBlocker.tooltip": "Скрывает многострочные сообщения [ Очень важное объявление ] в чате."
+  "skyblockm-tweaks.config.adBlocker": "Блокировка серверной рекламы",
+  "skyblockm-tweaks.config.adBlocker.tooltip": "Скрывает многострочные сообщения [ Очень важное объявление ] в чате",
+  "skyblockm-tweaks.config.terminalStackCount": "Количество предметов в терминале",
+  "skyblockm-tweaks.config.terminalStackCount.tooltip": "Отображает компактное количество (напр. 413K, 3.1K) в слотах терминала и убирает летающий мусор из названия инвентаря"
 }
