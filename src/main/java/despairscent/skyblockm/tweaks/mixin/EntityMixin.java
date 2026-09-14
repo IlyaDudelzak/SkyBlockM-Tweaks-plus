@@ -60,4 +60,18 @@ public abstract class EntityMixin {
             }
         }
     }
+
+    @Inject(method = "updateTrackedPositionAndAngles(Lnet/minecraft/util/math/Vec3d;FF)V", at = @At("HEAD"), require = 0)
+    private void onUpdateTrackedPositionAndAngles(net.minecraft.util.math.Vec3d pos, float yaw, float pitch, CallbackInfo ci) {
+        if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
+            if (Math.abs(display.getX() - pos.x) > 0.01 || Math.abs(display.getY() - pos.y) > 0.01 || Math.abs(display.getZ() - pos.z) > 0.01 ||
+                Math.abs(MathHelper.wrapDegrees(display.getYaw() - yaw)) > 0.05f ||
+                Math.abs(MathHelper.wrapDegrees(display.getPitch() - pitch)) > 0.05f) {
+                ItemDisplayBakingManager.invalidateCache(display);
+                if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
+                    ItemDisplayBakingManager.removeEntity(display);
+                }
+            }
+        }
+    }
 }

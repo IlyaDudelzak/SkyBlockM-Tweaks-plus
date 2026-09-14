@@ -1,9 +1,16 @@
 package despairscent.skyblockm.tweaks;
 
+import despairscent.skyblockm.tweaks.mixininner.IItemRenderStateAccessor;
+import despairscent.skyblockm.tweaks.mixininner.ILayerRenderStateAccessor;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.BlockRenderLayer;
+import net.minecraft.client.render.RenderLayers;
+import net.minecraft.client.render.item.ItemRenderState;
+import net.minecraft.client.render.model.BakedQuad;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.decoration.DisplayEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -11,6 +18,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -18,11 +26,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
 
 public class ItemDisplayBakingManager {
+    public static class BakedQuadInfo {
+        public final BakedQuad quad;
+        public final Matrix4f matrix;
+        public final BlockRenderLayer renderLayer;
+        public final int tintColor;
+
+        public BakedQuadInfo(BakedQuad quad, Matrix4f matrix, BlockRenderLayer renderLayer, int tintColor) {
+            this.quad = quad;
+            this.matrix = matrix;
+            this.renderLayer = renderLayer;
+            this.tintColor = tintColor;
+        }
+    }
+
     public static class BakedEntityInfo {
         public final int entityId;
         public final BlockPos pos;
         public final ItemStack itemStack;
-        public final BakedModel itemModel;
+        public final List<BakedQuadInfo> quads;
         public final Matrix4f matrix;
         public final Object itemTransform;
         public final Object renderState;
@@ -53,51 +75,82 @@ public class ItemDisplayBakingManager {
             this.data = display.getData();
             
             ItemStack stack = ItemStack.EMPTY;
-            BakedModel model = null;
             Object transform = null;
+            List<BakedQuadInfo> bakedQuads = new ArrayList<>();
+            MatrixStack ms = new MatrixStack();
             try {
                 var d = display.getData();
                 if (d != null && !d.itemStack().isEmpty()) {
                     stack = d.itemStack().copy();
                     transform = d.itemTransform();
-                    model = MinecraftClient.getInstance().getItemRenderer().getModel(stack, null, null, 0);
+
+                    float rx = (float) (display.getX() - pos.getX());
+                    float ry = (float) (display.getY() - pos.getY());
+                    float rz = (float) (display.getZ() - pos.getZ());
+                    ms.translate(rx, ry, rz);
+                    
+                    org.joml.Quaternionf billboardRot = new org.joml.Quaternionf().rotationYXZ(
+                        (float) Math.toRadians(-display.getYaw()),
+                        (float) Math.toRadians(display.getPitch()),
+                        0.0f
+                    );
+                    ms.multiply(billboardRot);
+                    
+                    if (affine != null) {
+                        ms.multiplyPositionMatrix(affine.getMatrix());
+                    }
+                    
+                    ms.multiply(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
+                    Matrix4f baseMatrix = new Matrix4f(ms.peek().getPositionMatrix());
+
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    if (client != null && client.getItemModelManager() != null) {
+                        ItemRenderState itemRenderState = new ItemRenderState();
+                        client.getItemModelManager().updateForNonLivingEntity(itemRenderState, stack, d.itemTransform(), display);
+
+                        if (itemRenderState instanceof IItemRenderStateAccessor itemAccessor) {
+                            int layerCount = itemAccessor.skyblockm$getLayerCount();
+                            ItemRenderState.LayerRenderState[] layers = itemAccessor.skyblockm$getLayers();
+                            for (int l = 0; l < layerCount && l < layers.length; l++) {
+                                ItemRenderState.LayerRenderState layer = layers[l];
+                                if (layer instanceof ILayerRenderStateAccessor layerAccessor) {
+                                    if (layerAccessor.skyblockm$getSpecialModelType() != null) {
+                                        continue;
+                                    }
+                                    net.minecraft.client.render.model.json.Transformation trans = layerAccessor.skyblockm$getTransform();
+                                    MatrixStack layerMs = new MatrixStack();
+                                    layerMs.multiplyPositionMatrix(baseMatrix);
+                                    if (trans != null) {
+                                        trans.apply(d.itemTransform().isLeftHand(), layerMs.peek());
+                                    }
+                                    Matrix4f layerMatrix = new Matrix4f(layerMs.peek().getPositionMatrix());
+
+                                    BlockRenderLayer layerBlockRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
+                                    if (stack.getItem() instanceof BlockItem blockItem) {
+                                        layerBlockRenderLayer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+                                    }
+                                    int[] tints = layerAccessor.skyblockm$getTints();
+                                    List<BakedQuad> layerQuads = layer.getQuads();
+                                    if (layerQuads != null) {
+                                        for (BakedQuad quad : layerQuads) {
+                                            int tintColor = -1;
+                                            if (quad.hasTint() && quad.tintIndex() >= 0 && tints != null && quad.tintIndex() < tints.length) {
+                                                tintColor = tints[quad.tintIndex()];
+                                            }
+                                            bakedQuads.add(new BakedQuadInfo(quad, layerMatrix, layerBlockRenderLayer, tintColor));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (Exception e) {
                 // ignore
             }
             this.itemStack = stack;
-            this.itemModel = model;
             this.itemTransform = transform;
-
-            net.minecraft.client.util.math.MatrixStack ms = new net.minecraft.client.util.math.MatrixStack();
-            try {
-                float rx = (float) (display.getX() - pos.getX());
-                float ry = (float) (display.getY() - pos.getY());
-                float rz = (float) (display.getZ() - pos.getZ());
-                ms.translate(rx, ry, rz);
-                
-                org.joml.Quaternionf billboardRot = new org.joml.Quaternionf().rotationYXZ(
-                    (float) Math.toRadians(-display.getYaw()),
-                    (float) Math.toRadians(display.getPitch()),
-                    0.0f
-                );
-                ms.multiply(billboardRot);
-                
-                if (affine != null) {
-                    ms.multiplyPositionMatrix(affine.getMatrix());
-                }
-                
-                ms.multiply(RotationAxis.POSITIVE_Y.rotation((float)Math.PI));
-                
-                var d = display.getData();
-                if (d != null && model != null) {
-                    model.getTransformation().getTransformation(d.itemTransform()).apply(false, ms);
-                }
-                
-                ms.translate(-0.5f, -0.5f, -0.5f);
-            } catch (Exception e) {
-                // ignore
-            }
+            this.quads = bakedQuads;
             this.matrix = ms.peek().getPositionMatrix();
         }
 
@@ -190,9 +243,30 @@ public class ItemDisplayBakingManager {
         if (d == null || d.itemStack().isEmpty()) {
             return false;
         }
-        BakedModel model = MinecraftClient.getInstance().getItemRenderer().getModel(d.itemStack(), null, null, 0);
-        if (model == null || model.isBuiltin()) {
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.getItemModelManager() == null) {
             return false;
+        }
+        ItemRenderState itemRenderState = new ItemRenderState();
+        try {
+            client.getItemModelManager().updateForNonLivingEntity(itemRenderState, d.itemStack(), d.itemTransform(), display);
+        } catch (Exception e) {
+            return false;
+        }
+        if (itemRenderState.isEmpty()) {
+            return false;
+        }
+        if (itemRenderState instanceof IItemRenderStateAccessor itemAccessor) {
+            int layerCount = itemAccessor.skyblockm$getLayerCount();
+            ItemRenderState.LayerRenderState[] layers = itemAccessor.skyblockm$getLayers();
+            for (int l = 0; l < layerCount && l < layers.length; l++) {
+                if (layers[l] instanceof ILayerRenderStateAccessor layerAccessor) {
+                    if (layerAccessor.skyblockm$getSpecialModelType() != null) {
+                        return false;
+                    }
+                }
+            }
         }
 
         Box box = getCachedBox(display);
@@ -235,20 +309,19 @@ public class ItemDisplayBakingManager {
         for (BakedEntityInfo info : list) {
             if (info.matches(display)) {
                 if (info.hasSameVisual(display)) {
-                    // Already baked with matching model and transform!
                     if (display instanceof IBakedDisplay baked) {
                         baked.skyblockm$setBaked(true);
                     }
                     return;
                 } else {
-                    // Visual changed (e.g. wire connected): replace
                     list.remove(info);
                     break;
                 }
             }
         }
 
-        list.add(new BakedEntityInfo(display, pos));
+        BakedEntityInfo newInfo = new BakedEntityInfo(display, pos);
+        list.add(newInfo);
         ENTITY_ID_TO_POS.put(display.getId(), pos);
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
@@ -256,15 +329,7 @@ public class ItemDisplayBakingManager {
         markSectionDirty(pos);
     }
 
-    public static void onEntityDataChanged(DisplayEntity.ItemDisplayEntity display) {
-        invalidateCache(display);
-        if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
-            removeEntity(display);
-        }
-    }
-
     public static void markSectionDirty(BlockPos pos) {
-        if (CONFIG == null || CONFIG.itemDisplayBaking == null) return;
         int cx = pos.getX() >> 4;
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
@@ -318,6 +383,10 @@ public class ItemDisplayBakingManager {
         removeEntity(display);
     }
 
+    public static void onEntityDataChanged(DisplayEntity.ItemDisplayEntity display) {
+        updateEntity(display);
+    }
+
     public static void onBlockChanged(BlockPos pos, BlockState newState) {
         if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
             CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.remove(pos);
@@ -338,7 +407,6 @@ public class ItemDisplayBakingManager {
         
         var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
-        // Process up to 8 sections per frame to eliminate any rebuild delays
         while (iterator.hasNext() && processed < 8) {
             var entry = iterator.next();
             if (now >= entry.getValue()) {

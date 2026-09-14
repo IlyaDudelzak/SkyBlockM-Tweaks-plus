@@ -59,7 +59,8 @@ public class ModUtils {
     public static int getCustomModelId(ItemStack itemStack) {
         CustomModelDataComponent valueHolder;
         if ((valueHolder = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA)) != null) {
-            return valueHolder.value();
+            Float f = valueHolder.getFloat(0);
+            return f != null ? Math.round(f) : -1;
         }
         return -1;
     }

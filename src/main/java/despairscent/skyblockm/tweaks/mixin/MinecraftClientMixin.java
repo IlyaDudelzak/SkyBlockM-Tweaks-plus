@@ -5,7 +5,6 @@ import despairscent.skyblockm.tweaks.mixininner.IAnvilScreenMixin;
 import despairscent.skyblockm.tweaks.mixininner.IMinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.AnvilScreen;
 import org.jetbrains.annotations.Nullable;
@@ -21,14 +20,6 @@ public class MinecraftClientMixin implements IMinecraftClientAccessor {
     @Shadow
     @Nullable
     public Screen currentScreen;
-
-    @Shadow
-    private ItemColors itemColors;
-
-    @Override
-    public ItemColors skyblockm$getItemColors() {
-        return this.itemColors;
-    }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(RunArgs args, CallbackInfo ci) {

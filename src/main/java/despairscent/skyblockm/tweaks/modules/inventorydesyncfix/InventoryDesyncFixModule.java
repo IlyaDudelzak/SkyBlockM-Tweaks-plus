@@ -20,7 +20,7 @@ public class InventoryDesyncFixModule {
             if (CONFIG.inventoryDesyncFix.enabled && !fixingInventoryDesync && isRecipeViewer(screen)) {
                 fixingInventoryDesync = true;
                 fixingSelectedSlotDesync = false;
-                previousSelectedSlot = client.player.getInventory().selectedSlot;
+                previousSelectedSlot = client.player.getInventory().getSelectedSlot();
             }
         });
 
@@ -44,7 +44,7 @@ public class InventoryDesyncFixModule {
             }
 
             if (CONFIG.inventoryDesyncFix.selectedSlot) {
-                CLIENT.player.getInventory().selectedSlot = previousSelectedSlot;
+                CLIENT.player.getInventory().setSelectedSlot(previousSelectedSlot);
                 if (client.currentScreen == null) {
                     fixingSelectedSlotDesync = true;
                 }
@@ -66,7 +66,7 @@ public class InventoryDesyncFixModule {
             fixingSelectedSlotDesync = false;
             if (CLIENT.player != null) {
                 CLIENT.interactionManager.syncSelectedSlot(); // Окончательно применяем отправленный сервером слот
-                CLIENT.player.getInventory().selectedSlot = previousSelectedSlot;
+                CLIENT.player.getInventory().setSelectedSlot(previousSelectedSlot);
             }
         }
     }
