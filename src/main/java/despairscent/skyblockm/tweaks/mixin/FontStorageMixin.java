@@ -1,6 +1,7 @@
 package despairscent.skyblockm.tweaks.mixin;
 
 import net.minecraft.client.font.BakedGlyph;
+import net.minecraft.client.font.EmptyBakedGlyph;
 import net.minecraft.client.font.FontStorage;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
@@ -19,16 +20,13 @@ public class FontStorageMixin {
     @Final
     private Identifier id;
 
-    @Shadow
-    private BakedGlyph blankBakedGlyph;
-
     @Inject(method = "getBaked(I)Lnet/minecraft/client/font/BakedGlyph;", at = @At("HEAD"), cancellable = true)
     private void onGetBaked(int codePoint, CallbackInfoReturnable<BakedGlyph> cir) {
         if (CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled && CONFIG.terminalStackCount.cleanTitle) {
             if (this.id != null && "electric_storage".equals(this.id.getNamespace())) {
                 String path = this.id.getPath();
                 if (path.contains("ascii_row") || path.contains("background")) {
-                    cir.setReturnValue(this.blankBakedGlyph);
+                    cir.setReturnValue(EmptyBakedGlyph.INSTANCE);
                 }
             }
         }
