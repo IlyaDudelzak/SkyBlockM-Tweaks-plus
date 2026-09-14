@@ -249,7 +249,7 @@ public class DrawContextMixin {
     }
 
     @org.spongepowered.asm.mixin.injection.ModifyVariable(
-            method = "drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V",
+            method = "drawItemInSlot(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V",
             at = @org.spongepowered.asm.mixin.injection.At("HEAD"),
             argsOnly = true,
             ordinal = 0
