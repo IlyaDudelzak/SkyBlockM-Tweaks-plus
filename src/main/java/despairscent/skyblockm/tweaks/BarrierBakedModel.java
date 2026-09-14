@@ -64,22 +64,32 @@ public class BarrierBakedModel extends ForwardingBakedModel {
         }
     }
 
-    private static RenderMaterial getMaterialFor(ItemDisplayBakingManager.BakedEntityInfo info, Renderer renderer) {
-        initMaterials(renderer);
-        if (info == null || info.itemStack == null || info.itemStack.isEmpty()) {
-            return MATERIAL_TRANSLUCENT;
-        }
-        if (info.itemStack.getItem() instanceof BlockItem blockItem) {
-            RenderLayer layer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
-            if (layer == RenderLayer.getTranslucent()) {
-                return MATERIAL_TRANSLUCENT;
-            } else if (layer == RenderLayer.getCutout() || layer == RenderLayer.getCutoutMipped()) {
-                return MATERIAL_CUTOUT;
-            } else {
-                return MATERIAL_CUTOUT;
-            }
-        }
-        return MATERIAL_TRANSLUCENT;
+    private static final java.util.concurrent.ConcurrentHashMap<net.minecraft.util.Identifier, Boolean> TRANSLUCENT_SPRITE_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
+        if (sprite == null) return false;
+        net.minecraft.client.texture.SpriteContents contents = sprite.getContents();
+        if (contents == null) return false;
+        net.minecraft.util.Identifier id = contents.getId();
+        if (id == null) return false;
+        return TRANSLUCENT_SPRITE_CACHE.computeIfAbsent(id, k -> {
+            try {
+                net.minecraft.client.texture.NativeImage img = contents.image;
+                if (img != null) {
+                    int w = contents.getWidth();
+                    int h = contents.getHeight();
+                    for (int y = 0; y < h; y++) {
+                        for (int x = 0; x < w; x++) {
+                            int a = Byte.toUnsignedInt(img.getOpacity(x, y));
+                            if (a > 0 && a < 255) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+            return false;
+        });
     }
 
     @Override
@@ -104,7 +114,7 @@ public class BarrierBakedModel extends ForwardingBakedModel {
                 BakedModel itemModel = info.itemModel;
 
                 if (itemModel != null && info.matrix != null) {
-                    RenderMaterial material = getMaterialFor(info, renderer);
+                    initMaterials(renderer);
 
                     context.pushTransform(quad -> {
                         // 1. Transform vertex positions
@@ -163,7 +173,16 @@ public class BarrierBakedModel extends ForwardingBakedModel {
                         List<BakedQuad> quads = itemModel.getQuads(null, dir, random);
                         if (quads == null || quads.isEmpty()) continue;
                         for (BakedQuad quad : quads) {
-                            emitter.fromVanilla(quad, material, null);
+                            RenderMaterial quadMaterial = MATERIAL_CUTOUT;
+                            if (isSpriteTranslucent(quad.getSprite())) {
+                                quadMaterial = MATERIAL_TRANSLUCENT;
+                            } else if (info.itemStack != null && info.itemStack.getItem() instanceof BlockItem blockItem) {
+                                RenderLayer layer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+                                if (layer == RenderLayer.getTranslucent()) {
+                                    quadMaterial = MATERIAL_TRANSLUCENT;
+                                }
+                            }
+                            emitter.fromVanilla(quad, quadMaterial, null);
 
                             int itemColor = -1;
                             if (quad.hasColor()) {
