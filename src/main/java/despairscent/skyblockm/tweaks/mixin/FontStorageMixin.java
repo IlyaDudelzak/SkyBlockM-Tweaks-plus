@@ -1,5 +1,6 @@
 package despairscent.skyblockm.tweaks.mixin;
 
+import net.minecraft.client.font.EmptyGlyphRenderer;
 import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.font.GlyphRenderer;
 import net.minecraft.util.Identifier;
@@ -19,17 +20,13 @@ public class FontStorageMixin {
     @Final
     private Identifier id;
 
-    @Shadow
-    @Final
-    private GlyphRenderer blankGlyphRenderer;
-
     @Inject(method = "getGlyphRenderer(I)Lnet/minecraft/client/font/GlyphRenderer;", at = @At("HEAD"), cancellable = true)
     private void onGetGlyphRenderer(int codePoint, CallbackInfoReturnable<GlyphRenderer> cir) {
         if (CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled && CONFIG.terminalStackCount.cleanTitle) {
             if (this.id != null && "electric_storage".equals(this.id.getNamespace())) {
                 String path = this.id.getPath();
                 if (path.contains("ascii_row") || path.contains("background")) {
-                    cir.setReturnValue(this.blankGlyphRenderer);
+                    cir.setReturnValue(EmptyGlyphRenderer.INSTANCE);
                 }
             }
         }
