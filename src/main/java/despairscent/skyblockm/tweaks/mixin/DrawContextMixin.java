@@ -259,7 +259,7 @@ public class DrawContextMixin {
     )
     private String suppressVanillaStackCountText(String stackCountText, net.minecraft.client.font.TextRenderer textRenderer, ItemStack stack, int x, int y) {
         if (CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled && !stack.isEmpty()) {
-            if (despairscent.skyblockm.tweaks.StoredCountUtils.getStoredCountFormatted(stack) != null) {
+            if (despairscent.skyblockm.tweaks.StoredCountUtils.getStoredCountFormatted(stack) != null || despairscent.skyblockm.tweaks.StoredCountUtils.hasAutocraft(stack)) {
                 return "";
             }
         }
@@ -285,6 +285,20 @@ public class DrawContextMixin {
                 int textX = isPlus ? (int) ((17.0f / scale) - textRenderer.getWidth(count)) : (int) ((16.0f / scale) - textRenderer.getWidth(count) - 0.5f);
                 int textY = isPlus ? (int) ((17.0f / scale) - textRenderer.fontHeight + 1.0f) : (int) ((16.0f / scale) - textRenderer.fontHeight + 0.5f);
                 ((DrawContext) (Object) this).drawText(textRenderer, count, textX, textY, 0xFFFFFF, true);
+                this.matrices.pop();
+            }
+
+            if (despairscent.skyblockm.tweaks.StoredCountUtils.hasAutocraft(stack)) {
+                float scale = (float) CONFIG.terminalStackCount.scalePlus;
+                if (scale <= 0.05f) {
+                    scale = 1.0f;
+                }
+                this.matrices.push();
+                this.matrices.translate(x, y, 200.0f);
+                this.matrices.scale(scale, scale, 1.0f);
+                int textX = (int) ((17.0f / scale) - textRenderer.getWidth("+"));
+                int textY = 0;
+                ((DrawContext) (Object) this).drawText(textRenderer, "+", textX, textY, 0xFFFFFF, true);
                 this.matrices.pop();
             }
         }
