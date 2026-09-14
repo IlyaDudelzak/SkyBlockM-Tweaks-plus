@@ -97,35 +97,43 @@ public class StoredCountUtils {
             return null;
         }
         String str = title.getString();
-        boolean hasPua = false;
-        boolean hasDigit = false;
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            if (c >= '\uF800' && c <= '\uF8FF') hasPua = true;
-            if (Character.isDigit(c)) hasDigit = true;
-            if (hasPua && hasDigit) break;
-        }
-        if (!hasPua || !hasDigit) {
-            return title;
-        }
-
-        if (!title.getSiblings().isEmpty()) {
-            MutableText cleaned = Text.empty().setStyle(title.getStyle());
-            for (Text child : title.getSiblings()) {
-                String childStr = child.getString();
-                String res = TITLE_GARBAGE.matcher(childStr).replaceAll("");
-                if (!res.isEmpty()) {
-                    if (res.equals(childStr)) {
-                        cleaned.append(child);
-                    } else {
-                        cleaned.append(Text.literal(res).setStyle(child.getStyle()));
-                    }
+        if (str.length() > 20 && str.startsWith("\uF808")) {
+            int slotIdx = -1;
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (c == '\uF821' || c == 'ထ' || (i >= 7 && Character.isDigit(c))) {
+                    slotIdx = i;
+                    break;
                 }
             }
-            return cleaned;
-        } else {
-            String res = TITLE_GARBAGE.matcher(str).replaceAll("");
-            return Text.literal(res).setStyle(title.getStyle());
+
+            if (slotIdx != -1) {
+                java.util.List<Text> siblings = title.getSiblings();
+                if (!siblings.isEmpty()) {
+                    MutableText clean = Text.empty().setStyle(title.getStyle());
+                    int accumulated = 0;
+                    for (Text sibling : siblings) {
+                        String childStr = sibling.getString();
+                        if (accumulated + childStr.length() <= slotIdx) {
+                            clean.append(sibling);
+                            accumulated += childStr.length();
+                        } else {
+                            int remain = slotIdx - accumulated;
+                            if (remain > 0) {
+                                clean.append(Text.literal(childStr.substring(0, remain)).setStyle(sibling.getStyle()));
+                            }
+                            break;
+                        }
+                    }
+                    if (!clean.getString().isEmpty()) {
+                        return clean;
+                    }
+                }
+
+                String cleanStr = str.substring(0, slotIdx);
+                return Text.literal(cleanStr).setStyle(title.getStyle());
+            }
         }
+        return title;
     }
 }
