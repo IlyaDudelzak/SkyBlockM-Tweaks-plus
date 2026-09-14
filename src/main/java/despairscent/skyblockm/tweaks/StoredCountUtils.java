@@ -123,14 +123,16 @@ public class StoredCountUtils {
         if (title == null) {
             return false;
         }
-        java.util.List<Text> siblings = title.getSiblings();
-        if (siblings.isEmpty()) {
-            return false;
+        return containsInterfacesFont(title);
+    }
+
+    private static boolean containsInterfacesFont(Text text) {
+        net.minecraft.util.Identifier font = text.getStyle().getFont();
+        if (font != null && "electric_storage".equals(font.getNamespace()) && "interfaces".equals(font.getPath())) {
+            return true;
         }
-        for (int i = 0; i < siblings.size() && i < 3; i++) {
-            Text child = siblings.get(i);
-            net.minecraft.util.Identifier font = child.getStyle().getFont();
-            if (font != null && "electric_storage".equals(font.getNamespace()) && "interfaces".equals(font.getPath())) {
+        for (Text child : text.getSiblings()) {
+            if (containsInterfacesFont(child)) {
                 return true;
             }
         }
@@ -152,31 +154,23 @@ public class StoredCountUtils {
     private static void cleanSiblingInto(Text child, MutableText destination) {
         net.minecraft.util.Identifier font = child.getStyle().getFont();
         String fontPath = font != null ? font.getPath() : "";
-        String fontNamespace = font != null ? font.getNamespace() : "";
 
-        if ("electric_storage".equals(fontNamespace)) {
-            if ("interfaces".equals(fontPath) || fontPath.startsWith("terminal_slider")) {
-                destination.append(child);
-                return;
+        if (fontPath.contains("ascii_row")) {
+            String text = child.getString();
+            String stripped = ES_NUMBER_CHARS.matcher(text).replaceAll("");
+            if (!stripped.isEmpty()) {
+                destination.append(Text.literal(stripped).setStyle(child.getStyle()));
             }
+            return;
+        }
 
-            if (fontPath.startsWith("ascii_row")) {
-                String text = child.getString();
-                String stripped = ES_NUMBER_CHARS.matcher(text).replaceAll("");
-                if (!stripped.isEmpty()) {
-                    destination.append(Text.literal(stripped).setStyle(child.getStyle()));
-                }
-                return;
+        if (fontPath.contains("background")) {
+            String text = child.getString();
+            String stripped = ES_BG_CHARS.matcher(text).replaceAll("");
+            if (!stripped.isEmpty()) {
+                destination.append(Text.literal(stripped).setStyle(child.getStyle()));
             }
-
-            if (fontPath.startsWith("background")) {
-                String text = child.getString();
-                String stripped = ES_BG_CHARS.matcher(text).replaceAll("");
-                if (!stripped.isEmpty()) {
-                    destination.append(Text.literal(stripped).setStyle(child.getStyle()));
-                }
-                return;
-            }
+            return;
         }
 
         if (!child.getSiblings().isEmpty()) {
@@ -188,12 +182,6 @@ public class StoredCountUtils {
             return;
         }
 
-        String text = child.getString();
-        String stripped = ES_NUMBER_CHARS.matcher(text).replaceAll("");
-        if (stripped.equals(text)) {
-            destination.append(child);
-        } else if (!stripped.isEmpty()) {
-            destination.append(Text.literal(stripped).setStyle(child.getStyle()));
-        }
+        destination.append(child);
     }
 }
