@@ -125,26 +125,25 @@ public class ItemDisplayBakingManager {
                                     }
                                     Matrix4f layerMatrix = new Matrix4f(layerMs.peek().getPositionMatrix());
 
-                                    BlockRenderLayer layerBlockRenderLayer = BlockRenderLayer.TRANSLUCENT;
-                                    if (stack.getItem() instanceof BlockItem blockItem && !stack.isOf(net.minecraft.item.Items.BARRIER)) {
-                                        BlockRenderLayer blockLayer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
-                                        if (blockLayer == BlockRenderLayer.CUTOUT || blockLayer == BlockRenderLayer.CUTOUT_MIPPED) {
-                                            layerBlockRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
-                                        } else if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
-                                            layerBlockRenderLayer = BlockRenderLayer.TRANSLUCENT;
-                                        } else {
-                                            layerBlockRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
-                                        }
-                                    }
                                     int[] tints = layerAccessor.skyblockm$getTints();
                                     List<BakedQuad> layerQuads = layer.getQuads();
                                     if (layerQuads != null) {
                                         for (BakedQuad quad : layerQuads) {
+                                            BlockRenderLayer quadRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
+                                            if (isSpriteTranslucent(quad.sprite())) {
+                                                quadRenderLayer = BlockRenderLayer.TRANSLUCENT;
+                                            } else if (stack.getItem() instanceof BlockItem blockItem && !stack.isOf(net.minecraft.item.Items.BARRIER)) {
+                                                BlockRenderLayer blockLayer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+                                                if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
+                                                    quadRenderLayer = BlockRenderLayer.TRANSLUCENT;
+                                                }
+                                            }
+
                                             int tintColor = -1;
                                             if (quad.hasTint() && quad.tintIndex() >= 0 && tints != null && quad.tintIndex() < tints.length) {
                                                 tintColor = tints[quad.tintIndex()];
                                             }
-                                            bakedQuads.add(new BakedQuadInfo(quad, layerMatrix, layerBlockRenderLayer, tintColor));
+                                            bakedQuads.add(new BakedQuadInfo(quad, layerMatrix, quadRenderLayer, tintColor));
                                         }
                                     }
                                 }
@@ -159,6 +158,34 @@ public class ItemDisplayBakingManager {
             this.itemTransform = transform;
             this.quads = bakedQuads;
             this.matrix = ms.peek().getPositionMatrix();
+        }
+
+        private static final ConcurrentHashMap<net.minecraft.util.Identifier, Boolean> TRANSLUCENT_SPRITE_CACHE = new ConcurrentHashMap<>();
+
+        public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
+            if (sprite == null) return false;
+            net.minecraft.client.texture.SpriteContents contents = sprite.getContents();
+            if (contents == null) return false;
+            net.minecraft.util.Identifier id = contents.getId();
+            if (id == null) return false;
+            return TRANSLUCENT_SPRITE_CACHE.computeIfAbsent(id, k -> {
+                try {
+                    net.minecraft.client.texture.NativeImage img = contents.image;
+                    if (img != null) {
+                        int w = contents.getWidth();
+                        int h = contents.getHeight();
+                        for (int y = 0; y < h; y++) {
+                            for (int x = 0; x < w; x++) {
+                                int a = Byte.toUnsignedInt(img.getOpacity(x, y));
+                                if (a > 0 && a < 255) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable ignored) {}
+                return false;
+            });
         }
 
         public boolean matches(DisplayEntity.ItemDisplayEntity display) {
