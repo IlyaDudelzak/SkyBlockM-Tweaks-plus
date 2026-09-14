@@ -1,13 +1,10 @@
 {
   "modmenu.summaryTranslation.skyblockm-tweaks": "Покращує ігровий досвід на сервері SkyBlockM",
   "modmenu.descriptionTranslation.skyblockm-tweaks": "Покращує ігровий досвід на сервері SkyBlockM за допомогою різноманітних оптимізацій та QoL-функцій\nДля налаштування потрібен Cloth Config API",
-
   "skyblockm-tweaks.config.base.title": "SkyBlockM Tweaks",
   "skyblockm-tweaks.config.base.moduleSetup": "  [Розширене налаштування]",
-
   "skyblockm-tweaks.config.storageTargetingFix": "Виправлення наведення на сховище",
   "skyblockm-tweaks.config.storageTargetingFix.tooltip": "У деяких випадках без виправлення кліки не проходять (наприклад, з ключем у руці)",
-
   "skyblockm-tweaks.config.moreTooltipInfo": "Подробиці у спливаючій підказці предмета",
   "skyblockm-tweaks.config.moreTooltipInfo.tooltip": "Спливаюча підказка — та, що з'являється при зміні слота в хотбарі",
   "skyblockm-tweaks.config.moreTooltipInfo.storage": "Сховище",
@@ -16,7 +13,6 @@
   "skyblockm-tweaks.config.moreTooltipInfo.fluidStorage.tooltip": "Показ рідини всередині",
   "skyblockm-tweaks.config.moreTooltipInfo.crystalMemory": "Кристал пам'яті",
   "skyblockm-tweaks.config.moreTooltipInfo.crystalMemory.tooltip": "Показ записаного предмета",
-
   "skyblockm-tweaks.config.renderItemInside": "Рендер внутрішнього предмета",
   "skyblockm-tweaks.config.renderItemInside.tooltip": "Наприклад, показ цілі ES-шаблону при затиснутому Shift (за замовчуванням)",
   "skyblockm-tweaks.config.renderItemInside.item.esPattern": "ES-шаблон створення",
@@ -27,16 +23,13 @@
   "skyblockm-tweaks.config.renderItemInside.itemSetup.drawOriginal": "Іконка контейнера",
   "skyblockm-tweaks.config.renderItemInside.itemSetup.bgColor": "Колір фону",
   "skyblockm-tweaks.config.renderItemInside.itemSetupEsPattern.forceRenderInsideInterface": "Показувати завжди при відкритому ES-інтерфейсі",
-
   "skyblockm-tweaks.config.textInputLagFix": "Виправлення лагів введення тексту в кастомних інтерфейсах",
   "skyblockm-tweaks.config.textInputLagFix.recipesSearch": "При пошуку рецептів",
   "skyblockm-tweaks.config.textInputLagFix.esTerminalSearch": "При пошуку в ES-терміналі",
-
   "skyblockm-tweaks.config.inventoryDesyncFix": "Виправлення десинхронізації інвентарю",
   "skyblockm-tweaks.config.inventoryDesyncFix.tooltip": "Десинхронізація трапляється після відкриття пошуку рецептів, вона спричиняє скидання обраного слота хотбару та затримку показу оновлень інвентарю",
   "skyblockm-tweaks.config.inventoryDesyncFix.inventoryUpdates": "Для оновлень інвентарю",
   "skyblockm-tweaks.config.inventoryDesyncFix.selectedSlot": "Для поточного слота хотбару",
-
   "skyblockm-tweaks.config.esTerminalScroll": "Прокрутка в ES-терміналі",
   "skyblockm-tweaks.config.esTerminalScroll.wheel": "Прокрутка коліщатком миші",
   "skyblockm-tweaks.config.esTerminalScroll.wheelModifier": "Клавіша для утримання з коліщатком миші",
@@ -52,13 +45,10 @@
   "skyblockm-tweaks.config.esTerminalScroll.boostKeyType.tooltip": "Якщо обрано \"Вимкнення\" — подвійна прокрутка буде активна завжди, доки не натиснута вказана клавіша",
   "skyblockm-tweaks.config.esTerminalScroll.boostKeyType.activate": "Активація",
   "skyblockm-tweaks.config.esTerminalScroll.boostKeyType.deactivate": "Вимкнення",
-
   "skyblockm-tweaks.config.compactGenome": "Компактний показ генів бджіл",
   "skyblockm-tweaks.config.compactGenome.tooltip": "Тільки для досвідчених бджолярів, більшість подробиць буде приховано",
-
   "skyblockm-tweaks.config.hideHiddenArmorStands": "Приховування невидимих стійок для броні",
   "skyblockm-tweaks.config.hideHiddenArmorStands.tooltip": "Приховує видимі в режимі спостерігача невидимі стійки для броні\nЛише для модерації, якій подобається привидами спостерігати за предметами в трубах з максимальною дистанцією відображення",
-
   "skyblockm-tweaks.config.itemDisplayBaking": "Запікання Item Display у чанки (FPS)",
   "skyblockm-tweaks.config.itemDisplayBaking.tooltip": "Оптимізує сотні тисяч кастомних блоків, запікаючи їхню геометрію прямо в чанки та вимикаючи зайві тіки сутностей",
   "skyblockm-tweaks.config.itemDisplayBaking.maxBakeSize": "Макс. розмір запікання (у блоках)",
@@ -71,7 +61,6 @@
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown.tooltip": "Мінімальний інтервал між повторними перебудовами того самого чанку (запобігає спаму від активних механізмів)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Приховувати сутності до запікання",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Повністю вимикає динамічний рендер сутностей для запікання, усуваючи просідання FPS при наближенні до бази",
-
   "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомні хітбокси бар'єрів",
   "skyblockm-tweaks.config.itemDisplayHitbox.tooltip": "Змінює хітбокс бар'єрів під форму кастомних блоків для зручної взаємодії крізь труби та проводи",
   "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Тип хітбоксу",
@@ -81,7 +70,6 @@
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberband.tooltip": "Запобігає смиканню екрана при торканні бар'єра (Увага: проліт крізь бар'єр викличе розсинхрон із сервером!)",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Максимальна дистанция відкату",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance.tooltip": "Максимальна дистанція корекції позиції сервером, яку клієнт спробує проігнорувати",
-
   "skyblockm-tweaks.config.skyblockPackOptimization.mode": "Автоматичне завантаження ресурспаку",
   "skyblockm-tweaks.config.skyblockPackOptimization.mode.tooltip": "Ні: Вимкнено\nЗ GitLab: Автоматично завантажує свіжий офіційний ресурспак з GitLab\nЗ сервера: Автоматично застосовує ресурспак, отриманий під час входу на сервер",
   "skyblockm-tweaks.config.skyblockPackOptimization.mode.none": "Ні",
@@ -89,10 +77,8 @@
   "skyblockm-tweaks.config.skyblockPackOptimization.mode.server": "З сервера",
   "skyblockm-tweaks.config.serverPackUnlocker": "Розблокування серверних ресурспаків",
   "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Відкріплює серверні ресурспаки, дозволяючи вам ставити інші ресурспаки поверх них, та запобігає кікам при відключених серверних ресурспаках",
-
   "skyblockm-tweaks.config.missing_cloth.title": "Потрібен Cloth Config API",
   "skyblockm-tweaks.config.missing_cloth.desc": "Для відкриття внутрішньоігрового меню налаштувань потрібно встановити Cloth Config API.\n\nУсі параметри також можна налаштувати вручну у файлі:\n.minecraft/config/skyblockm-tweaks.json",
-
   "skyblockm-tweaks.compactGenome.type.temperature": "Біоми",
   "skyblockm-tweaks.compactGenome.type.humidity": "Вологість",
   "skyblockm-tweaks.compactGenome.type.flowers": "Квіти",
@@ -102,7 +88,6 @@
   "skyblockm-tweaks.compactGenome.type.nocturnal": "Вночі",
   "skyblockm-tweaks.compactGenome.type.flyer": "У дощ",
   "skyblockm-tweaks.compactGenome.type.effect": "Ефект",
-
   "skyblockm-tweaks.compactGenome.value.temperature.normal": "звичайні",
   "skyblockm-tweaks.compactGenome.value.temperature.warm": "тропіки",
   "skyblockm-tweaks.compactGenome.value.temperature.cold": "тайга",
@@ -119,5 +104,7 @@
   "skyblockm-tweaks.compactGenome.value.effect.regeneration": "реген",
   "skyblockm-tweaks.compactGenome.value.effect.experience": "досвід",
   "skyblockm-tweaks.compactGenome.value.effect.freeze": "лід",
-  "skyblockm-tweaks.compactGenome.value.effect.flame": "підпал"
+  "skyblockm-tweaks.compactGenome.value.effect.flame": "підпал",
+  "config.adBlocker": "Блокування серверної реклами",
+  "config.adBlocker.tooltip": "Приховує багаторядкові повідомлення [ Очень важное объявление ] в чаті."
 }

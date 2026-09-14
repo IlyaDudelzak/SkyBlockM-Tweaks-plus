@@ -66,6 +66,8 @@ public class Config {
 
     public ServerPackUnlockerConfig serverPackUnlocker = new ServerPackUnlockerConfig();
 
+    public AdBlockerConfig adBlocker = new AdBlockerConfig();
+
     public boolean firstLaunchServersAdded = false;
 
     @Deprecated
@@ -206,6 +208,10 @@ public class Config {
         public boolean enabled = true;
     }
 
+    public static class AdBlockerConfig {
+        public boolean enabled = true;
+    }
+
     public static Config load() {
         try (FileReader reader = new FileReader(FabricLoader.getInstance().getConfigDir().resolve(FILENAME).toFile())) {
             Config config = GSON.fromJson(reader, Config.class);
@@ -234,6 +240,9 @@ public class Config {
             }
             if (config.serverPackUnlocker == null) {
                 config.serverPackUnlocker = new ServerPackUnlockerConfig();
+            }
+            if (config.adBlocker == null) {
+                config.adBlocker = new AdBlockerConfig();
             }
 
             return config;
