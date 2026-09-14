@@ -17,6 +17,7 @@
     "DrawContextMixin",
     "EntityMixin",
     "GameRendererMixin",
+    "HandledScreenMixin",
     "InGameHudMixin",
     "ItemDisplayEntityMixin",
     "MinecraftClientInteractionMixin",
