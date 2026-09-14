@@ -114,5 +114,9 @@
   "skyblockm-tweaks.config.terminalStackCount.scaleDigits": "Count Text Scale",
   "skyblockm-tweaks.config.terminalStackCount.scaleDigits.tooltip": "Scale of the item count text in slots (default 0.58)",
   "skyblockm-tweaks.config.terminalStackCount.scalePlus": "Autocraft '+' Scale",
-  "skyblockm-tweaks.config.terminalStackCount.scalePlus.tooltip": "Scale of the '+' symbol for autocraftable items (default 1.0)"
+  "skyblockm-tweaks.config.terminalStackCount.scalePlus.tooltip": "Scale of the '+' symbol for autocraftable items (default 1.0)",
+  "skyblockm-tweaks.config.splashes": "Custom SkyBlockM Splashes",
+  "skyblockm-tweaks.config.splashes.tooltip": "Displays SkyBlockM-themed splashes and jokes on the main menu",
+  "skyblockm-tweaks.config.splashes.onlyCustomSplashes": "Only SkyBlockM Splashes",
+  "skyblockm-tweaks.config.splashes.onlyCustomSplashes.tooltip": "Show exclusively mod splashes, hiding vanilla ones"
 }

@@ -32,6 +32,7 @@ public class ModLoader implements ClientModInitializer {
                 @Override
                 public void reload(net.minecraft.resource.ResourceManager manager) {
                     ItemDisplayBakingManager.onResourceReload();
+                    System.gc();
                 }
             }
         );

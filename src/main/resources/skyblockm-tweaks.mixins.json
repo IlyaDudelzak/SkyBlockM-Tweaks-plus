@@ -22,7 +22,8 @@
     "ItemDisplayEntityMixin",
     "MinecraftClientInteractionMixin",
     "ResourcePackProfileMixin",
-    "ResourcePackProfileInsertionPositionMixin"
+    "ResourcePackProfileInsertionPositionMixin",
+    "SplashTextResourceSupplierMixin"
   ],
   "injectors": {
     "defaultRequire": 1

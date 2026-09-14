@@ -111,7 +111,9 @@ public class SkyBlockPackManager {
 
             client.getResourcePackManager().scanPacks();
             client.getResourcePackManager().setEnabledProfiles(enabled);
+            System.gc();
             client.reloadResources();
+            System.gc();
             LOGGER.info("SkyBlockM Tweaks: Enabled and loaded SkyBlockM.zip at startup.");
         }
     }
@@ -160,9 +162,25 @@ public class SkyBlockPackManager {
                     LOGGER.info("SkyBlockM Tweaks: Successfully downloaded SkyBlockM pack from GitLab (SHA1: {}).", sha1);
 
                     client.execute(() -> {
-                        ensurePackEnabled(client, packPath);
+                        List<String> enabled = new ArrayList<>(client.options.resourcePacks);
+                        if (!enabled.contains(PACK_ID)) {
+                            int insertIdx = 0;
+                            for (int i = 0; i < enabled.size(); i++) {
+                                String id = enabled.get(i);
+                                if (id.equals("vanilla") || id.equals("fabric")) {
+                                    insertIdx = i + 1;
+                                }
+                            }
+                            enabled.add(insertIdx, PACK_ID);
+                            client.options.resourcePacks.clear();
+                            client.options.resourcePacks.addAll(enabled);
+                            client.options.write();
+                        }
                         client.getResourcePackManager().scanPacks();
+                        client.getResourcePackManager().setEnabledProfiles(client.options.resourcePacks);
+                        System.gc();
                         client.reloadResources();
+                        System.gc();
                     });
                 }
             } catch (Exception e) {
