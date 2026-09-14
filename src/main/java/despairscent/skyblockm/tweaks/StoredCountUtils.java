@@ -23,10 +23,29 @@ public class StoredCountUtils {
             }
             return null;
         }
-        if (isCraftable(stack)) {
+        if (!hasAutocraft(stack) && isCraftable(stack)) {
             return "+";
         }
         return null;
+    }
+
+    public static boolean hasAutocraft(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        LoreComponent lore = stack.get(DataComponentTypes.LORE);
+        if (lore == null) {
+            return false;
+        }
+        for (Text line : lore.lines()) {
+            String str = line.getString().toLowerCase(java.util.Locale.ROOT);
+            String compact = str.replace(" ", "");
+            if ((compact.contains("shift+пкм") || compact.contains("shift-пкм") || compact.contains("shift+rmb") || compact.contains("shift-rmb"))
+                    && (str.contains("создать") || str.contains("створити") || str.contains("craft"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isCraftable(ItemStack stack) {
