@@ -110,9 +110,6 @@ public class StoredCountUtils {
         }
     }
 
-    private static final Pattern ES_NUMBER_CHARS = Pattern.compile("[0-9.KM+kmb\\u102B\\u102E\\u1030-\\u1039\\u104B\\u104D]+");
-    private static final Pattern ES_BG_CHARS = Pattern.compile("[\\u1001-\\u1032\\u2001-\\u2032]+");
-
     public static boolean isTerminalTitle(Text title) {
         if (title == null) {
             return false;
@@ -134,48 +131,6 @@ public class StoredCountUtils {
     }
 
     public static Text cleanTitle(Text title) {
-        if (!isTerminalTitle(title)) {
-            return title;
-        }
-
-        MutableText cleaned = title.copyContentOnly().setStyle(title.getStyle());
-        for (Text child : title.getSiblings()) {
-            cleanSiblingInto(child, cleaned);
-        }
-        return cleaned;
-    }
-
-    private static void cleanSiblingInto(Text child, MutableText destination) {
-        net.minecraft.util.Identifier font = child.getStyle().getFont();
-        String fontPath = font != null ? font.getPath() : "";
-
-        if (fontPath.contains("ascii_row")) {
-            String text = child.getString();
-            String stripped = ES_NUMBER_CHARS.matcher(text).replaceAll("");
-            if (!stripped.isEmpty()) {
-                destination.append(Text.literal(stripped).setStyle(child.getStyle()));
-            }
-            return;
-        }
-
-        if (fontPath.contains("background")) {
-            String text = child.getString();
-            String stripped = ES_BG_CHARS.matcher(text).replaceAll("");
-            if (!stripped.isEmpty()) {
-                destination.append(Text.literal(stripped).setStyle(child.getStyle()));
-            }
-            return;
-        }
-
-        if (!child.getSiblings().isEmpty()) {
-            MutableText subCleaned = child.copyContentOnly().setStyle(child.getStyle());
-            for (Text sub : child.getSiblings()) {
-                cleanSiblingInto(sub, subCleaned);
-            }
-            destination.append(subCleaned);
-            return;
-        }
-
-        destination.append(child);
+        return title;
     }
 }
