@@ -16,10 +16,36 @@ public class StoredCountUtils {
             return null;
         }
         Long count = getStoredCount(stack);
-        if (count == null || count <= 1) {
+        if (count != null) {
+            if (count > 1) {
+                return formatCount(count);
+            } else if (count == 1) {
+                return "1";
+            }
             return null;
         }
-        return formatCount(count);
+        if (isCraftable(stack)) {
+            return "+";
+        }
+        return null;
+    }
+
+    public static boolean isCraftable(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        NbtCompound display = stack.getSubNbt(ItemStack.DISPLAY_KEY);
+        if (display == null || !display.contains(ItemStack.LORE_KEY, NbtElement.LIST_TYPE)) {
+            return false;
+        }
+        NbtList loreList = display.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        for (int i = 0; i < loreList.size(); i++) {
+            String str = loreList.getString(i).toLowerCase(java.util.Locale.ROOT);
+            if (str.contains("создать предмет") || str.contains("створити предмет") || str.contains("craft item") || (str.contains("создать") && str.contains("лкм"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static Long getStoredCount(ItemStack stack) {
