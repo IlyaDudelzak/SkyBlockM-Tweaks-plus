@@ -259,7 +259,7 @@ public abstract class DrawContextMixin {
                 this.matrices.scale(scale, scale);
                 int textX = isPlus ? (int) ((17.0f / scale) - textRenderer.getWidth(count)) : (int) ((16.0f / scale) - textRenderer.getWidth(count) - 0.5f);
                 int textY = isPlus ? (int) ((17.0f / scale) - textRenderer.fontHeight + 1.0f) : (int) ((16.0f / scale) - textRenderer.fontHeight + 0.5f);
-                ((DrawContext) (Object) this).drawText(textRenderer, count, textX, textY, 0xFFFFFF, true);
+                ((DrawContext) (Object) this).drawText(textRenderer, count, textX, textY, 0xFFFFFFFF, true);
                 this.matrices.popMatrix();
             }
 
@@ -273,7 +273,7 @@ public abstract class DrawContextMixin {
                 this.matrices.scale(scale, scale);
                 int textX = (int) ((17.0f / scale) - textRenderer.getWidth("+"));
                 int textY = 0;
-                ((DrawContext) (Object) this).drawText(textRenderer, "+", textX, textY, 0xFFFFFF, true);
+                ((DrawContext) (Object) this).drawText(textRenderer, "+", textX, textY, 0xFFFFFFFF, true);
                 this.matrices.popMatrix();
             }
         }
