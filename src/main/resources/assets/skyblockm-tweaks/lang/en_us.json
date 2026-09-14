@@ -1,13 +1,10 @@
 {
   "modmenu.summaryTranslation.skyblockm-tweaks": "Improves gameplay experience on SkyBlockM server",
   "modmenu.descriptionTranslation.skyblockm-tweaks": "Improves gameplay experience on SkyBlockM server with various optimizations and QoL features\nRequires Cloth Config API for configuration",
-
   "skyblockm-tweaks.config.base.title": "SkyBlockM Tweaks",
   "skyblockm-tweaks.config.base.moduleSetup": "  [Advanced Settings]",
-
   "skyblockm-tweaks.config.storageTargetingFix": "Storage Targeting Fix",
   "skyblockm-tweaks.config.storageTargetingFix.tooltip": "In some cases, clicks fail without this fix (e.g. while holding a wrench)",
-
   "skyblockm-tweaks.config.moreTooltipInfo": "Extended Item Tooltip Info",
   "skyblockm-tweaks.config.moreTooltipInfo.tooltip": "Popup tooltip shown above the hotbar when switching slots",
   "skyblockm-tweaks.config.moreTooltipInfo.storage": "Item Storage",
@@ -16,7 +13,6 @@
   "skyblockm-tweaks.config.moreTooltipInfo.fluidStorage.tooltip": "Show stored fluid inside",
   "skyblockm-tweaks.config.moreTooltipInfo.crystalMemory": "Memory Crystal",
   "skyblockm-tweaks.config.moreTooltipInfo.crystalMemory.tooltip": "Show recorded item inside",
-
   "skyblockm-tweaks.config.renderItemInside": "Render Item Inside",
   "skyblockm-tweaks.config.renderItemInside.tooltip": "For example, show target item of ES pattern when holding Shift (default)",
   "skyblockm-tweaks.config.renderItemInside.item.esPattern": "ES Crafting Pattern",
@@ -27,16 +23,13 @@
   "skyblockm-tweaks.config.renderItemInside.itemSetup.drawOriginal": "Container Icon",
   "skyblockm-tweaks.config.renderItemInside.itemSetup.bgColor": "Background Color",
   "skyblockm-tweaks.config.renderItemInside.itemSetupEsPattern.forceRenderInsideInterface": "Always show when ES interface is open",
-
   "skyblockm-tweaks.config.textInputLagFix": "Text Input Lag Fix in Custom Interfaces",
   "skyblockm-tweaks.config.textInputLagFix.recipesSearch": "In Recipe Search",
   "skyblockm-tweaks.config.textInputLagFix.esTerminalSearch": "In ES Terminal Search",
-
   "skyblockm-tweaks.config.inventoryDesyncFix": "Inventory Desync Fix",
   "skyblockm-tweaks.config.inventoryDesyncFix.tooltip": "Desync happens after opening recipe search, causing hotbar slot reset and delayed inventory updates",
   "skyblockm-tweaks.config.inventoryDesyncFix.inventoryUpdates": "For Inventory Updates",
   "skyblockm-tweaks.config.inventoryDesyncFix.selectedSlot": "For Selected Hotbar Slot",
-
   "skyblockm-tweaks.config.esTerminalScroll": "ES Terminal Scrolling",
   "skyblockm-tweaks.config.esTerminalScroll.wheel": "Mouse Wheel Scrolling",
   "skyblockm-tweaks.config.esTerminalScroll.wheelModifier": "Key to Hold with Mouse Wheel",
@@ -52,13 +45,10 @@
   "skyblockm-tweaks.config.esTerminalScroll.boostKeyType.tooltip": "If \"Deactivate\" is selected, boosted scrolling is always active unless the key is held",
   "skyblockm-tweaks.config.esTerminalScroll.boostKeyType.activate": "Activate",
   "skyblockm-tweaks.config.esTerminalScroll.boostKeyType.deactivate": "Deactivate",
-
   "skyblockm-tweaks.config.compactGenome": "Compact Bee Genome Display",
   "skyblockm-tweaks.config.compactGenome.tooltip": "For experienced beekeepers only; most verbose details will be hidden",
-
   "skyblockm-tweaks.config.hideHiddenArmorStands": "Hide Invisible Armor Stands",
   "skyblockm-tweaks.config.hideHiddenArmorStands.tooltip": "Hides invisible armor stands that are visible in spectator mode\nUseful for staff observing items in pipes with maximum render distance",
-
   "skyblockm-tweaks.config.itemDisplayBaking": "Item Display Chunk Baking (FPS Boost)",
   "skyblockm-tweaks.config.itemDisplayBaking.tooltip": "Optimizes thousands of custom blocks by baking their geometry directly into chunks and disabling entity ticks",
   "skyblockm-tweaks.config.itemDisplayBaking.maxBakeSize": "Max Bake Size (in blocks)",
@@ -71,7 +61,6 @@
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown.tooltip": "Minimum interval between consecutive rebuilds of the same chunk (prevents spam from active machines)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Hide Entities Pending Bake",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Completely disables dynamic rendering of bakeable entities, preventing FPS drops when approaching bases",
-
   "skyblockm-tweaks.config.itemDisplayHitbox": "Custom Barrier Hitboxes",
   "skyblockm-tweaks.config.itemDisplayHitbox.tooltip": "Adjusts barrier hitboxes to fit custom block shapes for easy interaction through pipes and cables",
   "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Hitbox Type",
@@ -81,7 +70,6 @@
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberband.tooltip": "Prevents screen jitter when touching barriers (Warning: flying through barriers may desync with server!)",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance": "Max Rubberband Distance",
   "skyblockm-tweaks.config.itemDisplayHitbox.antiRubberbandDistance.tooltip": "Maximum server position correction distance that the client will attempt to ignore",
-
   "skyblockm-tweaks.config.skyblockPackOptimization.mode": "Auto-Load Resource Pack",
   "skyblockm-tweaks.config.skyblockPackOptimization.mode.tooltip": "None: Disabled\nFrom GitLab: Automatically downloads the latest official pack from GitLab\nFrom Server: Automatically loads the pack received on server join",
   "skyblockm-tweaks.config.skyblockPackOptimization.mode.none": "None",
@@ -89,10 +77,8 @@
   "skyblockm-tweaks.config.skyblockPackOptimization.mode.server": "From Server",
   "skyblockm-tweaks.config.serverPackUnlocker": "Server Pack Unlocker",
   "skyblockm-tweaks.config.serverPackUnlocker.tooltip": "Unpins server resource packs, letting you place custom packs above them and avoids kicks for disabled policies",
-
   "skyblockm-tweaks.config.missing_cloth.title": "Cloth Config API Required",
   "skyblockm-tweaks.config.missing_cloth.desc": "In-game configuration GUI requires Cloth Config API to be installed.\n\nYou can also configure all settings manually in:\n.minecraft/config/skyblockm-tweaks.json",
-
   "skyblockm-tweaks.compactGenome.type.temperature": "Biomes",
   "skyblockm-tweaks.compactGenome.type.humidity": "Humidity",
   "skyblockm-tweaks.compactGenome.type.flowers": "Flowers",
@@ -102,7 +88,6 @@
   "skyblockm-tweaks.compactGenome.type.nocturnal": "At Night",
   "skyblockm-tweaks.compactGenome.type.flyer": "In Rain",
   "skyblockm-tweaks.compactGenome.type.effect": "Effect",
-
   "skyblockm-tweaks.compactGenome.value.temperature.normal": "normal",
   "skyblockm-tweaks.compactGenome.value.temperature.warm": "warm",
   "skyblockm-tweaks.compactGenome.value.temperature.cold": "cold",
@@ -119,5 +104,7 @@
   "skyblockm-tweaks.compactGenome.value.effect.regeneration": "regen",
   "skyblockm-tweaks.compactGenome.value.effect.experience": "exp",
   "skyblockm-tweaks.compactGenome.value.effect.freeze": "freeze",
-  "skyblockm-tweaks.compactGenome.value.effect.flame": "flame"
+  "skyblockm-tweaks.compactGenome.value.effect.flame": "flame",
+  "config.adBlocker": "Block Server Ads (Very Important Announcements)",
+  "config.adBlocker.tooltip": "Hides the multi-line ad messages in the chat."
 }
