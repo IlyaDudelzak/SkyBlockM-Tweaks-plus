@@ -108,5 +108,11 @@
   "skyblockm-tweaks.config.adBlocker": "Block Server Advertisements",
   "skyblockm-tweaks.config.adBlocker.tooltip": "Hides multi-line [ Очень важное объявление ] ad announcements in chat",
   "skyblockm-tweaks.config.terminalStackCount": "Terminal Item Stack Count",
-  "skyblockm-tweaks.config.terminalStackCount.tooltip": "Displays compact stack counts (e.g. 413K, 3.1K) on items in the terminal and removes floating junk from inventory titles"
+  "skyblockm-tweaks.config.terminalStackCount.tooltip": "Displays compact stack counts (e.g. 413K, 3.1K) on items in the terminal and removes floating junk from inventory titles",
+  "skyblockm-tweaks.config.terminalStackCount.cleanTitle": "Clean Interface Title",
+  "skyblockm-tweaks.config.terminalStackCount.cleanTitle.tooltip": "Removes overlapping count numbers and squares from the terminal title",
+  "skyblockm-tweaks.config.terminalStackCount.scaleDigits": "Count Text Scale",
+  "skyblockm-tweaks.config.terminalStackCount.scaleDigits.tooltip": "Scale of the item count text in slots (default 0.58)",
+  "skyblockm-tweaks.config.terminalStackCount.scalePlus": "Autocraft '+' Scale",
+  "skyblockm-tweaks.config.terminalStackCount.scalePlus.tooltip": "Scale of the '+' symbol for autocraftable items (default 1.0)"
 }

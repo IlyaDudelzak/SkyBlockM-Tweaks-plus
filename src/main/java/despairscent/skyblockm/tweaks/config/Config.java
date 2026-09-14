@@ -217,6 +217,8 @@ public class Config {
     public static class TerminalStackCountConfig {
         public boolean enabled = true;
         public boolean cleanTitle = true;
+        public double scaleDigits = 0.58;
+        public double scalePlus = 1.0;
     }
 
     public static Config load() {
@@ -253,6 +255,13 @@ public class Config {
             }
             if (config.terminalStackCount == null) {
                 config.terminalStackCount = new TerminalStackCountConfig();
+            } else {
+                if (config.terminalStackCount.scaleDigits <= 0.05) {
+                    config.terminalStackCount.scaleDigits = 0.58;
+                }
+                if (config.terminalStackCount.scalePlus <= 0.05) {
+                    config.terminalStackCount.scalePlus = 1.0;
+                }
             }
 
             return config;
