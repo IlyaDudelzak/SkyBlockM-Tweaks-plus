@@ -23,7 +23,8 @@
     "DisplayEntityMixin",
     "ClientWorldMixin",
     "ResourcePackProfileMixin",
-    "ResourcePackProfileInsertionPositionMixin"
+    "ResourcePackProfileInsertionPositionMixin",
+    "SplashTextResourceSupplierMixin"
   ],
   "injectors": {
     "defaultRequire": 1
