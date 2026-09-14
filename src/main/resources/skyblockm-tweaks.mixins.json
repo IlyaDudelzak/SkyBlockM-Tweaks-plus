@@ -24,7 +24,8 @@
     "MouseMixin",
     "ResourcePackProfileInsertionPositionMixin",
     "ResourcePackProfileMixin",
-    "SplashTextResourceSupplierMixin"
+    "SplashTextResourceSupplierMixin",
+    "FontStorageMixin"
   ],
   "injectors": {
     "defaultRequire": 1
