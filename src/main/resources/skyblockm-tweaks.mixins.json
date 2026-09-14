@@ -8,6 +8,8 @@
     "AnvilScreenMixin",
     "BarrierBlockMixin",
     "BarrierBlockRenderTypeMixin",
+    "ChatHudMixin",
+    "ClientCommonNetworkHandlerMixin",
     "ClientPlayNetworkHandlerMixin",
     "ClientPlayerEntityMixin",
     "ClientWorldMixin",
@@ -18,10 +20,8 @@
     "InGameHudMixin",
     "ItemDisplayEntityMixin",
     "MinecraftClientInteractionMixin",
-    "MinecraftClientMixin",
-    "MouseMixin",
-    "ResourcePackProfileInsertionPositionMixin",
-    "ResourcePackProfileMixin"
+    "ResourcePackProfileMixin",
+    "ResourcePackProfileInsertionPositionMixin"
   ],
   "injectors": {
     "defaultRequire": 1
