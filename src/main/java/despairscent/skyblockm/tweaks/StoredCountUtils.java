@@ -11,8 +11,6 @@ import java.util.regex.Pattern;
 
 public class StoredCountUtils {
 
-    private static final Pattern TITLE_GARBAGE = Pattern.compile("[\\uF800-\\uF8FF\\u1001-\\u103F\\u2000-\\u200F]*[0-9]+[0-9.KMBkmb]*[\\uF800-\\uF8FF\\u1001-\\u103F\\u2000-\\u200F]*");
-
     public static String getStoredCountFormatted(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return null;
@@ -92,48 +90,84 @@ public class StoredCountUtils {
         }
     }
 
-    public static Text cleanTitle(Text title) {
+    private static final Pattern ES_NUMBER_CHARS = Pattern.compile("[0-9.KM+kmb\\u102B\\u102E\\u1030-\\u1039\\u104B\\u104D]+");
+    private static final Pattern ES_BG_CHARS = Pattern.compile("[\\u1001-\\u1032\\u2001-\\u2032]+");
+
+    public static boolean isTerminalTitle(Text title) {
         if (title == null) {
-            return null;
+            return false;
         }
-        String str = title.getString();
-        if (str.length() > 20 && str.startsWith("\uF808")) {
-            int slotIdx = -1;
-            for (int i = 0; i < str.length(); i++) {
-                char c = str.charAt(i);
-                if (c == '\uF821' || c == 'ထ' || (i >= 7 && Character.isDigit(c))) {
-                    slotIdx = i;
-                    break;
-                }
-            }
-
-            if (slotIdx != -1) {
-                java.util.List<Text> siblings = title.getSiblings();
-                if (!siblings.isEmpty()) {
-                    MutableText clean = Text.empty().setStyle(title.getStyle());
-                    int accumulated = 0;
-                    for (Text sibling : siblings) {
-                        String childStr = sibling.getString();
-                        if (accumulated + childStr.length() <= slotIdx) {
-                            clean.append(sibling);
-                            accumulated += childStr.length();
-                        } else {
-                            int remain = slotIdx - accumulated;
-                            if (remain > 0) {
-                                clean.append(Text.literal(childStr.substring(0, remain)).setStyle(sibling.getStyle()));
-                            }
-                            break;
-                        }
-                    }
-                    if (!clean.getString().isEmpty()) {
-                        return clean;
-                    }
-                }
-
-                String cleanStr = str.substring(0, slotIdx);
-                return Text.literal(cleanStr).setStyle(title.getStyle());
+        java.util.List<Text> siblings = title.getSiblings();
+        if (siblings.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < siblings.size() && i < 3; i++) {
+            Text child = siblings.get(i);
+            net.minecraft.util.Identifier font = child.getStyle().getFont();
+            if (font != null && "electric_storage".equals(font.getNamespace()) && "interfaces".equals(font.getPath())) {
+                return true;
             }
         }
-        return title;
+        return false;
+    }
+
+    public static Text cleanTitle(Text title) {
+        if (!isTerminalTitle(title)) {
+            return title;
+        }
+
+        MutableText cleaned = title.copyContentOnly().setStyle(title.getStyle());
+        for (Text child : title.getSiblings()) {
+            cleanSiblingInto(child, cleaned);
+        }
+        return cleaned;
+    }
+
+    private static void cleanSiblingInto(Text child, MutableText destination) {
+        net.minecraft.util.Identifier font = child.getStyle().getFont();
+        String fontPath = font != null ? font.getPath() : "";
+        String fontNamespace = font != null ? font.getNamespace() : "";
+
+        if ("electric_storage".equals(fontNamespace)) {
+            if ("interfaces".equals(fontPath) || fontPath.startsWith("terminal_slider")) {
+                destination.append(child);
+                return;
+            }
+
+            if (fontPath.startsWith("ascii_row")) {
+                String text = child.getString();
+                String stripped = ES_NUMBER_CHARS.matcher(text).replaceAll("");
+                if (!stripped.isEmpty()) {
+                    destination.append(Text.literal(stripped).setStyle(child.getStyle()));
+                }
+                return;
+            }
+
+            if (fontPath.startsWith("background")) {
+                String text = child.getString();
+                String stripped = ES_BG_CHARS.matcher(text).replaceAll("");
+                if (!stripped.isEmpty()) {
+                    destination.append(Text.literal(stripped).setStyle(child.getStyle()));
+                }
+                return;
+            }
+        }
+
+        if (!child.getSiblings().isEmpty()) {
+            MutableText subCleaned = child.copyContentOnly().setStyle(child.getStyle());
+            for (Text sub : child.getSiblings()) {
+                cleanSiblingInto(sub, subCleaned);
+            }
+            destination.append(subCleaned);
+            return;
+        }
+
+        String text = child.getString();
+        String stripped = ES_NUMBER_CHARS.matcher(text).replaceAll("");
+        if (stripped.equals(text)) {
+            destination.append(child);
+        } else if (!stripped.isEmpty()) {
+            destination.append(Text.literal(stripped).setStyle(child.getStyle()));
+        }
     }
 }
