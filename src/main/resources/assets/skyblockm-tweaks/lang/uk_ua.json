@@ -108,5 +108,11 @@
   "skyblockm-tweaks.config.adBlocker": "Блокування серверної реклами",
   "skyblockm-tweaks.config.adBlocker.tooltip": "Приховує багаторядкові повідомлення [ Очень важное объявление ] в чаті",
   "skyblockm-tweaks.config.terminalStackCount": "Кількість предметів у терміналі",
-  "skyblockm-tweaks.config.terminalStackCount.tooltip": "Відображає компактну кількість (напр. 413K, 3.1K) у слотах термінала та прибирає сміття з назви інвентаря"
+  "skyblockm-tweaks.config.terminalStackCount.tooltip": "Відображає компактну кількість (напр. 413K, 3.1K) у слотах термінала та прибирає сміття з назви інвентаря",
+  "skyblockm-tweaks.config.terminalStackCount.cleanTitle": "Очищення назви інтерфейсу",
+  "skyblockm-tweaks.config.terminalStackCount.cleanTitle.tooltip": "Прибирає накладене сміття (цифри та квадрати) з назви термінала",
+  "skyblockm-tweaks.config.terminalStackCount.scaleDigits": "Масштаб шрифту кількостей",
+  "skyblockm-tweaks.config.terminalStackCount.scaleDigits.tooltip": "Масштаб тексту з кількістю предметів у слотах (за замовчуванням 0.58)",
+  "skyblockm-tweaks.config.terminalStackCount.scalePlus": "Масштаб знака «+» автокрафту",
+  "skyblockm-tweaks.config.terminalStackCount.scalePlus.tooltip": "Масштаб знака «+» для предметів, доступних для автокрафту (за замовчуванням 1.0)"
 }
