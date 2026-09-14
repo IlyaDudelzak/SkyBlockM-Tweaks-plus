@@ -257,14 +257,32 @@ public class DrawContextMixin {
             argsOnly = true,
             ordinal = 0
     )
-    private String modifyStackCountText(String stackCountText, net.minecraft.client.font.TextRenderer textRenderer, ItemStack stack, int x, int y) {
-        if (stackCountText == null && CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled) {
-            String count = despairscent.skyblockm.tweaks.StoredCountUtils.getStoredCountFormatted(stack);
-            if (count != null) {
-                return count;
+    private String suppressVanillaStackCountText(String stackCountText, net.minecraft.client.font.TextRenderer textRenderer, ItemStack stack, int x, int y) {
+        if (CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled && !stack.isEmpty()) {
+            if (despairscent.skyblockm.tweaks.StoredCountUtils.getStoredCountFormatted(stack) != null) {
+                return "";
             }
         }
         return stackCountText;
+    }
+
+    @org.spongepowered.asm.mixin.injection.Inject(
+            method = "drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V",
+            at = @org.spongepowered.asm.mixin.injection.At("TAIL")
+    )
+    private void drawStoredCountOverlay(net.minecraft.client.font.TextRenderer textRenderer, ItemStack stack, int x, int y, String stackCountText, org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        if (CONFIG != null && CONFIG.terminalStackCount != null && CONFIG.terminalStackCount.enabled && !stack.isEmpty()) {
+            String count = despairscent.skyblockm.tweaks.StoredCountUtils.getStoredCountFormatted(stack);
+            if (count != null) {
+                this.matrices.push();
+                this.matrices.translate(x, y, 200.0f);
+                this.matrices.scale(0.5f, 0.5f, 1.0f);
+                int textX = 32 - textRenderer.getWidth(count) - 1;
+                int textY = 32 - textRenderer.fontHeight;
+                ((DrawContext) (Object) this).drawText(textRenderer, count, textX, textY, 0xFFFFFF, true);
+                this.matrices.pop();
+            }
+        }
     }
 
 }
