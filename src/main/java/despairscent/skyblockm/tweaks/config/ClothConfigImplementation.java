@@ -246,6 +246,27 @@ public class ClothConfigImplementation {
                 .setDefaultValue(Config.DEFAULT.terminalStackCount.enabled)
                 .setSaveConsumer(value -> CONFIG.terminalStackCount.enabled = value)
                 .build());
+        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.terminalStackCount.cleanTitle"), CONFIG.terminalStackCount.cleanTitle)
+                        .setTooltip(i18n("config.terminalStackCount.cleanTitle.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.terminalStackCount.cleanTitle)
+                        .setSaveConsumer(value -> CONFIG.terminalStackCount.cleanTitle = value)
+                        .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.terminalStackCount.scaleDigits"), CONFIG.terminalStackCount.scaleDigits)
+                        .setTooltip(i18n("config.terminalStackCount.scaleDigits.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.terminalStackCount.scaleDigits)
+                        .setMin(0.2)
+                        .setMax(2.0)
+                        .setSaveConsumer(value -> CONFIG.terminalStackCount.scaleDigits = value)
+                        .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.terminalStackCount.scalePlus"), CONFIG.terminalStackCount.scalePlus)
+                        .setTooltip(i18n("config.terminalStackCount.scalePlus.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.terminalStackCount.scalePlus)
+                        .setMin(0.2)
+                        .setMax(2.0)
+                        .setSaveConsumer(value -> CONFIG.terminalStackCount.scalePlus = value)
+                        .build()
+        )).build());
 
         builder.setSavingRunnable(() -> CONFIG.save());
 
