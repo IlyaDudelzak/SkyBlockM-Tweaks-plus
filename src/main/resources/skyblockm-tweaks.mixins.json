@@ -23,7 +23,8 @@
     "MinecraftClientInteractionMixin",
     "ResourcePackProfileMixin",
     "ResourcePackProfileInsertionPositionMixin",
-    "SplashTextResourceSupplierMixin"
+    "SplashTextResourceSupplierMixin",
+    "FontStorageMixin"
   ],
   "injectors": {
     "defaultRequire": 1
