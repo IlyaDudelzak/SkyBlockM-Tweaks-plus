@@ -125,9 +125,16 @@ public class ItemDisplayBakingManager {
                                     }
                                     Matrix4f layerMatrix = new Matrix4f(layerMs.peek().getPositionMatrix());
 
-                                    BlockRenderLayer layerBlockRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
-                                    if (stack.getItem() instanceof BlockItem blockItem) {
-                                        layerBlockRenderLayer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+                                    BlockRenderLayer layerBlockRenderLayer = BlockRenderLayer.TRANSLUCENT;
+                                    if (stack.getItem() instanceof BlockItem blockItem && !stack.isOf(net.minecraft.item.Items.BARRIER)) {
+                                        BlockRenderLayer blockLayer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+                                        if (blockLayer == BlockRenderLayer.CUTOUT || blockLayer == BlockRenderLayer.CUTOUT_MIPPED) {
+                                            layerBlockRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
+                                        } else if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
+                                            layerBlockRenderLayer = BlockRenderLayer.TRANSLUCENT;
+                                        } else {
+                                            layerBlockRenderLayer = BlockRenderLayer.CUTOUT_MIPPED;
+                                        }
                                     }
                                     int[] tints = layerAccessor.skyblockm$getTints();
                                     List<BakedQuad> layerQuads = layer.getQuads();

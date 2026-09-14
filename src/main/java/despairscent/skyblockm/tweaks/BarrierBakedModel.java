@@ -39,7 +39,7 @@ public class BarrierBakedModel extends WrapperBlockStateModel {
                 if (info.quads == null || info.quads.isEmpty()) continue;
 
                 for (ItemDisplayBakingManager.BakedQuadInfo quadInfo : info.quads) {
-                    BlockRenderLayer layer = quadInfo.renderLayer != null ? quadInfo.renderLayer : BlockRenderLayer.CUTOUT_MIPPED;
+                    BlockRenderLayer layer = quadInfo.renderLayer != null ? quadInfo.renderLayer : BlockRenderLayer.TRANSLUCENT;
 
                     emitter.pushTransform(quad -> {
                         // 1. Transform vertex positions
@@ -96,6 +96,9 @@ public class BarrierBakedModel extends WrapperBlockStateModel {
 
                     int itemColor = quadInfo.tintColor;
                     if (itemColor != -1) {
+                        if ((itemColor & 0xFF000000) == 0) {
+                            itemColor |= 0xFF000000;
+                        }
                         for (int i = 0; i < 4; i++) {
                             int currentColor = emitter.color(i);
                             int a = ((currentColor >> 24) & 0xFF) * ((itemColor >> 24) & 0xFF) / 255;
