@@ -81,7 +81,7 @@ public class BarrierBakedModel extends ForwardingBakedModel {
                     for (int y = 0; y < h; y++) {
                         for (int x = 0; x < w; x++) {
                             int a = Byte.toUnsignedInt(img.getOpacity(x, y));
-                            if (a > 0 && a < 255) {
+                            if (a > 5 && a < 250) {
                                 return true;
                             }
                         }
