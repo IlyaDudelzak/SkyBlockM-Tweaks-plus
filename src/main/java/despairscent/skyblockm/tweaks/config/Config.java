@@ -213,7 +213,7 @@ public class Config {
     }
 
     public static class AdBlockerConfig {
-        public boolean enabled = true;
+        public boolean enabled = false;
     }
 
     public static class TerminalStackCountConfig {

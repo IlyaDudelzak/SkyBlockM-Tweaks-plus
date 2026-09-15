@@ -235,11 +235,6 @@ public class ClothConfigImplementation {
                 .setDefaultValue(Config.DEFAULT.serverPackUnlocker.enabled)
                 .setSaveConsumer(value -> CONFIG.serverPackUnlocker.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.adBlocker"), CONFIG.adBlocker.enabled)
-                .setTooltip(i18n("config.adBlocker.tooltip"))
-                .setDefaultValue(Config.DEFAULT.adBlocker.enabled)
-                .setSaveConsumer(value -> CONFIG.adBlocker.enabled = value)
-                .build());
         base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.terminalStackCount"), CONFIG.terminalStackCount.enabled)
                 .setTooltip(i18n("config.terminalStackCount.tooltip"))
                 .setDefaultValue(Config.DEFAULT.terminalStackCount.enabled)
