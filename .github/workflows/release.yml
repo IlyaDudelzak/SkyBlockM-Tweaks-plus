@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch: [mc1.20.1, mc1.20.4, mc1.21.1, mc1.21.3]
+        branch: [mc1.20.1, mc1.20.4, mc1.21.1, mc1.21.3, mc1.21.8, mc1.21.11]
     steps:
       - name: Checkout branch ${{ matrix.branch }}
         uses: actions/checkout@v4
