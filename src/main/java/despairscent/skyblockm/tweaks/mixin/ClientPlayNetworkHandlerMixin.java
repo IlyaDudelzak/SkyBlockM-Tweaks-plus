@@ -50,4 +50,38 @@ public class ClientPlayNetworkHandlerMixin {
     private void onClearWorld(CallbackInfo ci) {
         despairscent.skyblockm.tweaks.ItemDisplayBakingManager.clear();
     }
+
+    @Inject(method = "sendChatCommand", at = @At("HEAD"), cancellable = true)
+    private void onSendChatCommand(String command, CallbackInfo ci) {
+        if (command == null) return;
+        String trimmed = command.trim();
+        if (trimmed.equalsIgnoreCase("ads off")) {
+            if (CONFIG != null && CONFIG.adBlocker != null) {
+                CONFIG.adBlocker.enabled = true;
+                CONFIG.save();
+                if (CLIENT.inGameHud != null) {
+                    CLIENT.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal("§7[§6SkyBlockM§7] §aБлокировка рекламы включена"));
+                }
+            }
+            ci.cancel();
+        } else if (trimmed.equalsIgnoreCase("ads on")) {
+            if (CONFIG != null && CONFIG.adBlocker != null) {
+                CONFIG.adBlocker.enabled = false;
+                CONFIG.save();
+                if (CLIENT.inGameHud != null) {
+                    CLIENT.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal("§7[§6SkyBlockM§7] §cБлокировка рекламы выключена"));
+                }
+            }
+            ci.cancel();
+        } else if (trimmed.equalsIgnoreCase("ads") || trimmed.equalsIgnoreCase("ads toggle")) {
+            if (CONFIG != null && CONFIG.adBlocker != null) {
+                CONFIG.adBlocker.enabled = !CONFIG.adBlocker.enabled;
+                CONFIG.save();
+                if (CLIENT.inGameHud != null) {
+                    CLIENT.inGameHud.getChatHud().addMessage(net.minecraft.text.Text.literal("§7[§6SkyBlockM§7] Блокировка рекламы: " + (CONFIG.adBlocker.enabled ? "§aВКЛ" : "§cВЫКЛ")));
+                }
+            }
+            ci.cancel();
+        }
+    }
 }
