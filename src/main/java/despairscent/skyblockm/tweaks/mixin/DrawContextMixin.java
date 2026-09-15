@@ -8,6 +8,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
@@ -28,6 +30,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static despairscent.skyblockm.tweaks.ModUtils.CLIENT;
@@ -83,12 +86,18 @@ public class DrawContextMixin {
         }
     }
 
-    @Inject(method = "drawItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;IIII)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemRenderer;renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V"))
-    private void drawItemInject(LivingEntity entity, World world, ItemStack itemStack, int x, int y, int seed, int z, CallbackInfo ci) {
+    @Redirect(
+            method = "drawItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;IIII)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/render/item/ItemRenderer;renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V"
+            )
+    )
+    private void redirectRenderItem(ItemRenderer itemRenderer, ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, LivingEntity entity, World world, ItemStack itemStack, int x, int y, int seed, int z) {
         if (!CONFIG.renderItemInside.enabled ||
                 !itemStack.contains(DataComponentTypes.CUSTOM_MODEL_DATA) ||
                 !itemStack.contains(DataComponentTypes.CUSTOM_DATA)) {
+            itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
             return;
         }
 
@@ -100,6 +109,7 @@ public class DrawContextMixin {
         if (itemStack.getItem() == Items.PAPER && modelId == 7301) {
             if (!customData.contains("ElectricStorage.RecipeResults") ||
                     !testRender(CONFIG.renderItemInside.esPattern)) {
+                itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
                 return;
             }
             drawOriginal = CONFIG.renderItemInside.esPattern.drawOriginal;
@@ -109,20 +119,24 @@ public class DrawContextMixin {
         } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
             if (!customData.contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
+                itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
                 return;
             }
             drawOriginal = CONFIG.renderItemInside.storage.drawOriginal;
             itemInside = itemStackFromNbtPre1_20_5(customData.getCompound("ItemStack"));
         } else if (itemStack.getItem() == Items.IRON_HORSE_ARMOR && modelId == 2001) {
             if (!testRender(CONFIG.renderItemInside.crystalMemory)) {
+                itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
                 return;
             }
             drawOriginal = CONFIG.renderItemInside.crystalMemory.drawOriginal;
             itemInside = itemStackFromCrystalMemory(customData);
             if (itemInside == null) {
+                itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
                 return;
             }
         } else {
+            itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
             return;
         }
 
@@ -134,20 +148,29 @@ public class DrawContextMixin {
             DiffuseLighting.disableGuiDepthLighting();
         }
 
-        this.client.getItemRenderer().renderItem(itemInside, ModelTransformationMode.GUI, false, this.matrices, ((DrawContext) (Object) this).getVertexConsumers(), 15728880, OverlayTexture.DEFAULT_UV, itemInsideModel);
+        itemRenderer.renderItem(itemInside, ModelTransformationMode.GUI, false, matrices, vertexConsumers, light, overlay, itemInsideModel);
         ((DrawContext) (Object) this).draw();
 
         if (drawOriginal) {
-            this.matrices.translate(0.25f, -0.25f, 1f);
-            this.matrices.scale(0.5f, 0.5f, 1f);
+            matrices.push();
+            matrices.translate(0.25f, -0.25f, 1f);
+            matrices.scale(0.5f, 0.5f, 1f);
 
-            if (this.client.getItemRenderer().getModel(itemStack, world, entity, seed).isSideLit()) {
+            if (model.isSideLit()) {
                 DiffuseLighting.enableGuiDepthLighting();
             } else {
                 DiffuseLighting.disableGuiDepthLighting();
             }
+
+            itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
+            ((DrawContext) (Object) this).draw();
+            matrices.pop();
+        }
+
+        if (model.isSideLit()) {
+            DiffuseLighting.enableGuiDepthLighting();
         } else {
-            this.matrices.scale(0, 0, 0);
+            DiffuseLighting.disableGuiDepthLighting();
         }
     }
 
@@ -281,7 +304,7 @@ public class DrawContextMixin {
                 this.matrices.scale(scale, scale, 1.0f);
                 int textX = isPlus ? (int) ((17.0f / scale) - textRenderer.getWidth(count)) : (int) ((16.0f / scale) - textRenderer.getWidth(count) - 0.5f);
                 int textY = isPlus ? (int) ((17.0f / scale) - textRenderer.fontHeight + 1.0f) : (int) ((16.0f / scale) - textRenderer.fontHeight + 0.5f);
-                ((DrawContext) (Object) this).drawText(textRenderer, count, textX, textY, 0xFFFFFF, true);
+                ((DrawContext) (Object) this).drawText(textRenderer, count, textX, textY, 0xFFFFFFFF, true);
                 this.matrices.pop();
             }
 
@@ -295,7 +318,7 @@ public class DrawContextMixin {
                 this.matrices.scale(scale, scale, 1.0f);
                 int textX = (int) ((17.0f / scale) - textRenderer.getWidth("+"));
                 int textY = 0;
-                ((DrawContext) (Object) this).drawText(textRenderer, "+", textX, textY, 0xFFFFFF, true);
+                ((DrawContext) (Object) this).drawText(textRenderer, "+", textX, textY, 0xFFFFFFFF, true);
                 this.matrices.pop();
             }
         }
