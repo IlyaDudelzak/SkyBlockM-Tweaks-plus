@@ -31,29 +31,30 @@ public class DependencyDownloader {
 
         CompletableFuture.runAsync(() -> {
             try {
-                // Проверяем, доступны ли уже зависимости на classpath
-                CaptchaClassifier.resetInit();
-                if (CaptchaClassifier.init()) {
-                    ready = true;
-                    ModUtils.LOGGER.info("[DependencyDownloader] ONNX Runtime готов к работе.");
-                    return;
+                ClassLoader classLoader = DependencyDownloader.class.getClassLoader();
+                boolean alreadyAvailable = false;
+                try {
+                    Class.forName("ai.onnxruntime.OrtEnvironment", false, classLoader);
+                    alreadyAvailable = true;
+                } catch (ClassNotFoundException ignored) {}
+
+                if (!alreadyAvailable) {
+                    Path cacheDir = FabricLoader.getInstance().getGameDir().resolve("skyblockm-tweaks").resolve("libs");
+                    Files.createDirectories(cacheDir);
+
+                    Path onnxJar = cacheDir.resolve("onnxruntime-1.20.0.jar");
+
+                    if (!Files.exists(onnxJar) || Files.size(onnxJar) < 1000000) {
+                        ModUtils.LOGGER.info("[DependencyDownloader] Скачивание библиотеки ONNX Runtime в фоне...");
+                        downloadFile(ONNX_MAVEN_URL, onnxJar);
+                        ModUtils.LOGGER.info("[DependencyDownloader] ONNX Runtime успешно скачан (" + (Files.size(onnxJar) / (1024 * 1024)) + " MB).");
+                    }
+
+                    // Динамически внедряем JAR в ClassLoader
+                    injectJar(onnxJar.toFile());
                 }
 
-                Path cacheDir = FabricLoader.getInstance().getGameDir().resolve("skyblockm-tweaks").resolve("libs");
-                Files.createDirectories(cacheDir);
-
-                Path onnxJar = cacheDir.resolve("onnxruntime-1.20.0.jar");
-
-                if (!Files.exists(onnxJar) || Files.size(onnxJar) < 1000000) {
-                    ModUtils.LOGGER.info("[DependencyDownloader] Скачивание библиотеки ONNX Runtime в фоне...");
-                    downloadFile(ONNX_MAVEN_URL, onnxJar);
-                    ModUtils.LOGGER.info("[DependencyDownloader] ONNX Runtime успешно скачан (" + (Files.size(onnxJar) / (1024 * 1024)) + " MB).");
-                }
-
-                // Динамически внедряем JAR в ClassLoader
-                injectJar(onnxJar.toFile());
-
-                // Повторно инициализируем классификатор
+                // Теперь инициализируем классификатор
                 CaptchaClassifier.resetInit();
                 if (CaptchaClassifier.init()) {
                     ready = true;
@@ -93,26 +94,54 @@ public class DependencyDownloader {
     private static void injectJar(File jarFile) {
         try {
             ClassLoader classLoader = DependencyDownloader.class.getClassLoader();
-            Method addUrlMethod = null;
-            Class<?> clz = classLoader.getClass();
-            while (clz != null) {
-                try {
-                    addUrlMethod = clz.getDeclaredMethod("addUrl", URL.class);
-                    break;
-                } catch (NoSuchMethodException ignored) {}
-                try {
-                    addUrlMethod = clz.getDeclaredMethod("addURL", URL.class);
-                    break;
-                } catch (NoSuchMethodException ignored) {}
-                clz = clz.getSuperclass();
+            Path jarPath = jarFile.toPath();
+            URL jarUrl = jarFile.toURI().toURL();
+
+            // 1. KnotClassLoader getDelegate().addCodeSource(Path)
+            try {
+                Method getDelegateMethod = classLoader.getClass().getDeclaredMethod("getDelegate");
+                getDelegateMethod.setAccessible(true);
+                Object delegate = getDelegateMethod.invoke(classLoader);
+                if (delegate != null) {
+                    Method addCodeSourceMethod = delegate.getClass().getDeclaredMethod("addCodeSource", Path.class);
+                    addCodeSourceMethod.setAccessible(true);
+                    addCodeSourceMethod.invoke(delegate, jarPath);
+                    ModUtils.LOGGER.info("[DependencyDownloader] Добавлен codeSource в KnotClassDelegate: " + jarPath);
+                }
+            } catch (Throwable t) {
+                ModUtils.LOGGER.warn("[DependencyDownloader] KnotClassDelegate.addCodeSource warning: " + t.getMessage());
             }
 
-            if (addUrlMethod != null) {
-                addUrlMethod.setAccessible(true);
-                addUrlMethod.invoke(classLoader, jarFile.toURI().toURL());
-            } else {
-                ModUtils.LOGGER.warn("[DependencyDownloader] Не найден метод addUrl/addURL в ClassLoader " + classLoader.getClass().getName());
-            }
+            // 2. KnotClassLoader addUrlFwd(URL)
+            try {
+                Method addUrlFwdMethod = classLoader.getClass().getDeclaredMethod("addUrlFwd", URL.class);
+                addUrlFwdMethod.setAccessible(true);
+                addUrlFwdMethod.invoke(classLoader, jarUrl);
+                ModUtils.LOGGER.info("[DependencyDownloader] Вызван addUrlFwd в KnotClassLoader: " + jarUrl);
+            } catch (Throwable ignored) {}
+
+            // 3. Fallback standard addURL
+            try {
+                Method addUrlMethod = null;
+                Class<?> clz = classLoader.getClass();
+                while (clz != null) {
+                    try {
+                        addUrlMethod = clz.getDeclaredMethod("addUrl", URL.class);
+                        break;
+                    } catch (NoSuchMethodException ignored) {}
+                    try {
+                        addUrlMethod = clz.getDeclaredMethod("addURL", URL.class);
+                        break;
+                    } catch (NoSuchMethodException ignored) {}
+                    clz = clz.getSuperclass();
+                }
+
+                if (addUrlMethod != null) {
+                    addUrlMethod.setAccessible(true);
+                    addUrlMethod.invoke(classLoader, jarUrl);
+                }
+            } catch (Throwable ignored) {}
+
         } catch (Throwable t) {
             ModUtils.LOGGER.error("[DependencyDownloader] Не удалось внедрить JAR: " + t.getMessage(), t);
         }
