@@ -25,7 +25,9 @@
     "ResourcePackProfileMixin",
     "ResourcePackProfileInsertionPositionMixin",
     "SplashTextResourceSupplierMixin",
-    "FontStorageMixin"
+    "FontStorageMixin",
+    "DisconnectedScreenMixin",
+    "KeyboardInputMixin"
   ],
   "injectors": {
     "defaultRequire": 1
