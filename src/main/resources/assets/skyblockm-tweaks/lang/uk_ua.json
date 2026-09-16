@@ -118,5 +118,13 @@
   "skyblockm-tweaks.config.splashes": "Кастомні сплеші SkyBlockM",
   "skyblockm-tweaks.config.splashes.tooltip": "Відображає тематичні фрази та жарти SkyBlockM у головному меню",
   "skyblockm-tweaks.config.splashes.onlyCustomSplashes": "Тільки сплеші SkyBlockM",
-  "skyblockm-tweaks.config.splashes.onlyCustomSplashes.tooltip": "Показувати виключно сплеші модифікації, приховуючи стандартні ванільні"
+  "skyblockm-tweaks.config.splashes.onlyCustomSplashes.tooltip": "Показувати виключно сплеші модифікації, приховуючи стандартні ванільні",
+  "skyblockm-tweaks.config.autoReconnect": "Автоматичне перепідключення",
+  "skyblockm-tweaks.config.autoReconnect.tooltip": "Автоматично перепідключається до сервера при кіку або розриві з'єднання",
+  "skyblockm-tweaks.config.autoReconnect.delaySeconds": "Затримка перепідключення (сек)",
+  "skyblockm-tweaks.config.autoReconnect.delaySeconds.tooltip": "Час у секундах до автоматичного перепідключення",
+  "skyblockm-tweaks.config.automaticCaptcha": "Автоматичне розв'язання капчі (AI)",
+  "skyblockm-tweaks.config.automaticCaptcha.tooltip": "Автоматично розпізнає та натискає рамки капчі за допомогою нейромережі",
+  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput": "Блокувати дії гравця",
+  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput.tooltip": "Блокує рух, поворот камери та кліки гравця під час автоматичного розв'язання капчі"
 }

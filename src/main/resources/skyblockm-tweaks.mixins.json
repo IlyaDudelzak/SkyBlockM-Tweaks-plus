@@ -27,7 +27,9 @@
     "SplashTextResourceSupplierMixin",
     "FontStorageMixin",
     "ItemRenderStateMixin",
-    "LayerRenderStateMixin"
+    "LayerRenderStateMixin",
+    "DisconnectedScreenMixin",
+    "KeyboardInputMixin"
   ],
   "injectors": {
     "defaultRequire": 1
