@@ -118,5 +118,13 @@
   "skyblockm-tweaks.config.splashes": "Custom SkyBlockM Splashes",
   "skyblockm-tweaks.config.splashes.tooltip": "Displays SkyBlockM-themed splashes and jokes on the main menu",
   "skyblockm-tweaks.config.splashes.onlyCustomSplashes": "Only SkyBlockM Splashes",
-  "skyblockm-tweaks.config.splashes.onlyCustomSplashes.tooltip": "Show exclusively mod splashes, hiding vanilla ones"
+  "skyblockm-tweaks.config.splashes.onlyCustomSplashes.tooltip": "Show exclusively mod splashes, hiding vanilla ones",
+  "skyblockm-tweaks.config.autoReconnect": "Auto Reconnect",
+  "skyblockm-tweaks.config.autoReconnect.tooltip": "Automatically reconnects to the server upon kick or disconnect",
+  "skyblockm-tweaks.config.autoReconnect.delaySeconds": "Reconnect Delay (sec)",
+  "skyblockm-tweaks.config.autoReconnect.delaySeconds.tooltip": "Delay in seconds before automatic reconnection",
+  "skyblockm-tweaks.config.automaticCaptcha": "Automatic Captcha Solver (AI)",
+  "skyblockm-tweaks.config.automaticCaptcha.tooltip": "Automatically detects and clicks captcha item frames using neural network",
+  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput": "Block Player Input",
+  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput.tooltip": "Blocks movement, mouse camera and clicks while captcha is being solved"
 }
