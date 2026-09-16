@@ -71,6 +71,7 @@ public class Config {
     public TerminalStackCountConfig terminalStackCount = new TerminalStackCountConfig();
 
     public SplashesConfig splashes = new SplashesConfig();
+    public AutomaticCaptchaConfig automaticCaptcha = new AutomaticCaptchaConfig();
 
     public boolean firstLaunchServersAdded = false;
 
@@ -228,6 +229,11 @@ public class Config {
         public boolean onlyCustomSplashes = false;
     }
 
+    public static class AutomaticCaptchaConfig {
+        public boolean enabled = true;
+        public boolean disablePlayerInput = true;
+    }
+
     public static Config load() {
         try (FileReader reader = new FileReader(FabricLoader.getInstance().getConfigDir().resolve(FILENAME).toFile())) {
             Config config = GSON.fromJson(reader, Config.class);
@@ -272,6 +278,9 @@ public class Config {
             }
             if (config.splashes == null) {
                 config.splashes = new SplashesConfig();
+            }
+            if (config.automaticCaptcha == null) {
+                config.automaticCaptcha = new AutomaticCaptchaConfig();
             }
 
             return config;

@@ -43,4 +43,18 @@ public class MouseMixin {
         }
     }
 
+    @Inject(method = "updateMouse", at = @At("HEAD"), cancellable = true)
+    private void onUpdateMouseInject(CallbackInfo ci) {
+        if (despairscent.skyblockm.tweaks.CaptchaDetector.shouldBlockPlayerInput()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "onMouseButton", at = @At("HEAD"), cancellable = true)
+    private void onMouseButtonInject(long window, int button, int action, int mods, CallbackInfo ci) {
+        if (despairscent.skyblockm.tweaks.CaptchaDetector.shouldBlockPlayerInput()) {
+            ci.cancel();
+        }
+    }
+
 }

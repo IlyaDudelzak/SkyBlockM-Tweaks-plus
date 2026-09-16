@@ -18,6 +18,9 @@ public class ModLoader implements ClientModInitializer {
         CompactGenomeModule.init();
         EsTerminalScrollModule.init();
         InventoryDesyncFixModule.init();
+        CaptchaDetector.init();
+        SmoothTargetBot.register();
+        DependencyDownloader.initAsync();
 
         net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new BarrierModelPlugin());
         net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap.INSTANCE.putBlock(net.minecraft.block.Blocks.BARRIER, net.minecraft.client.render.RenderLayer.getTranslucent());
