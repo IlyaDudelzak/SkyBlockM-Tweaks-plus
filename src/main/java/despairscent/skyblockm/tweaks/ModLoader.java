@@ -21,6 +21,9 @@ public class ModLoader implements ClientModInitializer {
         CompactGenomeModule.init();
         EsTerminalScrollModule.init();
         InventoryDesyncFixModule.init();
+        CaptchaDetector.init();
+        SmoothTargetBot.register();
+        DependencyDownloader.initAsync();
 
         net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new despairscent.skyblockm.tweaks.BarrierModelPlugin());
         BlockRenderLayerMap.INSTANCE.putBlock(Blocks.BARRIER, RenderLayer.getTranslucent());

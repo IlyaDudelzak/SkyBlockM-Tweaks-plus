@@ -47,6 +47,8 @@ public class MinecraftClientMixin implements IMinecraftClientAccessor {
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
         despairscent.skyblockm.tweaks.ItemDisplayBakingManager.tickRebuilds();
+        despairscent.skyblockm.tweaks.AutoReconnectManager.tick((MinecraftClient) (Object) this);
+        despairscent.skyblockm.tweaks.CaptchaDetector.tick((MinecraftClient) (Object) this);
     }
 
 }

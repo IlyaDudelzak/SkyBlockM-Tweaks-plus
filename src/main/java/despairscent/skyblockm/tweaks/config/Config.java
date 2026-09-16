@@ -72,6 +72,9 @@ public class Config {
 
     public SplashesConfig splashes = new SplashesConfig();
 
+    public AutoReconnectConfig autoReconnect = new AutoReconnectConfig();
+    public AutomaticCaptchaConfig automaticCaptcha = new AutomaticCaptchaConfig();
+
     public boolean firstLaunchServersAdded = false;
 
     @Deprecated
@@ -223,9 +226,19 @@ public class Config {
         public double scalePlus = 1.0;
     }
 
+    public static class AutoReconnectConfig {
+        public boolean enabled = true;
+        public int delaySeconds = 60;
+    }
+
     public static class SplashesConfig {
         public boolean enabled = true;
         public boolean onlyCustomSplashes = false;
+    }
+
+    public static class AutomaticCaptchaConfig {
+        public boolean enabled = true;
+        public boolean disablePlayerInput = true;
     }
 
     public static Config load() {
@@ -272,6 +285,12 @@ public class Config {
             }
             if (config.splashes == null) {
                 config.splashes = new SplashesConfig();
+            }
+            if (config.autoReconnect == null) {
+                config.autoReconnect = new AutoReconnectConfig();
+            }
+            if (config.automaticCaptcha == null) {
+                config.automaticCaptcha = new AutomaticCaptchaConfig();
             }
 
             return config;
