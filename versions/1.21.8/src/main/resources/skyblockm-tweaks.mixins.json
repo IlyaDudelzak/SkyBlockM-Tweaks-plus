@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "despairscent.skyblockm.tweaks.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [],
   "client": [
     "AnvilScreenMixin",
@@ -26,6 +26,8 @@
     "ResourcePackProfileMixin",
     "SplashTextResourceSupplierMixin",
     "FontStorageMixin",
+    "ItemRenderStateMixin",
+    "LayerRenderStateMixin",
     "DisconnectedScreenMixin",
     "KeyboardInputMixin"
   ],

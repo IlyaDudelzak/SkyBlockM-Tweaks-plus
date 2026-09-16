@@ -57,7 +57,11 @@ public abstract class AnvilScreenMixin implements IAnvilScreenMixin {
         if (this.nameFieldPrevious != null) {
             if (this.fixInputLagScreenChainMode) {
                 this.nameField.setText(this.nameFieldPrevious.getText());
+                //? if >=1.20.2 {
                 this.nameField.setCursor(this.nameFieldPrevious.getCursor(), false);
+                //?} else {
+                /*this.nameField.setCursor(this.nameFieldPrevious.getCursor());
+                *///?}
                 this.nameFieldInherited = true;
             }
             this.nameFieldPrevious = null;

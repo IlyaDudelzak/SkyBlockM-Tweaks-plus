@@ -1,7 +1,13 @@
 package despairscent.skyblockm.tweaks;
 
+//? if >=1.20.5 {
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
+//?} else {
+/*import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+*///?}
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -33,6 +39,7 @@ public class StoredCountUtils {
         if (stack == null || stack.isEmpty()) {
             return false;
         }
+        //? if >=1.20.5 {
         LoreComponent lore = stack.get(DataComponentTypes.LORE);
         if (lore == null) {
             return false;
@@ -46,12 +53,29 @@ public class StoredCountUtils {
             }
         }
         return false;
+        //?} else {
+        /*NbtCompound display = stack.getSubNbt(ItemStack.DISPLAY_KEY);
+        if (display == null || !display.contains(ItemStack.LORE_KEY, NbtElement.LIST_TYPE)) {
+            return false;
+        }
+        NbtList loreList = display.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        for (int i = 0; i < loreList.size(); i++) {
+            String str = loreList.getString(i).toLowerCase(java.util.Locale.ROOT);
+            String compact = str.replace(" ", "");
+            if ((compact.contains("shift+пкм") || compact.contains("shift-пкм") || compact.contains("shift+rmb") || compact.contains("shift-rmb"))
+                    && (str.contains("создать") || str.contains("створити") || str.contains("craft"))) {
+                return true;
+            }
+        }
+        return false;
+        *///?}
     }
 
     public static boolean isCraftable(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return false;
         }
+        //? if >=1.20.5 {
         LoreComponent lore = stack.get(DataComponentTypes.LORE);
         if (lore == null) {
             return false;
@@ -63,9 +87,24 @@ public class StoredCountUtils {
             }
         }
         return false;
+        //?} else {
+        /*NbtCompound display = stack.getSubNbt(ItemStack.DISPLAY_KEY);
+        if (display == null || !display.contains(ItemStack.LORE_KEY, NbtElement.LIST_TYPE)) {
+            return false;
+        }
+        NbtList loreList = display.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        for (int i = 0; i < loreList.size(); i++) {
+            String str = loreList.getString(i).toLowerCase(java.util.Locale.ROOT);
+            if (str.contains("создать предмет") || str.contains("створити предмет") || str.contains("craft item") || (str.contains("создать") && str.contains("лкм"))) {
+                return true;
+            }
+        }
+        return false;
+        *///?}
     }
 
     public static Long getStoredCount(ItemStack stack) {
+        //? if >=1.20.5 {
         LoreComponent lore = stack.get(DataComponentTypes.LORE);
         if (lore == null) {
             return null;
@@ -78,6 +117,24 @@ public class StoredCountUtils {
             }
         }
         return null;
+        //?} else {
+        /*if (stack == null) {
+            return null;
+        }
+        NbtCompound display = stack.getSubNbt(ItemStack.DISPLAY_KEY);
+        if (display == null || !display.contains(ItemStack.LORE_KEY, NbtElement.LIST_TYPE)) {
+            return null;
+        }
+        NbtList loreList = display.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        for (int i = 0; i < loreList.size(); i++) {
+            String json = loreList.getString(i);
+            int idx = json.indexOf("Хранится:");
+            if (idx != -1) {
+                return parseCount(json.substring(idx + "Хранится:".length()));
+            }
+        }
+        return null;
+        *///?}
     }
 
     public static Long parseCount(String str) {
@@ -137,7 +194,12 @@ public class StoredCountUtils {
     }
 
     private static boolean containsInterfacesFont(Text text) {
+        //? if >=1.21.11 {
+        /*net.minecraft.text.StyleSpriteSource fontSource = text.getStyle().getFont();
+        net.minecraft.util.Identifier font = fontSource instanceof net.minecraft.text.StyleSpriteSource.Font fontImpl ? fontImpl.id() : null;
+        *///?} else {
         net.minecraft.util.Identifier font = text.getStyle().getFont();
+        //?}
         if (font != null && "electric_storage".equals(font.getNamespace()) && "interfaces".equals(font.getPath())) {
             return true;
         }

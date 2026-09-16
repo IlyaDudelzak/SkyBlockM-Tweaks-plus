@@ -3,7 +3,11 @@ package despairscent.skyblockm.tweaks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.Screen;
+//? if >=1.20.2 {
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
+//?} else {
+/*import net.minecraft.client.gui.screen.ConnectScreen;
+*///?}
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
@@ -103,7 +107,11 @@ public class AutoReconnectManager {
         cancel();
         ServerInfo server = getLastConnectedServer();
         if (server != null && client != null) {
+            //? if >=1.20.5 {
             ConnectScreen.connect(parent, client, ServerAddress.parse(server.address), server, false, null);
+            //?} else {
+            /*ConnectScreen.connect(parent, client, ServerAddress.parse(server.address), server, false);
+            *///?}
         }
     }
 

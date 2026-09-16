@@ -12,7 +12,11 @@ repositories {
 }
 
 loom {
-    accessWidenerPath = rootProject.file("src/main/resources/skyblockm-tweaks.accesswidener")
+    if (file("src/main/resources/skyblockm-tweaks.accesswidener").exists()) {
+        accessWidenerPath = file("src/main/resources/skyblockm-tweaks.accesswidener")
+    } else {
+        accessWidenerPath = rootProject.file("src/main/resources/skyblockm-tweaks.accesswidener")
+    }
 	runs {
 		client {
 			programArgs "--username", "tester2"
@@ -47,6 +51,12 @@ remapJar {
 processResources {
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version
+		filter { String line ->
+			if (line.contains('"minecraft": "*"') && project.hasProperty("minecraft_dependency")) {
+				return line.replace('"minecraft": "*"', '"minecraft": ' + project.minecraft_dependency)
+			}
+			return line
+		}
 	}
 }
 

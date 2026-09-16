@@ -4,18 +4,20 @@
   "version": "${version}",
 
   "name": "SkyBlockM Tweaks+",
-  "icon": "assets/skyblockm-tweaks/icon.png",
-  "description": "Улучшает игровой опыт на сервере SkyBlockM",
-  "authors": ["DespairScent", "ILYADNEPR"],
+  "description": "Fork SkyBlockM Tweaks (DespairScent) with AI Captcha Solver & performance fixes",
+  "authors": [
+    "Ilya Dudelzak (Fork & AI Solver)",
+    "DespairScent (Original Author)"
+  ],
   "contact": {
     "homepage": "https://github.com/IlyaDudelzak/SkyBlockM-Tweaks-plus",
-    "sources": "https://github.com/IlyaDudelzak/SkyBlockM-Tweaks-plus",
-    "issues": "https://github.com/IlyaDudelzak/SkyBlockM-Tweaks-plus/issues"
+    "sources": "https://github.com/IlyaDudelzak/SkyBlockM-Tweaks-plus"
   },
+
   "license": "MIT",
+  "icon": "assets/skyblockm-tweaks/icon.png",
 
   "environment": "client",
-
   "entrypoints": {
     "client": [
       "despairscent.skyblockm.tweaks.ModLoader"
@@ -24,13 +26,14 @@
       "despairscent.skyblockm.tweaks.config.ModMenuImplementation"
     ]
   },
-
+  "mixins": [
+    "skyblockm-tweaks.mixins.json"
+  ],
   "accessWidener": "skyblockm-tweaks.accesswidener",
-  "mixins": ["skyblockm-tweaks.mixins.json"],
 
   "depends": {
     "fabricloader": ">=0.16.0",
-    "minecraft": ["1.21", "1.21.1"],
+    "minecraft": "*",
     "fabric-api": "*"
   },
   "recommends": {

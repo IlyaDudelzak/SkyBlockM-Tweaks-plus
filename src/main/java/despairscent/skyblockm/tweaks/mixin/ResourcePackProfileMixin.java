@@ -22,10 +22,19 @@ public abstract class ResourcePackProfileMixin {
         }
     }
 
+    //? if >=1.20.5 {
     @Inject(method = "isRequired", at = @At("HEAD"), cancellable = true)
     public void unrequireServerPacks(CallbackInfoReturnable<Boolean> cir) {
         if (CONFIG != null && CONFIG.serverPackUnlocker != null && CONFIG.serverPackUnlocker.enabled && this.getSource() == ResourcePackSource.SERVER) {
             cir.setReturnValue(false);
         }
     }
+    //?} else {
+    /*@Inject(method = "isAlwaysEnabled", at = @At("HEAD"), cancellable = true)
+    public void unrequireServerPacks(CallbackInfoReturnable<Boolean> cir) {
+        if (CONFIG != null && CONFIG.serverPackUnlocker != null && CONFIG.serverPackUnlocker.enabled && this.getSource() == ResourcePackSource.SERVER) {
+            cir.setReturnValue(false);
+        }
+    }
+    *///?}
 }

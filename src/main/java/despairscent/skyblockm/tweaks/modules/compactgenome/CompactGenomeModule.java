@@ -43,10 +43,17 @@ public class CompactGenomeModule {
     }
 
     public static void init() {
-        ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> {
-            if (!CONFIG.compactGenome.enabled) {
-                return;
-            }
+        //? if >=1.20.5 {
+        ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> processTooltip(lines));
+        //?} else {
+        /*ItemTooltipCallback.EVENT.register((stack, context, lines) -> processTooltip(lines));
+        *///?}
+    }
+
+    private static void processTooltip(List<Text> lines) {
+        if (!CONFIG.compactGenome.enabled) {
+            return;
+        }
 
             int start = 0;
             for (; start < lines.size(); start++) {
@@ -83,7 +90,6 @@ public class CompactGenomeModule {
             lines.subList(start, end).clear();
 
             lines.addAll(start, generateLines(genomeSet, FORMAT));
-        });
     }
 
     private static <G> boolean parseLines(GenomeSet genomeSet, GenomeParser<G> parser, List<Text> lines, int i) {

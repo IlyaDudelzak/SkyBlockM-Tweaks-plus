@@ -56,6 +56,16 @@ public abstract class DisconnectedScreenMixin extends Screen {
             int delaySec = Math.max(1, CONFIG.autoReconnect.delaySeconds);
 
             // Текст обратного отсчета над кнопками на всю ширину экрана (центрированный)
+            //? if >=1.21.11 {
+            /*TextWidget countdownWidget = new TextWidget(
+                    0,
+                    btnY - 16,
+                    this.width,
+                    12,
+                    AutoReconnectManager.getReconnectMessage(delaySec),
+                    this.textRenderer
+            );
+            *///?} else {
             TextWidget countdownWidget = new TextWidget(
                     0,
                     btnY - 16,
@@ -64,6 +74,7 @@ public abstract class DisconnectedScreenMixin extends Screen {
                     AutoReconnectManager.getReconnectMessage(delaySec),
                     this.textRenderer
             ).alignCenter();
+            //?}
 
             // Кнопка немедленного переподключения
             ButtonWidget reconnectButton = ButtonWidget.builder(Text.literal("Переподключение"), button -> {

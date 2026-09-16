@@ -51,7 +51,11 @@ public class SplashTextResourceSupplierMixin {
             if (pickCustom || (this.splashTexts != null && this.splashTexts.isEmpty())) {
                 String splash = SplashManager.getRandomSplash();
                 if (splash != null && !splash.isEmpty()) {
+                    //? if >=1.21.11 {
+                    /*cir.setReturnValue(new SplashTextRenderer(net.minecraft.text.Text.literal(splash)));
+                    *///?} else {
                     cir.setReturnValue(new SplashTextRenderer(splash));
+                    //?}
                 }
             }
         }

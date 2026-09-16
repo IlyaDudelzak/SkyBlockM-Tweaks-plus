@@ -2,8 +2,14 @@ package despairscent.skyblockm.tweaks.mixin;
 
 import despairscent.skyblockm.tweaks.ModUtils;
 import net.minecraft.client.gui.hud.InGameHud;
+//? if >=1.20.5 {
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
+//?} else {
+/*import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+*///?}
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -55,6 +61,7 @@ public class InGameHudMixin {
                 return itemStack.getName();
             }
 
+            //? if >=1.20.5 {
             LoreComponent lore = itemStack.get(DataComponentTypes.LORE);
             if (lore == null || lore.styledLines().size() != 4) {
                 return itemStack.getName();
@@ -67,6 +74,43 @@ public class InGameHudMixin {
                         .append(Text.literal(">").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)));
             } catch (Exception e) {
             }
+            //?} elif =1.20.4 {
+            /*NbtCompound nbtDisplay = itemStack.getSubNbt(ItemStack.DISPLAY_KEY);
+            if (nbtDisplay == null) {
+                return itemStack.getName();
+            }
+            NbtList lore = nbtDisplay.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+            if (lore.size() != 3) {
+                return itemStack.getName();
+            }
+
+            try {
+                Text itemStr = Text.Serialization.fromJson(lore.getString(0));
+                return Text.empty().append(itemStack.getName())
+                        .append(Text.literal(" <").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)))
+                        .append(itemStr.getSiblings().get(1))
+                        .append(Text.literal(">").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)));
+            } catch (Exception e) {
+            }
+            *///?} else {
+            /*NbtCompound nbtDisplay = itemStack.getSubNbt(ItemStack.DISPLAY_KEY);
+            if (nbtDisplay == null) {
+                return itemStack.getName();
+            }
+            NbtList lore = nbtDisplay.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+            if (lore.size() != 3) {
+                return itemStack.getName();
+            }
+
+            try {
+                Text itemStr = Text.Serializer.fromJson(lore.getString(0));
+                return Text.empty().append(itemStack.getName())
+                        .append(Text.literal(" <").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)))
+                        .append(itemStr.getSiblings().get(1))
+                        .append(Text.literal(">").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)));
+            } catch (Exception e) {
+            }
+            *///?}
         }
 
         return itemStack.getName();
@@ -74,6 +118,7 @@ public class InGameHudMixin {
 
     @Unique
     private static Text getExtendedNameForStorage(ItemStack itemStack) {
+        //? if >=1.20.5 {
         LoreComponent lore = itemStack.get(DataComponentTypes.LORE);
         if (lore == null || lore.styledLines().size() != 4) {
             return itemStack.getName();
@@ -86,6 +131,43 @@ public class InGameHudMixin {
                     .append(Text.literal(">").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)));
         } catch (Exception e) {
         }
+        //?} elif =1.20.4 {
+        /*NbtCompound nbtDisplay = itemStack.getSubNbt(ItemStack.DISPLAY_KEY);
+        if (nbtDisplay == null) {
+            return itemStack.getName();
+        }
+        NbtList lore = nbtDisplay.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        if (lore.size() != 4) {
+            return itemStack.getName();
+        }
+
+        try {
+            Text itemStr = Text.Serialization.fromJson(lore.getString(3));
+            return Text.empty().append(itemStack.getName())
+                    .append(Text.literal(" <").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)))
+                    .append(itemStr)
+                    .append(Text.literal(">").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)));
+        } catch (Exception e) {
+        }
+        *///?} else {
+        /*NbtCompound nbtDisplay = itemStack.getSubNbt(ItemStack.DISPLAY_KEY);
+        if (nbtDisplay == null) {
+            return itemStack.getName();
+        }
+        NbtList lore = nbtDisplay.getList(ItemStack.LORE_KEY, NbtElement.STRING_TYPE);
+        if (lore.size() != 4) {
+            return itemStack.getName();
+        }
+
+        try {
+            Text itemStr = Text.Serializer.fromJson(lore.getString(3));
+            return Text.empty().append(itemStack.getName())
+                    .append(Text.literal(" <").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)))
+                    .append(itemStr)
+                    .append(Text.literal(">").styled(style -> style.withColor(Formatting.WHITE).withItalic(false)));
+        } catch (Exception e) {
+        }
+        *///?}
 
         return itemStack.getName();
     }

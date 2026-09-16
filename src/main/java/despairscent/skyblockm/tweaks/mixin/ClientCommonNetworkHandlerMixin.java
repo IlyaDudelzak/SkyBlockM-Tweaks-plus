@@ -1,5 +1,6 @@
 package despairscent.skyblockm.tweaks.mixin;
 
+//? if >=1.20.2 {
 import despairscent.skyblockm.tweaks.ModUtils;
 import despairscent.skyblockm.tweaks.SkyBlockPackManager;
 import net.minecraft.client.network.ClientCommonNetworkHandler;
@@ -44,3 +45,4 @@ public abstract class ClientCommonNetworkHandlerMixin {
         SkyBlockPackManager.onServerPackSend(packet, serverAddress);
     }
 }
+//?}

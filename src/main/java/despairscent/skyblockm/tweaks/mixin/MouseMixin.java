@@ -43,18 +43,36 @@ public class MouseMixin {
         }
     }
 
+    //? if >=1.20.2 {
     @Inject(method = "updateMouse", at = @At("HEAD"), cancellable = true)
     private void onUpdateMouseInject(double timeDelta, CallbackInfo ci) {
         if (despairscent.skyblockm.tweaks.CaptchaDetector.shouldBlockPlayerInput()) {
             ci.cancel();
         }
     }
+    //?} else {
+    /*@Inject(method = "updateMouse", at = @At("HEAD"), cancellable = true)
+    private void onUpdateMouseInject(CallbackInfo ci) {
+        if (despairscent.skyblockm.tweaks.CaptchaDetector.shouldBlockPlayerInput()) {
+            ci.cancel();
+        }
+    }
+    *///?}
 
+    //? if >=1.21.11 {
+    /*@Inject(method = "onMouseButton", at = @At("HEAD"), cancellable = true)
+    private void onMouseButtonInject(long window, net.minecraft.client.input.MouseInput input, int action, CallbackInfo ci) {
+        if (despairscent.skyblockm.tweaks.CaptchaDetector.shouldBlockPlayerInput()) {
+            ci.cancel();
+        }
+    }
+    *///?} else {
     @Inject(method = "onMouseButton", at = @At("HEAD"), cancellable = true)
     private void onMouseButtonInject(long window, int button, int action, int mods, CallbackInfo ci) {
         if (despairscent.skyblockm.tweaks.CaptchaDetector.shouldBlockPlayerInput()) {
             ci.cancel();
         }
     }
+    //?}
 
 }

@@ -4,7 +4,9 @@ import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtSession;
 import net.minecraft.client.MinecraftClient;
+//? if >=1.20.5 {
 import net.minecraft.component.type.MapIdComponent;
+//?}
 import net.minecraft.item.map.MapState;
 
 import java.io.InputStream;
@@ -111,9 +113,13 @@ public class CaptchaClassifier {
      */
     public static ClassificationResult classifyWithConfidence(net.minecraft.item.ItemStack stack, net.minecraft.client.world.ClientWorld world) {
         if (stack == null || stack.isEmpty() || world == null) return null;
+        //? if >=1.20.5 {
         net.minecraft.component.type.MapIdComponent mapId = stack.get(net.minecraft.component.DataComponentTypes.MAP_ID);
         if (mapId == null) return null;
         MapState mapState = world.getMapState(mapId);
+        //?} else {
+        /*MapState mapState = net.minecraft.item.FilledMapItem.getMapState(stack, world);
+        *///?}
         if (mapState == null || !hasLoadedMapColors(mapState.colors)) {
             return null;
         }
@@ -159,7 +165,11 @@ public class CaptchaClassifier {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.world == null) return null;
 
+        //? if >=1.20.5 {
         MapState mapState = client.world.getMapState(new MapIdComponent(mapId));
+        //?} else {
+        /*MapState mapState = client.world.getMapState("map_" + mapId);
+        *///?}
         if (mapState == null || mapState.colors == null || mapState.colors.length == 0) {
             return null;
         }

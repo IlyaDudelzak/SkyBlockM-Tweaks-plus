@@ -8,7 +8,6 @@
     "BarrierBlockMixin",
     "BarrierBlockRenderTypeMixin",
     "ChatHudMixin",
-    "ClientCommonNetworkHandlerMixin",
     "ClientPlayNetworkHandlerMixin",
     "ClientPlayerEntityMixin",
     "ClientWorldMixin",

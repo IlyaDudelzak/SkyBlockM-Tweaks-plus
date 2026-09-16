@@ -5,11 +5,19 @@ import despairscent.skyblockm.tweaks.config.Config;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
+//? if >=1.20.5 {
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.CustomModelDataComponent;
+//?} else {
+/*import net.minecraft.nbt.NbtElement;
+*///?}
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
+//? if >=1.20.2 {
 import net.minecraft.text.PlainTextContent;
+//?} else {
+/*import net.minecraft.text.LiteralTextContent;
+*///?}
 import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +49,7 @@ public class ModUtils {
         // "recipeviewer:interfaces" отклоняется от нормы
         for (int i = 0; i < siblings.size() && i < 2; i++) {
             Text child = siblings.get(i);
+            //? if >=1.20.2 {
             if (child.getContent() instanceof PlainTextContent plainText && child.getStyle().getFont().toString().equals(namespace)) {
                 if (codes.length == 0) {
                     return true;
@@ -52,16 +61,43 @@ public class ModUtils {
                     }
                 }
             }
+            //?} else {
+            /*if (child.getContent() instanceof LiteralTextContent plainText && child.getStyle().getFont().toString().equals(namespace)) {
+                if (codes.length == 0) {
+                    return true;
+                }
+                String codeScreen = plainText.string();
+                for (String code : codes) {
+                    if (codeScreen.equals(code)) {
+                        return true;
+                    }
+                }
+            }
+            *///?}
         }
         return false;
     }
 
     public static int getCustomModelId(ItemStack itemStack) {
+        //? if >=1.21.8 {
+        /*CustomModelDataComponent valueHolder;
+        if ((valueHolder = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA)) != null) {
+            Float f = valueHolder.getFloat(0);
+            return f != null ? Math.round(f) : -1;
+        }
+        return -1;
+        *///?} elif >=1.20.5 {
         CustomModelDataComponent valueHolder;
         if ((valueHolder = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA)) != null) {
             return valueHolder.value();
         }
         return -1;
+        //?} else {
+        /*if (itemStack.hasNbt() && itemStack.getNbt().contains("CustomModelData", NbtElement.NUMBER_TYPE)) {
+            return itemStack.getNbt().getInt("CustomModelData");
+        }
+        return -1;
+        *///?}
     }
 
     public static String getLiteralNested(Text text, int... path) {
@@ -71,12 +107,35 @@ public class ModUtils {
             }
             text = text.getSiblings().get(k);
         }
+        //? if >=1.20.2 {
         if (text.getContent() instanceof PlainTextContent content) {
             return content.string();
         }
+        //?} else {
+        /*if (text.getContent() instanceof LiteralTextContent content) {
+            return content.string();
+        }
+        *///?}
         return null;
     }
 
+    //? if >=1.21.11 {
+    /*public static boolean isKeyPressed(int key) {
+        MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
+        return key != Config.KEY_UNDEFINED && client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow(), key);
+    }
+
+    public static boolean isKeyPressedOrUndefined(int key) {
+        MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
+        return key == Config.KEY_UNDEFINED || (client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow(), key));
+    }
+
+    public static boolean hasShiftDown() {
+        MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
+        if (client == null || client.getWindow() == null) return false;
+        return InputUtil.isKeyPressed(client.getWindow(), 340) || InputUtil.isKeyPressed(client.getWindow(), 344);
+    }
+    *///?} else {
     public static boolean isKeyPressed(int key) {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
         return key != Config.KEY_UNDEFINED && client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key);
@@ -86,6 +145,7 @@ public class ModUtils {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
         return key == Config.KEY_UNDEFINED || (client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key));
     }
+    //?}
 
     public static <K, V> Map<K, V> generateConvertMap(V[] values, Function<V, K> keyGetter) {
         var builder = ImmutableMap.<K, V>builder();

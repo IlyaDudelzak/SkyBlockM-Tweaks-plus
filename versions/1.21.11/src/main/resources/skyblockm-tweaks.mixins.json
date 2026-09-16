@@ -15,7 +15,6 @@
     "DisplayEntityMixin",
     "DrawContextMixin",
     "EntityMixin",
-    "GameRendererMixin",
     "HandledScreenMixin",
     "InGameHudMixin",
     "ItemDisplayEntityMixin",
@@ -26,6 +25,8 @@
     "ResourcePackProfileMixin",
     "SplashTextResourceSupplierMixin",
     "FontStorageMixin",
+    "ItemRenderStateMixin",
+    "LayerRenderStateMixin",
     "DisconnectedScreenMixin",
     "KeyboardInputMixin"
   ],
