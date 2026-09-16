@@ -276,18 +276,20 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.automaticCaptcha"), CONFIG.automaticCaptcha.enabled)
-                .setTooltip(i18n("config.automaticCaptcha.tooltip"))
-                .setDefaultValue(Config.DEFAULT.automaticCaptcha.enabled)
-                .setSaveConsumer(value -> CONFIG.automaticCaptcha.enabled = value)
-                .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startBooleanToggle(i18n("config.automaticCaptcha.disablePlayerInput"), CONFIG.automaticCaptcha.disablePlayerInput)
-                        .setTooltip(i18n("config.automaticCaptcha.disablePlayerInput.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.automaticCaptcha.disablePlayerInput)
-                        .setSaveConsumer(value -> CONFIG.automaticCaptcha.disablePlayerInput = value)
-                        .build()
-        )).build());
+        if (Config.isCaptchaUnlocked()) {
+            base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.automaticCaptcha"), CONFIG.automaticCaptcha.enabled)
+                    .setTooltip(i18n("config.automaticCaptcha.tooltip"))
+                    .setDefaultValue(Config.DEFAULT.automaticCaptcha.enabled)
+                    .setSaveConsumer(value -> CONFIG.automaticCaptcha.enabled = value)
+                    .build());
+            base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                    builder.entryBuilder().startBooleanToggle(i18n("config.automaticCaptcha.disablePlayerInput"), CONFIG.automaticCaptcha.disablePlayerInput)
+                            .setTooltip(i18n("config.automaticCaptcha.disablePlayerInput.tooltip"))
+                            .setDefaultValue(Config.DEFAULT.automaticCaptcha.disablePlayerInput)
+                            .setSaveConsumer(value -> CONFIG.automaticCaptcha.disablePlayerInput = value)
+                            .build()
+            )).build());
+        }
 
         builder.setSavingRunnable(() -> CONFIG.save());
 
