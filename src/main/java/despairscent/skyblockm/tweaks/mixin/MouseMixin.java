@@ -51,7 +51,7 @@ public class MouseMixin {
     }
 
     @Inject(method = "onMouseButton", at = @At("HEAD"), cancellable = true)
-    private void onMouseButtonInject(long window, int button, int action, int mods, CallbackInfo ci) {
+    private void onMouseButtonInject(long window, net.minecraft.client.input.MouseInput input, int action, CallbackInfo ci) {
         if (despairscent.skyblockm.tweaks.CaptchaDetector.shouldBlockPlayerInput()) {
             ci.cancel();
         }
