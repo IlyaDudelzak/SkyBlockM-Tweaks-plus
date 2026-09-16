@@ -237,8 +237,20 @@ public class Config {
     }
 
     public static class AutomaticCaptchaConfig {
-        public boolean enabled = true;
+        public boolean enabled = false;
         public boolean disablePlayerInput = true;
+    }
+
+    public static boolean isCaptchaUnlocked() {
+        String prop = System.getProperty("skyblockm.captcha");
+        if (prop != null && (prop.isEmpty() || "true".equalsIgnoreCase(prop) || "1".equals(prop))) return true;
+        String devProp = System.getProperty("skyblockm.dev");
+        if (devProp != null && (devProp.isEmpty() || "true".equalsIgnoreCase(devProp) || "1".equals(devProp))) return true;
+        String captchaProp = System.getProperty("captcha");
+        if (captchaProp != null && (captchaProp.isEmpty() || "true".equalsIgnoreCase(captchaProp) || "1".equals(captchaProp))) return true;
+        String env = System.getenv("SKYBLOCKM_CAPTCHA");
+        if (env != null && ("true".equalsIgnoreCase(env) || "1".equals(env))) return true;
+        return false;
     }
 
     public static Config load() {
