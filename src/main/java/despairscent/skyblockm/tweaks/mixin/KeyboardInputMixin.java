@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class KeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void onTickInject(boolean slowDown, float slowDownFactor, CallbackInfo ci) {
+    private void onTickInject(CallbackInfo ci) {
         if (CaptchaDetector.shouldBlockPlayerInput()) {
             this.playerInput = net.minecraft.util.PlayerInput.DEFAULT;
         }
