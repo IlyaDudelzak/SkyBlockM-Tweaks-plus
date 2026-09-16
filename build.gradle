@@ -12,7 +12,7 @@ repositories {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/skyblockm-tweaks.accesswidener")
+    accessWidenerPath = rootProject.file("src/main/resources/skyblockm-tweaks.accesswidener")
 	runs {
 		client {
 			programArgs "--username", "tester2"
@@ -50,12 +50,22 @@ processResources {
 	}
 }
 
+int targetJava = project.minecraft_version.startsWith("1.20") ? 17 : 21
+
 tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
-	it.options.release = 21
+	it.options.release = targetJava
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.toVersion(targetJava)
+	targetCompatibility = JavaVersion.toVersion(targetJava)
+}
+
+if (project == rootProject) {
+    tasks.register("chiseledBuild") {
+        group = "build"
+        description = "Builds all Minecraft versions configured in Stonecutter."
+        dependsOn subprojects.collect { it.tasks.named("build") }
+    }
 }
