@@ -1,4 +1,5 @@
 package despairscent.skyblockm.tweaks.config;
+import despairscent.skyblockm.tweaks.ModUtils;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;

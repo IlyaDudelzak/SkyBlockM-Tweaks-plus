@@ -1,9 +1,16 @@
 package despairscent.skyblockm.tweaks;
 
+import despairscent.skyblockm.tweaks.features.captcha.CaptchaDetector;
+import despairscent.skyblockm.tweaks.features.captcha.DependencyDownloader;
+import despairscent.skyblockm.tweaks.features.captcha.SmoothTargetBot;
+import despairscent.skyblockm.tweaks.features.itemdisplay.BarrierModelPlugin;
+import despairscent.skyblockm.tweaks.features.itemdisplay.ItemDisplayBakingManager;
+import despairscent.skyblockm.tweaks.features.resourcepack.SkyBlockPackManager;
+
 import despairscent.skyblockm.tweaks.config.Config;
-import despairscent.skyblockm.tweaks.modules.compactgenome.CompactGenomeModule;
-import despairscent.skyblockm.tweaks.modules.esterminalscroll.EsTerminalScrollModule;
-import despairscent.skyblockm.tweaks.modules.inventorydesyncfix.InventoryDesyncFixModule;
+import despairscent.skyblockm.tweaks.features.compactgenome.CompactGenomeModule;
+import despairscent.skyblockm.tweaks.features.esterminalscroll.EsTerminalScrollModule;
+import despairscent.skyblockm.tweaks.features.inventorydesyncfix.InventoryDesyncFixModule;
 import net.fabricmc.api.ClientModInitializer;
 //? if <1.21.8 {
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -27,7 +34,7 @@ public class ModLoader implements ClientModInitializer {
         SmoothTargetBot.register();
         DependencyDownloader.initAsync();
 
-        net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new despairscent.skyblockm.tweaks.BarrierModelPlugin());
+        net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new despairscent.skyblockm.tweaks.features.itemdisplay.BarrierModelPlugin());
         //? if <1.21.8 {
         BlockRenderLayerMap.INSTANCE.putBlock(Blocks.BARRIER, RenderLayer.getTranslucent());
         //?}

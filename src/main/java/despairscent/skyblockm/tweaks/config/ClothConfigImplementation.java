@@ -1,4 +1,5 @@
 package despairscent.skyblockm.tweaks.config;
+import despairscent.skyblockm.tweaks.ModUtils;
 
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
