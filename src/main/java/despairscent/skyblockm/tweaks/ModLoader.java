@@ -5,7 +5,7 @@ import despairscent.skyblockm.tweaks.features.captcha.DependencyDownloader;
 import despairscent.skyblockm.tweaks.features.captcha.SmoothTargetBot;
 import despairscent.skyblockm.tweaks.features.itemdisplay.BarrierModelPlugin;
 import despairscent.skyblockm.tweaks.features.itemdisplay.ItemDisplayBakingManager;
-import despairscent.skyblockm.tweaks.features.resourcepack.SkyBlockPackManager;
+import despairscent.skyblockm.tweaks.features.nuclearcalculator.GameMenuCalculatorButton;import despairscent.skyblockm.tweaks.features.nuclearcalculator.NuclearReactorDetectorModule;import despairscent.skyblockm.tweaks.features.resourcepack.SkyBlockPackManager;
 
 import despairscent.skyblockm.tweaks.config.Config;
 import despairscent.skyblockm.tweaks.features.compactgenome.CompactGenomeModule;
@@ -13,9 +13,9 @@ import despairscent.skyblockm.tweaks.features.esterminalscroll.EsTerminalScrollM
 import despairscent.skyblockm.tweaks.features.inventorydesyncfix.InventoryDesyncFixModule;
 import net.fabricmc.api.ClientModInitializer;
 //? if <1.21.8 {
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+/*import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.minecraft.client.render.RenderLayer;
-//?}
+*///?}
 import net.minecraft.block.Blocks;
 
 import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
@@ -33,11 +33,13 @@ public class ModLoader implements ClientModInitializer {
         CaptchaDetector.init();
         SmoothTargetBot.register();
         DependencyDownloader.initAsync();
+        GameMenuCalculatorButton.init();
+        NuclearReactorDetectorModule.init();
 
         net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new despairscent.skyblockm.tweaks.features.itemdisplay.BarrierModelPlugin());
         //? if <1.21.8 {
-        BlockRenderLayerMap.INSTANCE.putBlock(Blocks.BARRIER, RenderLayer.getTranslucent());
-        //?}
+        /*BlockRenderLayerMap.INSTANCE.putBlock(Blocks.BARRIER, RenderLayer.getTranslucent());
+        *///?}
 
         net.fabricmc.fabric.api.resource.ResourceManagerHelper.get(net.minecraft.resource.ResourceType.CLIENT_RESOURCES).registerReloadListener(
             new net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener() {

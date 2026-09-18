@@ -2,8 +2,8 @@ package despairscent.skyblockm.tweaks.features.resourcepack;
 import despairscent.skyblockm.tweaks.ModUtils;
 
 //? if <1.20.2 {
-/*
-import net.minecraft.client.MinecraftClient;
+
+/*import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
 
 import java.io.InputStream;

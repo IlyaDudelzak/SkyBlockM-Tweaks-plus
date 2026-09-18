@@ -4,7 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 //? if >=1.21.8 {
-/*import net.minecraft.client.render.item.ItemRenderState;
+import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Box;
@@ -38,8 +38,8 @@ public class ModelBoundsCache {
         return new Box(0, 0, 0, 1, 1, 1);
     }
 }
-*///?} else {
-import net.minecraft.client.render.item.ItemRenderer;
+//?} else {
+/*import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.item.ItemStack;
@@ -118,4 +118,4 @@ public class ModelBoundsCache {
         return new Box(0, 0, 0, 1, 1, 1);
     }
 }
-//?}
+*///?}

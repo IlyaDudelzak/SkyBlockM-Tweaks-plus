@@ -49,6 +49,8 @@ remapJar {
 }
 
 processResources {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version
 		filter { String line ->

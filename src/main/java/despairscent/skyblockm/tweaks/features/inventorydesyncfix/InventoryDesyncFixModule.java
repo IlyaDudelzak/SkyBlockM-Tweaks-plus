@@ -22,10 +22,10 @@ public class InventoryDesyncFixModule {
                 fixingInventoryDesync = true;
                 fixingSelectedSlotDesync = false;
                 //? if >=1.21.8 {
-                /*previousSelectedSlot = client.player.getInventory().getSelectedSlot();
-                *///?} else {
-                previousSelectedSlot = client.player.getInventory().selectedSlot;
-                //?}
+                previousSelectedSlot = client.player.getInventory().getSelectedSlot();
+                //?} else {
+                /*previousSelectedSlot = client.player.getInventory().selectedSlot;
+                *///?}
             }
         });
 
@@ -50,10 +50,10 @@ public class InventoryDesyncFixModule {
 
             if (CONFIG.inventoryDesyncFix.selectedSlot) {
                 //? if >=1.21.8 {
-                /*CLIENT.player.getInventory().setSelectedSlot(previousSelectedSlot);
-                *///?} else {
-                CLIENT.player.getInventory().selectedSlot = previousSelectedSlot;
-                //?}
+                CLIENT.player.getInventory().setSelectedSlot(previousSelectedSlot);
+                //?} else {
+                /*CLIENT.player.getInventory().selectedSlot = previousSelectedSlot;
+                *///?}
                 if (client.currentScreen == null) {
                     fixingSelectedSlotDesync = true;
                 }
@@ -76,10 +76,10 @@ public class InventoryDesyncFixModule {
             if (CLIENT.player != null) {
                 CLIENT.interactionManager.syncSelectedSlot(); // Окончательно применяем отправленный сервером слот
                 //? if >=1.21.8 {
-                /*CLIENT.player.getInventory().setSelectedSlot(previousSelectedSlot);
-                *///?} else {
-                CLIENT.player.getInventory().selectedSlot = previousSelectedSlot;
-                //?}
+                CLIENT.player.getInventory().setSelectedSlot(previousSelectedSlot);
+                //?} else {
+                /*CLIENT.player.getInventory().selectedSlot = previousSelectedSlot;
+                *///?}
             }
         }
     }

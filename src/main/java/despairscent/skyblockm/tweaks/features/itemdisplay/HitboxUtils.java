@@ -33,20 +33,20 @@ public class HitboxUtils {
             Box rawBounds = new Box(0, 0, 0, 1, 1, 1);
             if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
                 //? if >=1.21.8 {
-                /*rawBounds = ModelBoundsCache.getBounds(data.itemStack(), data.itemTransform());
-                *///?} else {
-                rawBounds = ModelBoundsCache.getBounds(data.itemStack());
+                rawBounds = ModelBoundsCache.getBounds(data.itemStack(), data.itemTransform());
+                //?} else {
+                /*rawBounds = ModelBoundsCache.getBounds(data.itemStack());
                 
                 net.minecraft.client.render.model.BakedModel itemModel = net.minecraft.client.MinecraftClient.getInstance().getItemRenderer().getModel(data.itemStack(), null, null, 0);
                 if (itemModel != null) {
                     itemModel.getTransformation().getTransformation(data.itemTransform()).apply(false, ms);
                 }
-                //?}
+                *///?}
             }
             
             //? if <1.21.8 {
-            ms.translate(-0.5f, -0.5f, -0.5f);
-            //?}
+            /*ms.translate(-0.5f, -0.5f, -0.5f);
+            *///?}
             Matrix4f matrix = ms.peek().getPositionMatrix();
             
             Vector3f[] corners = new Vector3f[] {

@@ -80,19 +80,19 @@ public class ModUtils {
 
     public static int getCustomModelId(ItemStack itemStack) {
         //? if >=1.21.8 {
-        /*CustomModelDataComponent valueHolder;
+        CustomModelDataComponent valueHolder;
         if ((valueHolder = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA)) != null) {
             Float f = valueHolder.getFloat(0);
             return f != null ? Math.round(f) : -1;
         }
         return -1;
-        *///?} elif >=1.20.5 {
-        CustomModelDataComponent valueHolder;
+        //?} elif >=1.20.5 {
+        /*CustomModelDataComponent valueHolder;
         if ((valueHolder = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA)) != null) {
             return valueHolder.value();
         }
         return -1;
-        //?} else {
+        *///?} else {
         /*if (itemStack.hasNbt() && itemStack.getNbt().contains("CustomModelData", NbtElement.NUMBER_TYPE)) {
             return itemStack.getNbt().getInt("CustomModelData");
         }
@@ -120,7 +120,7 @@ public class ModUtils {
     }
 
     //? if >=1.21.11 {
-    /*public static boolean isKeyPressed(int key) {
+    public static boolean isKeyPressed(int key) {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
         return key != Config.KEY_UNDEFINED && client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow(), key);
     }
@@ -135,8 +135,8 @@ public class ModUtils {
         if (client == null || client.getWindow() == null) return false;
         return InputUtil.isKeyPressed(client.getWindow(), 340) || InputUtil.isKeyPressed(client.getWindow(), 344);
     }
-    *///?} else {
-    public static boolean isKeyPressed(int key) {
+    //?} else {
+    /*public static boolean isKeyPressed(int key) {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
         return key != Config.KEY_UNDEFINED && client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key);
     }
@@ -145,7 +145,7 @@ public class ModUtils {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
         return key == Config.KEY_UNDEFINED || (client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key));
     }
-    //?}
+    *///?}
 
     public static <K, V> Map<K, V> generateConvertMap(V[] values, Function<V, K> keyGetter) {
         var builder = ImmutableMap.<K, V>builder();

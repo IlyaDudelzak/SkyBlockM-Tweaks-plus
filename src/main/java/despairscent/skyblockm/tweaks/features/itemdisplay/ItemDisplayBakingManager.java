@@ -3,8 +3,8 @@ import despairscent.skyblockm.tweaks.ModUtils;
 
 //? if >=1.21.11 {
 
-/*import despairscent.skyblockm.tweaks.features.itemdisplay.mixininner.IItemRenderStateAccessor;
-import despairscent.skyblockm.tweaks.features.itemdisplay.mixininner.ILayerRenderStateAccessor;
+import despairscent.skyblockm.tweaks.mixininner.IItemRenderStateAccessor;
+import despairscent.skyblockm.tweaks.mixininner.ILayerRenderStateAccessor;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BlockRenderLayer;
@@ -472,10 +472,10 @@ public class ItemDisplayBakingManager {
         return false;
     }
 }
-*///?} elif =1.21.8 {
+//?} elif =1.21.8 {
 /*
-import despairscent.skyblockm.tweaks.features.itemdisplay.mixininner.IItemRenderStateAccessor;
-import despairscent.skyblockm.tweaks.features.itemdisplay.mixininner.ILayerRenderStateAccessor;
+import despairscent.skyblockm.tweaks.mixininner.IItemRenderStateAccessor;
+import despairscent.skyblockm.tweaks.mixininner.ILayerRenderStateAccessor;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BlockRenderLayer;
@@ -971,7 +971,7 @@ public class ItemDisplayBakingManager {
     }
 }
 *///?} elif >=1.21 {
-import net.minecraft.block.BlockState;
+/*import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.entity.decoration.DisplayEntity;
@@ -1365,9 +1365,9 @@ public class ItemDisplayBakingManager {
         return false;
     }
 }
-//?} else {
-/*
-import net.minecraft.block.BlockState;
+*///?} else {
+
+/*import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.entity.decoration.DisplayEntity;

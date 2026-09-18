@@ -3,7 +3,7 @@ import despairscent.skyblockm.tweaks.ModUtils;
 
 //? if >=1.21.8 {
 
-/*import net.fabricmc.fabric.api.client.model.loading.v1.wrapper.WrapperBlockStateModel;
+import net.fabricmc.fabric.api.client.model.loading.v1.wrapper.WrapperBlockStateModel;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.block.BlockState;
@@ -127,9 +127,9 @@ public class BarrierBakedModel extends WrapperBlockStateModel {
         super.emitQuads(emitter, blockView, pos, state, random, cullTest);
     }
 }
-*///?} elif =1.21.3 {
+//?} elif =1.21.3 {
 /*
-import despairscent.skyblockm.tweaks.core.mixininner.IMinecraftClientAccessor;
+import despairscent.skyblockm.tweaks.mixininner.IMinecraftClientAccessor;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
@@ -355,7 +355,7 @@ public class BarrierBakedModel extends ForwardingBakedModel {
     }
 }
 *///?} elif =1.21.1 {
-import despairscent.skyblockm.tweaks.core.mixininner.IMinecraftClientAccessor;
+/*import despairscent.skyblockm.tweaks.mixininner.IMinecraftClientAccessor;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
@@ -561,9 +561,9 @@ public class BarrierBakedModel extends ForwardingBakedModel {
         }
     }
 }
-//?} elif =1.20.4 {
+*///?} elif =1.20.4 {
 /*
-import despairscent.skyblockm.tweaks.core.mixininner.IMinecraftClientAccessor;
+import despairscent.skyblockm.tweaks.mixininner.IMinecraftClientAccessor;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
@@ -791,8 +791,8 @@ public class BarrierBakedModel extends ForwardingBakedModel {
     }
 }
 *///?} else {
-/*
-import despairscent.skyblockm.tweaks.core.mixininner.IMinecraftClientAccessor;
+
+/*import despairscent.skyblockm.tweaks.mixininner.IMinecraftClientAccessor;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.material.BlendMode;
