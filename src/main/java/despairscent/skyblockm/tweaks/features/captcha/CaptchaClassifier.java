@@ -135,6 +135,26 @@ public class CaptchaClassifier {
     }
 
     /**
+     * Извлекает массив цветов карты (16 384 байт) из сущности рамки ItemFrameEntity.
+     */
+    public static byte[] getMapColors(net.minecraft.entity.decoration.ItemFrameEntity frame, net.minecraft.client.world.ClientWorld world) {
+        if (frame == null || world == null) return null;
+        net.minecraft.item.ItemStack stack = frame.getHeldItemStack();
+        if (stack == null || stack.isEmpty()) return null;
+        //? if >=1.20.5 {
+        net.minecraft.component.type.MapIdComponent mapId = stack.get(net.minecraft.component.DataComponentTypes.MAP_ID);
+        if (mapId == null) return null;
+        MapState mapState = world.getMapState(mapId);
+        //?} else {
+        /*MapState mapState = net.minecraft.item.FilledMapItem.getMapState(stack, world);
+        *///?}
+        if (mapState == null || !hasLoadedMapColors(mapState.colors)) {
+            return null;
+        }
+        return mapState.colors;
+    }
+
+    /**
      * Распознает класс капчи по предмету карты в ItemStack.
      */
     public static CaptchaClass classify(net.minecraft.item.ItemStack stack, net.minecraft.client.world.ClientWorld world) {

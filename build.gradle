@@ -19,11 +19,6 @@ loom {
     }
 	runs {
 		client {
-			programArgs "--username", "tester2"
-			property "fabric.log.level", "debug"
-			property "log4j2.level", "debug"
-			property "mixin.debug.verbose", "true"
-			property "mixin.debug.export", "true"
 		}
 	}
 }
@@ -70,6 +65,9 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
 	sourceCompatibility = JavaVersion.toVersion(targetJava)
 	targetCompatibility = JavaVersion.toVersion(targetJava)
 }

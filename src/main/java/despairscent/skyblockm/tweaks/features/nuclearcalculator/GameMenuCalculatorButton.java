@@ -10,6 +10,9 @@ public class GameMenuCalculatorButton {
 
     public static void init() {
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
+            if (!despairscent.skyblockm.tweaks.ModUtils.CONFIG.nuclearCalculator.enabled) {
+                return;
+            }
             if (screen instanceof GameMenuScreen) {
                 // Добавляем аккуратную кнопку в левый верхний угол меню паузы
                 ButtonWidget button = ButtonWidget.builder(Text.literal("⚛ Калькулятор"), btn -> {

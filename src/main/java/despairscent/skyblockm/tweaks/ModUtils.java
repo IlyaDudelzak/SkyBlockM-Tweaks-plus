@@ -1,7 +1,10 @@
 package despairscent.skyblockm.tweaks;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import despairscent.skyblockm.tweaks.config.Config;
+import despairscent.skyblockm.tweaks.features.nuclearcalculator.components.ReactorComponent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
@@ -34,23 +37,41 @@ public class ModUtils {
 
     public static Config CONFIG = new Config();
 
+    public static final Gson gson = despairscent.skyblockm.tweaks.features.nuclearcalculator.ReactorSimulator.GSON;
+
     public static MutableText i18n(String key, Object... args) {
         return Text.translatable("skyblockm-tweaks." + key, args);
+    }
+
+    public static net.minecraft.util.Identifier getFontIdentifier(net.minecraft.text.Style style) {
+        if (style == null) return null;
+        //? if >=1.21.11 {
+        net.minecraft.text.StyleSpriteSource fontSource = style.getFont();
+        return fontSource instanceof net.minecraft.text.StyleSpriteSource.Font fontImpl ? fontImpl.id() : null;
+        //?} else {
+        /*return style.getFont();
+        *///?}
     }
 
     public static boolean testCustomScreen(Screen screen, String namespace, String... codes) {
         if (screen == null) {
             return false;
         }
-        List<Text> siblings = screen.getTitle().getSiblings();
-        if (siblings.isEmpty()) {
+        Text root = screen.getTitle();
+        if (root == null) {
             return false;
         }
+        List<Text> siblings = root.getSiblings();
+        List<Text> listToCheck = siblings.isEmpty() ? List.of(root) : siblings;
         // "recipeviewer:interfaces" отклоняется от нормы
-        for (int i = 0; i < siblings.size() && i < 2; i++) {
-            Text child = siblings.get(i);
+        for (int i = 0; i < listToCheck.size() && i < 2; i++) {
+            Text child = listToCheck.get(i);
+            net.minecraft.util.Identifier font = getFontIdentifier(child.getStyle());
+            if (font == null && child != root) {
+                font = getFontIdentifier(root.getStyle());
+            }
             //? if >=1.20.2 {
-            if (child.getContent() instanceof PlainTextContent plainText && child.getStyle().getFont().toString().equals(namespace)) {
+            if (child.getContent() instanceof PlainTextContent plainText && font != null && font.toString().equals(namespace)) {
                 if (codes.length == 0) {
                     return true;
                 }
@@ -62,7 +83,7 @@ public class ModUtils {
                 }
             }
             //?} else {
-            /*if (child.getContent() instanceof LiteralTextContent plainText && child.getStyle().getFont().toString().equals(namespace)) {
+            /*if (child.getContent() instanceof LiteralTextContent plainText && font != null && font.toString().equals(namespace)) {
                 if (codes.length == 0) {
                     return true;
                 }
@@ -144,6 +165,10 @@ public class ModUtils {
     public static boolean isKeyPressedOrUndefined(int key) {
         MinecraftClient client = CLIENT != null ? CLIENT : MinecraftClient.getInstance();
         return key == Config.KEY_UNDEFINED || (client != null && client.getWindow() != null && InputUtil.isKeyPressed(client.getWindow().getHandle(), key));
+    }
+
+    public static boolean hasShiftDown() {
+        return net.minecraft.client.gui.screen.Screen.hasShiftDown();
     }
     *///?}
 

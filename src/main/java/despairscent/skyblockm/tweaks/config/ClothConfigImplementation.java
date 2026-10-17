@@ -302,6 +302,24 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator"), CONFIG.nuclearCalculator.enabled)
+                .setTooltip(i18n("config.nuclearCalculator.tooltip"))
+                .setDefaultValue(Config.DEFAULT.nuclearCalculator.enabled)
+                .setSaveConsumer(value -> CONFIG.nuclearCalculator.enabled = value)
+                .build());
+        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator.openCurrentReactor"), CONFIG.nuclearCalculator.openCurrentReactor)
+                        .setTooltip(i18n("config.nuclearCalculator.openCurrentReactor.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.nuclearCalculator.openCurrentReactor)
+                        .setSaveConsumer(value -> CONFIG.nuclearCalculator.openCurrentReactor = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator.showButtonInReactor"), CONFIG.nuclearCalculator.showButtonInReactor)
+                        .setTooltip(i18n("config.nuclearCalculator.showButtonInReactor.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.nuclearCalculator.showButtonInReactor)
+                        .setSaveConsumer(value -> CONFIG.nuclearCalculator.showButtonInReactor = value)
+                        .build()
+        )).build());
+
         builder.setSavingRunnable(() -> CONFIG.save());
 
         return builder.build();

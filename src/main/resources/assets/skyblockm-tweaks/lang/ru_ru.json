@@ -126,5 +126,11 @@
   "skyblockm-tweaks.config.automaticCaptcha": "Автоматическое решение капчи (AI)",
   "skyblockm-tweaks.config.automaticCaptcha.tooltip": "Автоматически распознаёт и нажимает рамки капчи с помощью нейросети",
   "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput": "Блокировать действия игрока",
-  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput.tooltip": "Блокирует движение, поворот камеры и клики игрока во время автоматического решения капчи"
+  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput.tooltip": "Блокирует движение, поворот камеры и клики игрока во время автоматического решения капчи",
+  "skyblockm-tweaks.config.nuclearCalculator": "Калькулятор ядерного реактора",
+  "skyblockm-tweaks.config.nuclearCalculator.tooltip": "Включает функционал калькулятора и симулятора ядерного реактора",
+  "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor": "Открывать симулятор текущего реактора",
+  "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor.tooltip": "Автоматически открывать симулятор с параметрами текущего реактора при его открытии",
+  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor": "Кнопка в интерфейсе реактора",
+  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor.tooltip": "Показывать кнопку вызова калькулятора (🖩) рядом с интерфейсом реактора"
 }

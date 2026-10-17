@@ -1,11 +1,16 @@
 package despairscent.skyblockm.tweaks.features.nuclearcalculator;
 
+import despairscent.skyblockm.tweaks.ModUtils;
 import despairscent.skyblockm.tweaks.features.nuclearcalculator.components.*;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -33,7 +38,7 @@ public class NuclearCalculatorScreen extends Screen {
     private static final int SLOT_SIZE = 18;
 
     // Панелька слева от реактора
-    private static final int PANEL_WIDTH = 72;
+    private static final int PANEL_WIDTH = 76;
     private static final int PANEL_HEIGHT = 146;
     private static final int PALETTE_COLS = 3;
     private static final int PALETTE_ROWS = 6;
@@ -68,6 +73,13 @@ public class NuclearCalculatorScreen extends Screen {
     private ButtonWidget btnStartStop;
     private ButtonWidget btnReflector;
     private ButtonWidget btnHeatPreset;
+    private ButtonWidget btnExtract;
+    private ButtonWidget btnInsert;
+    private final ButtonWidget[] btnSlots = new ButtonWidget[3];
+    private int activeSlotIndex = -1;
+    private static int previosActiveSlotIndex = 0;
+    private boolean isLoadingSlot = false;
+    private boolean fromReactor = false;
 
     public static class PaletteEntry {
         public final ItemStack stack;
@@ -86,9 +98,14 @@ public class NuclearCalculatorScreen extends Screen {
     }
 
     public NuclearCalculatorScreen(Text title, Screen parent) {
+        this(title, parent, false);
+    }
+
+    public NuclearCalculatorScreen(Text title, Screen parent, boolean fromReactor) {
         super(title);
         this.parent = parent;
         this.simulator = new ReactorSimulator(this.grid);
+        this.fromReactor = fromReactor;
         Arrays.fill(this.displayStacks, ItemStack.EMPTY);
         Arrays.fill(this.playerInventoryStacks, ItemStack.EMPTY);
         initPalette();
@@ -245,6 +262,7 @@ public class NuclearCalculatorScreen extends Screen {
             this.simulator.setNeutronReflector(this.neutronReflector);
             this.simulator.setHullHeat(prevHull);
             this.simulator.recalculateOutput();
+            autoSaveActiveSlot();
         }
     }
 
@@ -260,6 +278,7 @@ public class NuclearCalculatorScreen extends Screen {
             this.simulator.setHullHeat(heat);
             this.simulator.recalculateOutput();
             updateHeatButtonMessage();
+            autoSaveActiveSlot();
         }
     }
 
@@ -274,6 +293,7 @@ public class NuclearCalculatorScreen extends Screen {
         this.simulator.setHullHeat(0);
         this.simulator.recalculateOutput();
         updateHeatButtonMessage();
+        autoSaveActiveSlot();
     }
 
     private void clearAll() {
@@ -284,6 +304,7 @@ public class NuclearCalculatorScreen extends Screen {
         this.simulator.setHullHeat(0);
         this.simulator.recalculateOutput();
         updateHeatButtonMessage();
+        autoSaveActiveSlot();
     }
 
     private void toggleReflector() {
@@ -293,6 +314,7 @@ public class NuclearCalculatorScreen extends Screen {
         if (btnReflector != null) {
             btnReflector.setMessage(Text.literal(this.neutronReflector ? "§aОтраж: x4" : "§7Отраж: x1"));
         }
+        autoSaveActiveSlot();
     }
 
     private void cycleHeatPreset() {
@@ -310,6 +332,7 @@ public class NuclearCalculatorScreen extends Screen {
         simulator.setHullHeat(next);
         simulator.recalculateOutput();
         updateHeatButtonMessage();
+        autoSaveActiveSlot();
     }
 
     private void adjustHeat(int delta) {
@@ -318,6 +341,7 @@ public class NuclearCalculatorScreen extends Screen {
         simulator.setHullHeat(newHeat);
         simulator.recalculateOutput();
         updateHeatButtonMessage();
+        autoSaveActiveSlot();
     }
 
     private void updateHeatButtonMessage() {
@@ -339,8 +363,44 @@ public class NuclearCalculatorScreen extends Screen {
         this.panelY = this.guiTop;
 
         int btnX = this.guiLeft + 180;
-        int btnWidth = 76;
+        int btnWidth = PANEL_WIDTH;
         int btnHeight = 20;
+        int panelBottom = panelY + PANEL_HEIGHT + 4;
+        int buttonSpacing = 4;
+        int buttonDistance = btnHeight + buttonSpacing;
+
+        // Кнопки взаимодействия с реактором СЛЕВА под палитрой
+        this.btnExtract = this.addDrawableChild(ButtonWidget.builder(Text.literal("Из реактора"),
+                btn -> extractFromReactor())
+                .dimensions(panelX, panelBottom, btnWidth, btnHeight).build());
+
+        panelBottom += buttonDistance;
+        this.btnInsert = this.addDrawableChild(ButtonWidget.builder(Text.literal("В реактор"),
+                btn -> insertIntoReactor()).dimensions(panelX, panelBottom, btnWidth, btnHeight).build());
+
+        // Кнопки 3-х ячеек над окном реактора (вкладки сверху)
+        int slotBtnY = Math.max(2, this.guiTop - 22);
+        int slotBtnW = 56;
+        int slotSpacing = 4;
+        for (int i = 0; i < 3; i++) {
+            final int slotIndex = i;
+            int sx = this.guiLeft + i * (slotBtnW + slotSpacing);
+            btnSlots[i] = this.addDrawableChild(ButtonWidget.builder(
+                    getSlotButtonText(slotIndex),
+                    btn -> onSlotButtonClicked(slotIndex)
+            ).dimensions(sx, slotBtnY, slotBtnW, btnHeight).build());
+        }
+
+        btnExtract.active = fromReactor;
+        btnInsert.active = fromReactor;
+
+        if (activeSlotIndex == -1 && !fromReactor) {
+            activeSlotIndex = 0;
+            loadFromSlot(0);
+        } else {
+            extractFromReactor();
+        }
+        updateSlotButtons();
 
         // Кнопки управления справа от окна реактора
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Шаг +1с"), btn -> {
@@ -363,19 +423,19 @@ public class NuclearCalculatorScreen extends Screen {
         this.btnReflector = this.addDrawableChild(ButtonWidget.builder(
                 Text.literal(this.neutronReflector ? "§aОтраж: x4" : "§7Отраж: x1"),
                 btn -> toggleReflector()
-        ).dimensions(btnX, this.guiTop + 108, btnWidth, btnHeight).build());
+        ).dimensions(btnX, this.guiTop + 106, btnWidth, btnHeight).build());
 
         // Настройка тепла ядра
         this.btnHeatPreset = this.addDrawableChild(ButtonWidget.builder(
                 Text.literal(String.format("Ядро: %.0f%%", simulator.getHullHeatPercent())),
                 btn -> cycleHeatPreset()
-        ).dimensions(btnX, this.guiTop + 132, btnWidth, btnHeight).build());
+        ).dimensions(btnX, this.guiTop + 130, btnWidth, btnHeight).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("-10%"), btn -> adjustHeat(-1000))
-                .dimensions(btnX, this.guiTop + 154, 36, 18).build());
+                .dimensions(btnX, this.guiTop + 152, 36, 18).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("+10%"), btn -> adjustHeat(1000))
-                .dimensions(btnX + 40, this.guiTop + 154, 36, 18).build());
+                .dimensions(btnX + 40, this.guiTop + 152, 36, 18).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Назад"), btn -> this.close())
                 .dimensions(btnX, this.guiTop + 198, btnWidth, btnHeight).build());
@@ -474,10 +534,10 @@ public class NuclearCalculatorScreen extends Screen {
 
                     // Полоска нагрева поверх предмета
                     if (comp != null && comp.getMaxHeat() > 0 && comp.getCurrentHeat() > 0) {
-                        float heatRatio = Math.min(1.0f, (float) comp.getCurrentHeat() / comp.getMaxHeat());
+                        float heatRatio = Math.min(1.0f, (float) (comp.getMaxHeat() - (comp.getCurrentHeat() / comp.getMaxHeat())));
                         int barWidth = Math.round(heatRatio * 13);
                         int barY = slotY + 13;
-                        int color = comp.isBroken() ? 0xFFFF0000 : (heatRatio > 0.7f ? 0xFFFF5555 : (heatRatio > 0.3f ? 0xFFFFAA00 : 0xFF55FF55));
+                        int color = comp.isBroken() ? 0xFFFF0000 : (heatRatio < 0.3f ? 0xFFFF5555 : (heatRatio < 0.7f ? 0xFFFFAA00 : 0xFF55FF55));
 
                         context.fill(slotX + 2, barY, slotX + 15, barY + 2, 0xFF000000);
                         context.fill(slotX + 2, barY, slotX + 2 + barWidth, barY + 2, color);
@@ -536,6 +596,22 @@ public class NuclearCalculatorScreen extends Screen {
         // 10. Отрисовка кнопок
         super.render(context, mouseX, mouseY, delta);
 
+        // Отрисовка подсветки активной ячейки
+        if (activeSlotIndex >= 0 && activeSlotIndex < 3 && btnSlots[activeSlotIndex] != null) {
+            ButtonWidget activeBtn = btnSlots[activeSlotIndex];
+            int bx = activeBtn.getX();
+            int by = activeBtn.getY();
+            int bw = activeBtn.getWidth();
+            int bh = activeBtn.getHeight();
+            // Зеленая неоновая рамка толщиной 1px вокруг кнопки
+            context.fill(bx - 1, by - 1, bx + bw + 1, by, 0xFF55FF55);
+            context.fill(bx - 1, by + bh, bx + bw + 1, by + bh + 1, 0xFF55FF55);
+            context.fill(bx - 1, by, bx, by + bh, 0xFF55FF55);
+            context.fill(bx + bw, by, bx + bw + 1, by + bh, 0xFF55FF55);
+            // Полупрозрачный зеленоватый акцент кнопки
+            context.fill(bx, by, bx + bw, by + bh, 0x3055FF55);
+        }
+
         // 11. Всплывающие подсказки (показываются, только если в руке нет призрака предмета)
         if (this.cursorStack.isEmpty()) {
             if (hoveredReactorSlot != -1) {
@@ -552,6 +628,8 @@ public class NuclearCalculatorScreen extends Screen {
                     ReactorComponent comp = ReactorItemMapper.fromItemStack(stack);
                     renderReactorSlotTooltip(context, comp, stack, mouseX, mouseY);
                 }
+            } else {
+                renderControlTooltips(context, mouseX, mouseY);
             }
         }
 
@@ -704,6 +782,25 @@ public class NuclearCalculatorScreen extends Screen {
         if (!isDrag) {
             lastInteractedSlot = -1;
 
+            // 1.5. ПКМ по кнопке ячейки — сохранить/перезаписать схему, ПКМ по "Из реактора" — скопировать схему
+            if (button == 1) {
+                for (int i = 0; i < 3; i++) {
+                    ButtonWidget btn = btnSlots[i];
+                    if (btn != null && btn.visible && mouseX >= btn.getX() && mouseX < btn.getX() + btn.getWidth()
+                            && mouseY >= btn.getY() && mouseY < btn.getY() + btn.getHeight()) {
+                        activeSlotIndex = i;
+                        saveToSlot(i);
+                        return true;
+                    }
+                }
+                if (btnExtract != null && btnExtract.visible && btnExtract.active
+                        && mouseX >= btnExtract.getX() && mouseX < btnExtract.getX() + btnExtract.getWidth()
+                        && mouseY >= btnExtract.getY() && mouseY < btnExtract.getY() + btnExtract.getHeight()) {
+                    extractFromReactor();
+                    return true;
+                }
+            }
+
             // 2. Взаимодействие с палитрой компонентов (панелька слева)
             int palIdx = getHoveredPaletteSlot((int) mouseX, (int) mouseY);
             if (palIdx >= 0 && palIdx < palette.length && palette[palIdx] != null) {
@@ -778,6 +875,344 @@ public class NuclearCalculatorScreen extends Screen {
         }
 
         return false;
+    }
+
+    private void autoSaveActiveSlot() {
+        if (isLoadingSlot || activeSlotIndex < 0 || activeSlotIndex >= 3) return;
+        ReactorPresetManager.PresetSlot existing = ReactorPresetManager.getSlot(activeSlotIndex);
+        String name = (existing != null && existing.name != null && !existing.name.isEmpty())
+                ? existing.name
+                : ("Ячейка " + (activeSlotIndex + 1));
+        ReactorPresetManager.PresetSlot preset = new ReactorPresetManager.PresetSlot(
+                name,
+                this.grid,
+                this.neutronReflector,
+                this.simulator != null ? this.simulator.getHullHeat() : 0
+        );
+        ReactorPresetManager.setSlot(activeSlotIndex, preset);
+        updateSlotButtons();
+    }
+
+    private void onSlotButtonClicked(int slotIndex) {
+        activeSlotIndex = slotIndex;
+        if (ModUtils.hasShiftDown()) {
+            saveToSlot(slotIndex);
+        } else {
+            loadFromSlot(slotIndex);
+        }
+        updateSlotButtons();
+    }
+
+    private void saveToSlot(int slotIndex) {
+        ReactorPresetManager.PresetSlot existing = ReactorPresetManager.getSlot(slotIndex);
+        String name = (existing != null && existing.name != null && !existing.name.isEmpty())
+                ? existing.name
+                : ("Ячейка " + (slotIndex + 1));
+        ReactorPresetManager.PresetSlot preset = new ReactorPresetManager.PresetSlot(
+                name,
+                this.grid,
+                this.neutronReflector,
+                this.simulator != null ? this.simulator.getHullHeat() : 0
+        );
+        ReactorPresetManager.setSlot(slotIndex, preset);
+        updateSlotButtons();
+        if (this.client != null && this.client.player != null) {
+            this.client.player.sendMessage(Text.literal("§aСхема сохранена в " + name), true);
+        }
+    }
+
+    private void loadFromSlot(int slotIndex) {
+        ReactorPresetManager.PresetSlot preset = ReactorPresetManager.getSlot(slotIndex);
+        if (preset == null || preset.isEmpty()) {
+            if (this.client != null && this.client.player != null) {
+                this.client.player.sendMessage(Text.literal("§cЯчейка " + (slotIndex + 1) + " пуста"), true);
+            }
+            return;
+        }
+
+        isLoadingSlot = true;
+        try {
+            clearAll();
+            for (int s = 0; s < 54; s++) {
+                ReactorComponent comp = preset.grid[s];
+                if (comp != null) {
+                    ItemStack stack = createStackForComponent(comp);
+                    setSlot(s, comp.copy(), stack);
+                }
+            }
+            this.neutronReflector = preset.neutronReflector;
+            this.simulator.setNeutronReflector(this.neutronReflector);
+            this.simulator.setHullHeat(preset.hullHeat);
+            if (btnReflector != null) {
+                btnReflector.setMessage(Text.literal(this.neutronReflector ? "§aОтраж: x4" : "§7Отраж: x1"));
+            }
+            updateHeatButtonMessage();
+            simulator.recalculateOutput();
+        } finally {
+            isLoadingSlot = false;
+        }
+
+        if (this.client != null && this.client.player != null) {
+            String name = (preset.name != null && !preset.name.isEmpty()) ? preset.name : ("Ячейка " + (slotIndex + 1));
+            this.client.player.sendMessage(Text.literal("§aЗагружена " + name), true);
+        }
+    }
+
+    private void extractFromReactor() {
+        if (!(this.parent instanceof HandledScreen<?> handledScreen) || !this.fromReactor) {
+            if (this.client != null && this.client.player != null) {
+                this.client.player.sendMessage(Text.literal("§cРеактор не открыт в фоне"), true);
+            }
+            return;
+        }
+
+        if (this.client == null || this.client.interactionManager == null || this.client.player == null) {
+            return;
+        }
+
+        var handler = handledScreen.getScreenHandler();
+
+        for (int i = 0; i < 54; i++) {
+            Slot currentSlot = handler.getSlot(i);
+            if(currentSlot.hasStack()) {
+                ReactorComponent component = ReactorItemMapper.fromItemStack(currentSlot.getStack());
+                setSlot(i, component, createStackForComponent(component));
+            } else {
+                setSlot(i, null, ItemStack.EMPTY);
+            }
+//                this.client.interactionManager.clickSlot(syncId, i, 0, SlotActionType.QUICK_MOVE, this.client.player);
+        }
+    }
+
+    private void insertIntoReactor() {
+        if (!(this.parent instanceof HandledScreen<?> handledScreen) || !this.fromReactor) {
+            if (this.client != null && this.client.player != null) {
+                this.client.player.sendMessage(Text.literal("§cРеактор не открыт в фоне"), true);
+            }
+            return;
+        }
+
+        if (this.client == null || this.client.interactionManager == null || this.client.player == null) {
+            return;
+        }
+
+        var handler = handledScreen.getScreenHandler();
+        int syncId = handler.syncId;
+
+        // 1. Очищаем несовпадающие слоты реактора
+        for (int i = 0; i < 54; i++) {
+            ItemStack stack = handler.getSlot(i).getStack();
+            if (!stack.isEmpty()) {
+                ReactorComponent planned = this.grid[i];
+                ReactorComponent current = ReactorItemMapper.fromItemStack(stack);
+                if (planned == null || current == null || current.getType() != planned.getType()) {
+//                    this.client.interactionManager.clickSlot(syncId, i, 0, SlotActionType.QUICK_MOVE, this.client.player);
+//                    if (handler) {
+//                        this.client.interactionManager.clickSlot(syncId, i, 0, SlotActionType.THROW, this.client.player);
+//                        syncInventoryState(handler);
+//                        return;
+//                    }
+                    this.client.interactionManager.clickSlot(syncId, i, 0, SlotActionType.THROW, this.client.player);
+                }
+            }
+        }
+
+        // 2. Устанавливаем недостающие компоненты из инвентаря игрока (слоты 54..89)
+        int placedCount = 0;
+        int missingCount = 0;
+
+        for (int targetSlot = 0; targetSlot < 54; targetSlot++) {
+            ReactorComponent planned = this.grid[targetSlot];
+            if (planned == null) continue;
+
+            ItemStack currentStack = handler.getSlot(targetSlot).getStack();
+            if (!currentStack.isEmpty()) {
+                // Уже стоит правильный компонент
+                continue;
+            }
+
+            int foundInvSlot = -1;
+            for (int invSlot = 54; invSlot < 90; invSlot++) {
+                ItemStack invStack = handler.getSlot(invSlot).getStack();
+                if (!invStack.isEmpty()) {
+                    ReactorComponent comp = ReactorItemMapper.fromItemStack(invStack);
+                    if (comp != null && comp.getType() == planned.getType()) {
+                        foundInvSlot = invSlot;
+                        break;
+                    }
+                }
+            }
+
+            if (foundInvSlot != -1) {
+                this.client.interactionManager.clickSlot(syncId, foundInvSlot, 0, SlotActionType.PICKUP, this.client.player);
+                ItemStack cursor = handler.getCursorStack();
+                if (cursor.getCount() == 1) {
+                    this.client.interactionManager.clickSlot(syncId, targetSlot, 0, SlotActionType.PICKUP, this.client.player);
+                } else {
+                    this.client.interactionManager.clickSlot(syncId, targetSlot, 1, SlotActionType.PICKUP, this.client.player);
+                    if (!handler.getCursorStack().isEmpty()) {
+                        this.client.interactionManager.clickSlot(syncId, foundInvSlot, 0, SlotActionType.PICKUP, this.client.player);
+                    }
+                }
+                placedCount++;
+            } else {
+                missingCount++;
+            }
+        }
+
+        if (!handler.getCursorStack().isEmpty()) {
+            for (int invSlot = 54; invSlot < 90; invSlot++) {
+                if (!handler.getSlot(invSlot).hasStack()) {
+                    this.client.interactionManager.clickSlot(syncId, invSlot, 0, SlotActionType.PICKUP, this.client.player);
+                    break;
+                }
+            }
+        }
+
+        syncInventoryState(handler);
+
+        if (this.client != null && this.client.player != null) {
+            if (missingCount == 0 && placedCount > 0) {
+                this.client.player.sendMessage(Text.literal("§aВсе компоненты (" + placedCount + ") успешно установлены в реактор"), true);
+            } else if (placedCount > 0) {
+                this.client.player.sendMessage(Text.literal("§eУстановлено: " + placedCount + " комп. Не найдено в инвентаре: " + missingCount), true);
+            } else if (missingCount > 0) {
+                this.client.player.sendMessage(Text.literal("§cНе найдено необходимых компонентов в инвентаре (" + missingCount + ")"), true);
+            } else {
+                this.client.player.sendMessage(Text.literal("§aСхема реактора уже полностью соответствует"), true);
+            }
+        }
+    }
+
+    private void syncInventoryState(ScreenHandler handler) {
+        for (int i = 0; i < 36; i++) {
+            this.playerInventoryStacks[i] = handler.getSlot(54 + i).getStack().copy();
+        }
+        for (int i = 0; i < 54; i++) {
+            ItemStack s = handler.getSlot(i).getStack();
+            if (!s.isEmpty()) {
+                this.displayStacks[i] = s.copy();
+            } else if (this.grid[i] != null) {
+                this.displayStacks[i] = createStackForComponent(this.grid[i]);
+            } else {
+                this.displayStacks[i] = ItemStack.EMPTY;
+            }
+        }
+    }
+
+    private Text getSlotButtonText(int slotIndex) {
+        boolean isActive = (slotIndex == activeSlotIndex);
+        boolean has = ReactorPresetManager.hasSlot(slotIndex);
+        String prefix = isActive ? "§a▶ " : "";
+        return Text.literal(prefix + (slotIndex + 1) + " Ячейка" + (has ? " §a✔" : " §7[-]"));
+    }
+
+    private void updateSlotButtons() {
+        for (int i = 0; i < 3; i++) {
+            if (btnSlots[i] != null) {
+                btnSlots[i].setMessage(getSlotButtonText(i));
+            }
+        }
+    }
+
+    public ItemStack createStackForComponent(ReactorComponent comp) {
+        if (comp == null || comp.getType() == null) return ItemStack.EMPTY;
+        for (PaletteEntry entry : palette) {
+            if (entry != null && !entry.isEraser && entry.stack != null) {
+                if (ModelDataHelper.getCustomModelData(entry.stack) == comp.getType().getId()) {
+                    ItemStack copy = entry.stack.copy();
+                    if (copy.isDamageable() && comp.getMaxHeat() > 0) {
+                        int maxDmg = copy.getMaxDamage();
+                        int dmg = maxDmg - (int) Math.round(((double) comp.getCurrentHeat() / comp.getMaxHeat()) * maxDmg);
+                        copy.setDamage(Math.min(dmg, maxDmg - 1));
+                    }
+                    return copy;
+                }
+            }
+        }
+        return ModelDataHelper.createReactorStack(comp.getType().getId(), comp.getType().getSerializedName());
+    }
+
+    private void renderControlTooltips(DrawContext context, int mouseX, int mouseY) {
+        if (btnExtract != null && btnExtract.visible
+                && mouseX >= btnExtract.getX() && mouseX < btnExtract.getX() + btnExtract.getWidth()
+                && mouseY >= btnExtract.getY() && mouseY < btnExtract.getY() + btnExtract.getHeight()) {
+            List<Text> lines = new ArrayList<>();
+            lines.add(Text.literal("§6Из реактора"));
+            if (btnExtract.active) {
+                lines.add(Text.literal("§7Забирает компоненты из открытого реактора"));
+                lines.add(Text.literal("§7в инвентарь игрока"));
+                lines.add(Text.literal("§8----------------"));
+                lines.add(Text.literal("§e[ЛКМ] §7Извлечь компоненты в инвентарь"));
+                lines.add(Text.literal("§e[Shift+ЛКМ] / [ПКМ] §7Загрузить схему в калькулятор"));
+            } else {
+                lines.add(Text.literal("§cРеактор не открыт в фоне"));
+            }
+            context.drawTooltip(this.textRenderer, lines, mouseX, mouseY);
+            return;
+        }
+
+        if (btnInsert != null && btnInsert.visible
+                && mouseX >= btnInsert.getX() && mouseX < btnInsert.getX() + btnInsert.getWidth()
+                && mouseY >= btnInsert.getY() && mouseY < btnInsert.getY() + btnInsert.getHeight()) {
+            List<Text> lines = new ArrayList<>();
+            lines.add(Text.literal("§6В реактор"));
+            if (btnInsert.active) {
+                lines.add(Text.literal("§7Устанавливает схему из калькулятора в реактор"));
+                lines.add(Text.literal("§7(берет компоненты из вашего инвентаря)"));
+                lines.add(Text.literal("§8----------------"));
+                lines.add(Text.literal("§e[ЛКМ] §7Установить компоненты в реактор"));
+            } else {
+                lines.add(Text.literal("§cРеактор не открыт в фоне"));
+            }
+            context.drawTooltip(this.textRenderer, lines, mouseX, mouseY);
+            return;
+        }
+
+        if (btnReflector != null && btnReflector.visible
+                && mouseX >= btnReflector.getX() && mouseX < btnReflector.getX() + btnReflector.getWidth()
+                && mouseY >= btnReflector.getY() && mouseY < btnReflector.getY() + btnReflector.getHeight()) {
+            List<Text> lines = new ArrayList<>();
+            lines.add(Text.literal("§6Отражатель нейтронов"));
+            lines.add(Text.literal("§7Увеличивает выработку энергии,"));
+            lines.add(Text.literal("§7а также выделение и потребление тепла в 4 раза"));
+            context.drawTooltip(this.textRenderer, lines, mouseX, mouseY);
+            return;
+        }
+
+        renderSlotButtonTooltip(context, mouseX, mouseY);
+    }
+
+    private void renderSlotButtonTooltip(DrawContext context, int mouseX, int mouseY) {
+        for (int i = 0; i < 3; i++) {
+            ButtonWidget btn = btnSlots[i];
+            if (btn != null && btn.visible && mouseX >= btn.getX() && mouseX < btn.getX() + btn.getWidth()
+                    && mouseY >= btn.getY() && mouseY < btn.getY() + btn.getHeight()) {
+                List<Text> lines = new ArrayList<>();
+                boolean isActive = (i == activeSlotIndex);
+                if (ReactorPresetManager.hasSlot(i)) {
+                    ReactorPresetManager.PresetSlot slot = ReactorPresetManager.getSlot(i);
+                    String title = (slot != null && slot.name != null && !slot.name.isEmpty()) ? slot.name : ("Ячейка " + (i + 1));
+                    lines.add(Text.literal("§6" + title));
+                    lines.add(Text.literal(isActive ? "§a▶ Активная ячейка (все изменения сохраняются сюда)" : "§7Неактивная ячейка"));
+                    lines.add(Text.literal("§7Компонентов: §f" + slot.getComponentCount() + " / 54"));
+                    lines.add(Text.literal("§7Отражатель: §f" + (slot.neutronReflector ? "§aВкл" : "§cВыкл")));
+                    if (slot.hullHeat > 0) {
+                        lines.add(Text.literal("§7Нагрев: §e" + slot.hullHeat + " / 10000"));
+                    }
+                    lines.add(Text.literal("§8----------------"));
+                    lines.add(Text.literal("§e[ЛКМ] §7Выбрать и загрузить"));
+                    lines.add(Text.literal("§e[Shift+ЛКМ] / [ПКМ] §7Перезаписать текущей схемой"));
+                } else {
+                    lines.add(Text.literal("§6Ячейка " + (i + 1)));
+                    lines.add(Text.literal(isActive ? "§a▶ Активная ячейка" : "§8[Пусто]"));
+                    lines.add(Text.literal("§e[ЛКМ] §7Выбрать ячейку"));
+                    lines.add(Text.literal("§e[Shift+ЛКМ] / [ПКМ] §7Сохранить сюда"));
+                }
+                context.drawTooltip(this.textRenderer, lines, mouseX, mouseY);
+                break;
+            }
+        }
     }
 
     //? if <=1.20.1 {

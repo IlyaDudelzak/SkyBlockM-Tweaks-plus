@@ -1,5 +1,6 @@
 package despairscent.skyblockm.tweaks.features.nuclearcalculator;
 
+import despairscent.skyblockm.tweaks.ModUtils;
 import despairscent.skyblockm.tweaks.features.nuclearcalculator.components.ReactorComponent;
 import despairscent.skyblockm.tweaks.mixin.HandledScreenAccessor;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -15,9 +16,11 @@ import java.util.regex.Pattern;
 public class NuclearReactorDetectorModule {
 
     private static final Pattern REACTOR_PATTERN = Pattern.compile(
-            "Выход:\\s*[0-9.,]+\\s*Вт\\s*\\|\\s*Нагрев ядра:\\s*[0-9.,]+%",
+            "Выход:\\s*([0-9.,]+)\\s*Вт\\s*\\|\\s*Нагрев ядра:\\s*([0-9.,]+)%",
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
     );
+
+    private static Screen lastAutoOpenedScreen = null;
 
     public static boolean isReactorScreen(Screen screen) {
         if (!(screen instanceof HandledScreen<?> handledScreen)) {
@@ -33,66 +36,85 @@ public class NuclearReactorDetectorModule {
         }
 
         // 2. Запасная проверка: если реактор пустой/остановлен, но шрифт electricity:nuclear_reactor
-        return handledScreen.getTitle().getStyle() != null
-                && handledScreen.getTitle().getStyle().getFont() != null
-                && handledScreen.getTitle().getStyle().getFont().toString().contains("nuclear_reactor");
+        net.minecraft.util.Identifier font = ModUtils.getFontIdentifier(handledScreen.getTitle().getStyle());
+        return font != null && font.toString().contains("nuclear_reactor");
+    }
+
+    public static void openSimulatorForReactor(net.minecraft.client.MinecraftClient client, HandledScreen<?> handledScreen) {
+        lastAutoOpenedScreen = handledScreen;
+
+        NuclearCalculatorScreen calcScreen = new NuclearCalculatorScreen(
+                Text.literal("Калькулятор реактора"),
+                handledScreen,
+                true
+        );
+
+        var handler = handledScreen.getScreenHandler();
+        String screenTitle = handledScreen.getTitle().getString();
+        String cleanTitle = screenTitle.replaceAll("§[0-9a-fk-or]", "").trim();
+
+        // 1. Копируем схему реактора (первые 54 слота)
+        int slotsToCopy = Math.min(54, handler.slots.size());
+        for (int i = 0; i < slotsToCopy; i++) {
+            ItemStack stack = handler.getSlot(i).getStack();
+            if (!stack.isEmpty()) {
+                ReactorComponent comp = ReactorItemMapper.fromItemStack(stack);
+                if (comp != null) {
+                    calcScreen.setSlot(i, comp, stack);
+                }
+            }
+        }
+
+        // 2. Копируем инвентарь игрока (слоты 54..89 в двойном сундуке)
+        int totalSlots = handler.slots.size();
+        for (int i = 54; i < Math.min(90, totalSlots); i++) {
+            ItemStack stack = handler.getSlot(i).getStack();
+            if (!stack.isEmpty()) {
+                calcScreen.setPlayerInventorySlot(i - 54, stack);
+            }
+        }
+
+        // 3. Парсим текущий нагрев из заголовка
+        var matcher = REACTOR_PATTERN.matcher(cleanTitle);
+        if (matcher.find()) {
+            try {
+                String heatStr = matcher.group(2).replace(',', '.');
+                double heatPercent = Double.parseDouble(heatStr);
+                calcScreen.setInitialHeatPercent(heatPercent);
+            } catch (Exception ignored) {}
+        }
+
+        client.setScreen(calcScreen);
     }
 
     public static void init() {
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
+            if (!ModUtils.CONFIG.nuclearCalculator.enabled) {
+                return;
+            }
             if (isReactorScreen(screen) && screen instanceof HandledScreen<?> handledScreen) {
-                HandledScreenAccessor accessor = (HandledScreenAccessor) handledScreen;
-                int guiX = accessor.getX();
-                int guiY = accessor.getY();
+                // Если включена опция "открывать симулятор текущего реактора"
+                if (ModUtils.CONFIG.nuclearCalculator.openCurrentReactor) {
+                    if (lastAutoOpenedScreen != handledScreen) {
+                        client.execute(() -> openSimulatorForReactor(client, handledScreen));
+                        return;
+                    }
+                }
 
-                // Создаем кнопку вызова калькулятора
-                ButtonWidget calcButton = ButtonWidget.builder(Text.literal("🖩"), button -> {
-                            NuclearCalculatorScreen calcScreen = new NuclearCalculatorScreen(
-                                    Text.literal("Калькулятор реактора"),
-                                    handledScreen
-                            );
+                // Кнопка в интерфейсе реактора
+                if (ModUtils.CONFIG.nuclearCalculator.showButtonInReactor) {
+                    HandledScreenAccessor accessor = (HandledScreenAccessor) handledScreen;
+                    int guiX = accessor.getX();
+                    int guiY = accessor.getY();
 
-                            var handler = handledScreen.getScreenHandler();
-                            String screenTitle = handledScreen.getTitle().getString();
-                            String cleanTitle = screenTitle.replaceAll("§[0-9a-fk-or]", "").trim();
+                    ButtonWidget calcButton = ButtonWidget.builder(Text.literal("🖩"), button -> {
+                                openSimulatorForReactor(client, handledScreen);
+                            })
+                            .dimensions(guiX + 178, guiY + 4, 20, 20)
+                            .build();
 
-                            // 1. Копируем схему реактора (первые 54 слота)
-                            int slotsToCopy = Math.min(54, handler.slots.size());
-                            for (int i = 0; i < slotsToCopy; i++) {
-                                ItemStack stack = handler.getSlot(i).getStack();
-                                if (!stack.isEmpty()) {
-                                    ReactorComponent comp = ReactorItemMapper.fromItemStack(stack);
-                                    if (comp != null) {
-                                        calcScreen.setSlot(i, comp, stack);
-                                    }
-                                }
-                            }
-
-                            // 2. Копируем инвентарь игрока (слоты 54..89 в двойном сундуке)
-                            int totalSlots = handler.slots.size();
-                            for (int i = 54; i < Math.min(90, totalSlots); i++) {
-                                ItemStack stack = handler.getSlot(i).getStack();
-                                if (!stack.isEmpty()) {
-                                    calcScreen.setPlayerInventorySlot(i - 54, stack);
-                                }
-                            }
-
-                            // 3. Парсим текущий нагрев из заголовка
-                            var matcher = REACTOR_PATTERN.matcher(cleanTitle);
-                            if (matcher.find()) {
-                                try {
-                                    String heatStr = matcher.group(2).replace(',', '.');
-                                    double heatPercent = Double.parseDouble(heatStr);
-                                    calcScreen.setInitialHeatPercent(heatPercent);
-                                } catch (Exception ignored) {}
-                            }
-
-                            client.setScreen(calcScreen);
-                        })
-                        .dimensions(guiX + 178, guiY + 4, 20, 20)
-                        .build();
-
-                Screens.getButtons(screen).add(calcButton);
+                    Screens.getButtons(screen).add(calcButton);
+                }
             }
         });
     }

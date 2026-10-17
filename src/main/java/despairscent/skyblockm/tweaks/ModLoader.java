@@ -64,6 +64,7 @@ public class ModLoader implements ClientModInitializer {
             despairscent.skyblockm.tweaks.ModUtils.CLIENT = client;
             SkyBlockPackManager.addDefaultServersIfFirstLaunch(client);
             SkyBlockPackManager.onClientStarted(client);
+            despairscent.skyblockm.tweaks.backend.BackendApiClient.sendTelemetry("MOD_START", null);
         });
     }
 

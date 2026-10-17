@@ -126,5 +126,11 @@
   "skyblockm-tweaks.config.automaticCaptcha": "Automatic Captcha Solver (AI)",
   "skyblockm-tweaks.config.automaticCaptcha.tooltip": "Automatically detects and clicks captcha item frames using neural network",
   "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput": "Block Player Input",
-  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput.tooltip": "Blocks movement, mouse camera and clicks while captcha is being solved"
+  "skyblockm-tweaks.config.automaticCaptcha.disablePlayerInput.tooltip": "Blocks movement, mouse camera and clicks while captcha is being solved",
+  "skyblockm-tweaks.config.nuclearCalculator": "Nuclear Reactor Calculator",
+  "skyblockm-tweaks.config.nuclearCalculator.tooltip": "Enables the nuclear reactor calculator and simulator functionality",
+  "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor": "Open simulator for current reactor",
+  "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor.tooltip": "Automatically opens the simulator with the current reactor layout when opening a reactor",
+  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor": "Button in reactor interface",
+  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor.tooltip": "Shows the calculator button (🖩) next to the reactor interface"
 }

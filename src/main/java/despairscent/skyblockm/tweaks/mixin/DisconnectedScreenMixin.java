@@ -29,6 +29,17 @@ public abstract class DisconnectedScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("TAIL"))
     private void onInit(CallbackInfo ci) {
+        StringBuilder sb = new StringBuilder();
+        if (this.title != null) {
+            sb.append(this.title.getString()).append(" ");
+        }
+        for (var element : this.children()) {
+            if (element instanceof net.minecraft.client.gui.widget.ClickableWidget cw) {
+                sb.append(cw.getMessage().getString()).append(" ");
+            }
+        }
+        despairscent.skyblockm.tweaks.features.captcha.CaptchaDetector.onDisconnectedScreen(sb.toString());
+
         if (CONFIG == null || CONFIG.autoReconnect == null || !CONFIG.autoReconnect.enabled) {
             return;
         }

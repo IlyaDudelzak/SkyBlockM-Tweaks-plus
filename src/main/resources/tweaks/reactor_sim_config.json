@@ -1,0 +1,511 @@
+{
+  "slots": [
+    {
+      "name": "ЛУЧШАЯ схема MOX",
+      "grid": [
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "advancedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "reactorHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "reactorHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "reactorHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 34
+        },
+        {
+          "name": "componentHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleMox",
+          "currentHeat": 0
+        }
+      ],
+      "neutronReflector": true,
+      "hullHeat": 9984
+    },
+    {
+      "name": "Лучшая уранкк",
+      "grid": [
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "singleUranium",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        },
+        {
+          "name": "overclockedHeatVent",
+          "currentHeat": 0
+        }
+      ],
+      "neutronReflector": true,
+      "hullHeat": 1000
+    },
+    {
+      "name": "Своя",
+      "grid": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "neutronReflector": false,
+      "hullHeat": 0
+    }
+  ]
+}

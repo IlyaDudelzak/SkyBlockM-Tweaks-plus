@@ -91,7 +91,16 @@ public class SmoothTargetBot {
                     executePlayerClick(client);
                     shouldClickWhenFacing = false; // Сбрасываем триггер клика
                     targetEntity = null; // Завершили текущую цель
-                    delayTicksRemaining = delayBetweenTargets; // Пауза перед следующей целью
+                    if (targetQueue.isEmpty()) {
+                        delayTicksRemaining = 0;
+                        if (onFinishedCallback != null) {
+                            Runnable cb = onFinishedCallback;
+                            onFinishedCallback = null;
+                            cb.run();
+                        }
+                    } else {
+                        delayTicksRemaining = delayBetweenTargets; // Пауза перед следующей целью
+                    }
                 }
             }
         });

@@ -10,9 +10,13 @@ import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.entity.mob.SlimeEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
+import despairscent.skyblockm.tweaks.backend.BackendApiClient;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CaptchaDetector {
 
@@ -24,13 +28,24 @@ public class CaptchaDetector {
     private static boolean captchaSolved = false;
     private static boolean solvingInProgress = false;
 
+    private static List<BackendApiClient.CaptchaFrameData> savedRoundFrames = null;
+    private static boolean awaitingOutcome = false;
+    private static int outcomeTimeoutTicks = 0;
+
     private static String lastActionBarText = "";
     private static String lastTitleText = "";
     private static String lastSubtitleText = "";
     private static CaptchaClassifier.CaptchaClass targetCaptchaClass = CaptchaClassifier.CaptchaClass.UNKNOWN;
 
+    public static boolean isAwaitingOutcome() {
+        return awaitingOutcome;
+    }
+
     public static void init() {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            if (awaitingOutcome && savedRoundFrames != null) {
+                completeRound(true, "Успешное решение капчи (подключение к новому миру/серверу)");
+            }
             startChecking();
         });
 
@@ -51,6 +66,18 @@ public class CaptchaDetector {
         lastSubtitleText = "";
         targetCaptchaClass = CaptchaClassifier.CaptchaClass.UNKNOWN;
         SmoothTargetBot.reset();
+    }
+
+    public static void onDisconnectedScreen(String reasonText) {
+        if (reasonText != null && !reasonText.isEmpty()) {
+            checkDisconnectReason(reasonText);
+        }
+        if (awaitingOutcome && savedRoundFrames != null) {
+            completeRound(false, "Отключение от сервера до подтверждения");
+        }
+        savedRoundFrames = null;
+        awaitingOutcome = false;
+        outcomeTimeoutTicks = 0;
     }
 
     public static void reset() {
@@ -87,25 +114,81 @@ public class CaptchaDetector {
         return targetCaptchaClass;
     }
 
+    private static boolean checkFailureMessage(String text) {
+        if (text == null) return false;
+        String clean = text.replaceAll("§[0-9a-fk-or]", "").trim();
+        String lower = clean.toLowerCase();
+        if (lower.contains("попробуйте еще раз") || lower.contains("try again")) {
+            ModUtils.LOGGER.warn("[CaptchaDetector] Получено сообщение об ошибке решения капчи: " + clean);
+            if (savedRoundFrames != null) {
+                completeRound(false, "Неверный выбор рамок: " + clean);
+            }
+            return true;
+        }
+        return false;
+    }
+
     public static void onActionBarMessage(String text) {
         if (text == null) return;
         lastActionBarText = text;
         ModUtils.LOGGER.info("[CaptchaDetector] Action Bar: " + text);
-        updateTargetClass(text);
+        if (!checkFailureMessage(text)) {
+            updateTargetClass(text);
+        }
     }
 
     public static void onTitleMessage(String text) {
         if (text == null) return;
         lastTitleText = text;
         ModUtils.LOGGER.info("[CaptchaDetector] Title: " + text);
-        updateTargetClass(text);
+        if (!checkFailureMessage(text)) {
+            updateTargetClass(text);
+        }
     }
 
     public static void onSubtitleMessage(String text) {
         if (text == null) return;
         lastSubtitleText = text;
         ModUtils.LOGGER.info("[CaptchaDetector] Subtitle: " + text);
-        updateTargetClass(text);
+        if (!checkFailureMessage(text)) {
+            updateTargetClass(text);
+        }
+    }
+
+    public static void checkDisconnectReason(String text) {
+        if (text == null) return;
+        String clean = text.replaceAll("§[0-9a-fk-or]", "").trim();
+        String lower = clean.toLowerCase();
+        if (lower.contains("вы не успели решить капчу")
+                || lower.contains("you didnt solve the captcha")
+                || lower.contains("you didn't solve the captcha")) {
+            ModUtils.LOGGER.warn("[CaptchaDetector] Кик по таймауту/ошибке капчи: " + clean);
+            if (savedRoundFrames != null) {
+                completeRound(false, "Кик с сервера: " + clean);
+            }
+        }
+    }
+
+    public static void completeRound(boolean success, String reason) {
+        if (savedRoundFrames != null && savedRoundFrames.size() == 9) {
+            ModUtils.LOGGER.info(String.format("[CaptchaDetector] Завершение раунда капчи: success=%s, причина: %s", success, reason));
+            BackendApiClient.uploadCaptchaFrames(savedRoundFrames, success);
+
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("success", success);
+            payload.put("reason", reason);
+            payload.put("targetClass", targetCaptchaClass.name());
+            BackendApiClient.sendTelemetry(success ? "CAPTCHA_SOLVE_SUCCESS" : "CAPTCHA_SOLVE_FAILED", payload);
+
+            savedRoundFrames = null;
+        }
+        awaitingOutcome = false;
+        outcomeTimeoutTicks = 0;
+        if (!success) {
+            captchaSolved = false;
+            captchaGridLogged = false;
+            targetCaptchaClass = CaptchaClassifier.CaptchaClass.UNKNOWN;
+        }
     }
 
     private static void updateTargetClass(String text) {
@@ -155,6 +238,19 @@ public class CaptchaDetector {
             return; // Библиотеки еще не скачаны, пропускаем
         }
 
+        // Если ожидаем подтверждения исхода (успех / неудача)
+        if (awaitingOutcome) {
+            if (outcomeTimeoutTicks > 0) {
+                outcomeTimeoutTicks--;
+            }
+            boolean inRoom = isCaptchaRoom(client.player, client.world);
+            if (!inRoom) {
+                completeRound(true, "Успешное решение капчи (выход из комнаты / смена сервера/измерения)");
+            } else if (outcomeTimeoutTicks <= 0) {
+                completeRound(false, "Истекло время ожидания подтверждения капчи (таймаут)");
+            }
+        }
+
         // Проверяем наличие комнаты капчи каждые 5 тиков
         if (client.player.age % 5 == 0) {
             boolean inRoom = isCaptchaRoom(client.player, client.world);
@@ -165,6 +261,9 @@ public class CaptchaDetector {
                 solvingInProgress = false;
                 onCaptchaRoomDetected(client.player, client.world);
             } else if (!inRoom && captchaRoomActive) {
+                if (awaitingOutcome) {
+                    completeRound(true, "Успешное решение капчи (выход из комнаты / смена сервера/измерения)");
+                }
                 captchaRoomActive = false;
                 captchaSolved = false;
                 captchaGridLogged = false;
@@ -183,7 +282,7 @@ public class CaptchaDetector {
         }
 
         // Если капча активна и еще не решена
-        if (captchaRoomActive && !captchaSolved && !solvingInProgress) {
+        if (captchaRoomActive && !captchaSolved && !solvingInProgress && !awaitingOutcome) {
             ItemFrameEntity[][] framesGrid = getSortedFramesGrid(client.player, client.world);
             CaptchaClassifier.CaptchaClass[][] grid = getCaptchaGrid(client.player, client.world);
 
@@ -210,9 +309,11 @@ public class CaptchaDetector {
                         solvingInProgress = true;
                         ModUtils.LOGGER.info(String.format("[CaptchaDetector] Запуск решения капчи: кликаем по 3 рамкам [%s] с плавной доводкой", targetCaptchaClass.getDisplayName()));
                         SmoothTargetBot.queueTargets(targetFrames, 0.20f, 12, () -> {
-                            ModUtils.LOGGER.info("[CaptchaDetector] Все 3 рамки успешно нажаты!");
+                            ModUtils.LOGGER.info("[CaptchaDetector] Все 3 рамки успешно нажаты! Ожидаем подтверждения результата...");
                             captchaSolved = true;
                             solvingInProgress = false;
+                            awaitingOutcome = true;
+                            outcomeTimeoutTicks = 160; // 8 секунд на смену мира/сервера
                         });
                     }
                 }
@@ -319,16 +420,33 @@ public class CaptchaDetector {
         }
 
         CaptchaClassifier.CaptchaClass[][] grid = new CaptchaClassifier.CaptchaClass[3][3];
+        List<BackendApiClient.CaptchaFrameData> frameDataList = new ArrayList<>();
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 3; c++) {
                 int classIdx = bestPerm != null ? bestPerm[r * 3 + c] : 0;
-                grid[r][c] = switch (classIdx) {
+                CaptchaClassifier.CaptchaClass cClass = switch (classIdx) {
                     case 0 -> CaptchaClassifier.CaptchaClass.CHESTS;
                     case 1 -> CaptchaClassifier.CaptchaClass.PIGS;
                     case 2 -> CaptchaClassifier.CaptchaClass.ZOMBIES;
                     default -> CaptchaClassifier.CaptchaClass.UNKNOWN;
                 };
+                grid[r][c] = cClass;
+
+                byte[] colors = CaptchaClassifier.getMapColors(framesGrid[r][c], world);
+                float[] logits = allScores[r * 3 + c];
+                float maxLogit = Math.max(logits[0], Math.max(logits[1], logits[2]));
+                float expChosen = (float) Math.exp(logits[classIdx] - maxLogit);
+                float expSum = (float) (Math.exp(logits[0] - maxLogit) + Math.exp(logits[1] - maxLogit) + Math.exp(logits[2] - maxLogit));
+                float conf = Math.min(1.0f, Math.max(0.0f, expChosen / expSum));
+
+                if (colors != null) {
+                    frameDataList.add(new BackendApiClient.CaptchaFrameData(colors.clone(), cClass.name(), conf));
+                }
             }
+        }
+        if (frameDataList.size() == 9) {
+            savedRoundFrames = frameDataList;
+            ModUtils.LOGGER.info("[CaptchaDetector] Сохранены исходные данные 9 рамок для backend API");
         }
         return grid;
     }

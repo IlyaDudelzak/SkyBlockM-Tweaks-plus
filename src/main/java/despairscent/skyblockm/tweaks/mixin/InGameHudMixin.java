@@ -17,12 +17,36 @@ import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import despairscent.skyblockm.tweaks.features.captcha.CaptchaDetector;
 
 import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
 
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
+
+    @Inject(method = "setTitle", at = @At("HEAD"))
+    private void onSetTitle(Text title, CallbackInfo ci) {
+        if (title != null) {
+            CaptchaDetector.onTitleMessage(title.getString());
+        }
+    }
+
+    @Inject(method = "setSubtitle", at = @At("HEAD"))
+    private void onSetSubtitle(Text subtitle, CallbackInfo ci) {
+        if (subtitle != null) {
+            CaptchaDetector.onSubtitleMessage(subtitle.getString());
+        }
+    }
+
+    @Inject(method = "setOverlayMessage", at = @At("HEAD"))
+    private void onSetOverlayMessage(Text message, boolean tinted, CallbackInfo ci) {
+        if (message != null) {
+            CaptchaDetector.onActionBarMessage(message.getString());
+        }
+    }
 
     @Redirect(method = "renderHeldItemTooltip",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getName()Lnet/minecraft/text/Text;"))

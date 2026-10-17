@@ -75,6 +75,8 @@ public class Config {
 
     public AutoReconnectConfig autoReconnect = new AutoReconnectConfig();
     public AutomaticCaptchaConfig automaticCaptcha = new AutomaticCaptchaConfig();
+    public BackendApiConfig backendApi = new BackendApiConfig();
+    public NuclearCalculatorConfig nuclearCalculator = new NuclearCalculatorConfig();
 
     public boolean firstLaunchServersAdded = false;
 
@@ -242,6 +244,19 @@ public class Config {
         public boolean disablePlayerInput = true;
     }
 
+    public static class BackendApiConfig {
+        public boolean enabled = true;
+        public String serverUrl = "http://localhost:8080";
+        public boolean uploadCaptcha = true;
+        public boolean sendTelemetry = true;
+    }
+
+    public static class NuclearCalculatorConfig {
+        public boolean enabled = true;
+        public boolean openCurrentReactor = false;
+        public boolean showButtonInReactor = true;
+    }
+
     public static Config load() {
         try (FileReader reader = new FileReader(FabricLoader.getInstance().getConfigDir().resolve(FILENAME).toFile())) {
             Config config = GSON.fromJson(reader, Config.class);
@@ -292,6 +307,12 @@ public class Config {
             }
             if (config.automaticCaptcha == null) {
                 config.automaticCaptcha = new AutomaticCaptchaConfig();
+            }
+            if (config.backendApi == null) {
+                config.backendApi = new BackendApiConfig();
+            }
+            if (config.nuclearCalculator == null) {
+                config.nuclearCalculator = new NuclearCalculatorConfig();
             }
 
             return config;
