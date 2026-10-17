@@ -99,7 +99,7 @@ public class ReactorComponent implements Serializable {
         if (type == null || !type.isFuelRod()) return 0;
         int base = type.getBaseEnergy() + (type.getBonusEnergy() * adjacentRods);
         if (type.isMox() && maxHullHeat > 0) {
-            double heatRatio = Math.min(1.0, (double) hullHeat / maxHullHeat);
+            double heatRatio = Math.max(0.0, (double) hullHeat / maxHullHeat);
             return (int) Math.round(base * (1.0 + 4.0 * heatRatio));
         }
         return base;

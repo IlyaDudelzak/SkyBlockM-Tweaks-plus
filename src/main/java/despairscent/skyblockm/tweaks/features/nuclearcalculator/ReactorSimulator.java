@@ -37,12 +37,32 @@ public class ReactorSimulator implements Serializable {
     }
 
     public void recalculateOutput() {
-        long totalWatts = 0;
+        // Симулируем всплеск тепла от стержней перед расчетом мощности (как на сервере)
+        ReactorSimulator preview = new ReactorSimulator(this.grid);
+        preview.setNeutronReflector(this.neutronReflector);
+        preview.setHullHeat(this.hullHeat);
+
+        List<Integer> rodIndices = new ArrayList<>();
         for (int i = 0; i < SIZE; i++) {
-            if (grid[i] instanceof FuelRod rod && !rod.isBroken()) {
-                int adjRods = countAdjacentRods(i);
-                totalWatts += rod.calculateEnergy(adjRods, this.hullHeat, this.maxHullHeat);
+            if (preview.grid[i] instanceof FuelRod rod && !rod.isBroken()) {
+                rodIndices.add(i);
             }
+        }
+        for (int i : rodIndices) {
+            FuelRod rod = (FuelRod) preview.grid[i];
+            int adjRods = preview.countAdjacentRods(i);
+            int generatedHeat = rod.calculateHeat(adjRods);
+            if (preview.neutronReflector) {
+                generatedHeat *= 4;
+            }
+            preview.distributeHeatToNeighbors(i, generatedHeat);
+        }
+
+        long totalWatts = 0;
+        for (int i : rodIndices) {
+            FuelRod rod = (FuelRod) preview.grid[i];
+            int adjRods = preview.countAdjacentRods(i);
+            totalWatts += rod.calculateEnergy(adjRods, preview.hullHeat, preview.maxHullHeat);
         }
         if (neutronReflector) {
             totalWatts *= 4;
@@ -52,10 +72,8 @@ public class ReactorSimulator implements Serializable {
 
     /** Выполняет 1 секунду работы реактора */
     public void tick() {
-        long totalWatts = 0;
-
-        // 1. Фаза выработки тепла и энергии стержнями
-        // ВСЕГДА выполняется ДО всего остального!
+        // 1. Фаза выработки тепла стержнями
+        // Стержни СНАЧАЛА выделяют тепло в соседей и в корпус реактора
         List<Integer> rodIndices = new ArrayList<>();
         for (int i = 0; i < SIZE; i++) {
             if (grid[i] instanceof FuelRod rod && !rod.isBroken()) {
@@ -67,13 +85,22 @@ public class ReactorSimulator implements Serializable {
         for (int i : rodIndices) {
             FuelRod rod = (FuelRod) grid[i];
             int adjRods = countAdjacentRods(i);
-            totalWatts += rod.calculateEnergy(adjRods, this.hullHeat, this.maxHullHeat);
             int generatedHeat = rod.calculateHeat(adjRods);
             if (neutronReflector) {
                 generatedHeat *= 4;
             }
 
             distributeHeatToNeighbors(i, generatedHeat);
+        }
+
+        // 2. Фаза расчета выработки энергии
+        // Мощность рассчитывается ПОСЛЕ того, как стержни добавили тепло в корпус,
+        // но ДО того, как теплоотводы его забрали
+        long totalWatts = 0;
+        for (int i : rodIndices) {
+            FuelRod rod = (FuelRod) grid[i];
+            int adjRods = countAdjacentRods(i);
+            totalWatts += rod.calculateEnergy(adjRods, this.hullHeat, this.maxHullHeat);
         }
         if (neutronReflector) {
             totalWatts *= 4;
