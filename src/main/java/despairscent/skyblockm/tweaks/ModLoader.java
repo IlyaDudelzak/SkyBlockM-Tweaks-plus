@@ -63,8 +63,9 @@ public class ModLoader implements ClientModInitializer {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             despairscent.skyblockm.tweaks.ModUtils.CLIENT = client;
             SkyBlockPackManager.addDefaultServersIfFirstLaunch(client);
-            SkyBlockPackManager.onClientStarted(client);
-            despairscent.skyblockm.tweaks.backend.BackendApiClient.sendTelemetry("MOD_START", null);
+            java.util.Map<String, Object> startPayload = new java.util.HashMap<>();
+            startPayload.put("os", System.getProperty("os.name"));
+            despairscent.skyblockm.tweaks.backend.BackendApiClient.sendTelemetry("MOD_START", startPayload);
         });
     }
 

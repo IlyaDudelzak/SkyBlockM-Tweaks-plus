@@ -116,11 +116,25 @@ public class BackendApiClient {
             return;
         }
 
-        String modVersion = FabricLoader.getInstance().getModContainer("skyblockm-tweaks-plus")
+        String modVersion = FabricLoader.getInstance().getModContainer("skyblockm-tweaks")
+                .or(() -> FabricLoader.getInstance().getModContainer("skyblockm-tweaks-plus"))
                 .map(c -> c.getMetadata().getVersion().getFriendlyString())
                 .orElse("unknown");
 
-        String mcVersion = MinecraftClient.getInstance().getGameVersion();
+        String mcVersion = FabricLoader.getInstance().getModContainer("minecraft")
+                .map(c -> c.getMetadata().getVersion().getFriendlyString())
+                .orElseGet(() -> {
+                    try {
+                        MinecraftClient client = MinecraftClient.getInstance();
+                        if (client != null && client.getGameVersion() != null) {
+                            return client.getGameVersion();
+                        }
+                    } catch (Throwable ignored) {}
+                    return "unknown";
+                });
+
+        if (modVersion.length() > 32) modVersion = modVersion.substring(0, 32);
+        if (mcVersion.length() > 32) mcVersion = mcVersion.substring(0, 32);
 
         JsonObject body = new JsonObject();
         body.addProperty("modVersion", modVersion);
@@ -128,6 +142,8 @@ public class BackendApiClient {
         body.addProperty("eventType", eventType);
         if (payload != null && !payload.isEmpty()) {
             body.add("payload", GSON.toJsonTree(payload));
+        } else {
+            body.add("payload", new JsonObject());
         }
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -137,12 +153,12 @@ public class BackendApiClient {
                 .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(body)))
                 .build();
 
-        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenAccept(resp -> {
                     if (resp.statusCode() == 200 || resp.statusCode() == 202) {
                         ModUtils.LOGGER.info("[BackendApiClient] Телеметрия принята сервером (" + resp.statusCode() + "): " + eventType);
                     } else {
-                        ModUtils.LOGGER.warn("[BackendApiClient] Ошибка ответа сервера при отправке телеметрии " + eventType + ": " + resp.statusCode());
+                        ModUtils.LOGGER.warn("[BackendApiClient] Ошибка ответа сервера при отправке телеметрии " + eventType + ": " + resp.statusCode() + " " + resp.body());
                     }
                 })
                 .exceptionally(ex -> {
