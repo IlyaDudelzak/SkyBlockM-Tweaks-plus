@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public class NuclearReactorDetectorModule {
 
     private static final Pattern REACTOR_PATTERN = Pattern.compile(
-            "Выход:\\s*([0-9.,]+)\\s*Вт\\s*\\|\\s*Нагрев ядра:\\s*([0-9.,]+)%",
+            "Выход:\\s*([0-9.,\\s\u00a0]+)\\s*Вт\\s*\\|\\s*Нагрев(?:\\s*ядра)?:\\s*([0-9.,]+)%",
             Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
     );
 
@@ -74,13 +74,22 @@ public class NuclearReactorDetectorModule {
             }
         }
 
-        // 3. Парсим текущий нагрев из заголовка
+        // 3. Парсим текущий нагрев и мощность из заголовка
         var matcher = REACTOR_PATTERN.matcher(cleanTitle);
         if (matcher.find()) {
             try {
+                String wattsStr = matcher.group(1).replaceAll("[\\s\u00a0]", "").replace(',', '.');
+                long serverWatts = (long) Double.parseDouble(wattsStr);
                 String heatStr = matcher.group(2).replace(',', '.');
                 double heatPercent = Double.parseDouble(heatStr);
                 calcScreen.setInitialHeatPercent(heatPercent);
+
+                if (serverWatts > 0) {
+                    long unboostedWatts = calcScreen.getSimulator().getOutputWatts();
+                    if (unboostedWatts > 0 && serverWatts > unboostedWatts * 2) {
+                        calcScreen.setNeutronReflector(true);
+                    }
+                }
             } catch (Exception ignored) {}
         }
 

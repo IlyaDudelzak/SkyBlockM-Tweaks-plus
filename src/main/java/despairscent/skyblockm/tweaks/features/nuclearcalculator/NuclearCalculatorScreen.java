@@ -307,14 +307,54 @@ public class NuclearCalculatorScreen extends Screen {
         autoSaveActiveSlot();
     }
 
-    private void toggleReflector() {
-        this.neutronReflector = !this.neutronReflector;
-        this.simulator.setNeutronReflector(this.neutronReflector);
-        this.simulator.recalculateOutput();
+    public ReactorSimulator getSimulator() {
+        return this.simulator;
+    }
+
+    public void setNeutronReflector(boolean reflector) {
+        this.neutronReflector = reflector;
+        if (this.simulator != null) {
+            this.simulator.setNeutronReflector(this.neutronReflector);
+            this.simulator.recalculateOutput();
+        }
         if (btnReflector != null) {
             btnReflector.setMessage(Text.literal(this.neutronReflector ? "§aОтраж: x4" : "§7Отраж: x1"));
         }
         autoSaveActiveSlot();
+    }
+
+    private void toggleReflector() {
+        setNeutronReflector(!this.neutronReflector);
+    }
+
+    private String getStatusText() {
+        long watts = simulator.getOutputWatts();
+        double heat = simulator.getHullHeatPercent();
+        boolean explosion = heat >= 100.0;
+
+        String text;
+        if (explosion) {
+            text = String.format("Выход: %d Вт | §4ВЗРЫВ (%.0f%%)!", watts, heat);
+        } else {
+            text = String.format("Выход: %d Вт | Нагрев: %.0f%%", watts, heat);
+        }
+
+        if (this.textRenderer.getWidth(text) > 160) {
+            String formattedWatts;
+            if (watts >= 1_000_000) {
+                formattedWatts = String.format(java.util.Locale.ROOT, "%.2f МВт", watts / 1_000_000.0);
+            } else if (watts >= 10_000) {
+                formattedWatts = String.format(java.util.Locale.ROOT, "%.1f кВт", watts / 1_000.0);
+            } else {
+                formattedWatts = watts + " Вт";
+            }
+            if (explosion) {
+                text = String.format("Выход: %s | §4ВЗРЫВ (%.0f%%)!", formattedWatts, heat);
+            } else {
+                text = String.format("Выход: %s | Нагрев: %.0f%%", formattedWatts, heat);
+            }
+        }
+        return text;
     }
 
     private void cycleHeatPreset() {
@@ -500,16 +540,7 @@ public class NuclearCalculatorScreen extends Screen {
         drawTextureRegion(context, TEXTURE_BOTTOM, this.guiLeft, this.guiTop + 125, 0.0F, 131.0F, 176, 12);
 
         // 5. Вывод статуса реактора (цифры тепла и мощности белым текстом в нижней планке)
-        String statusText;
-        if (simulator.getHullHeatPercent() >= 100.0) {
-            statusText = String.format("Выход: %d Вт | Нагрев: %.0f%% §4(ВЗРЫВ!)",
-                    simulator.getOutputWatts(),
-                    simulator.getHullHeatPercent());
-        } else {
-            statusText = String.format("Выход: %d Вт | Нагрев ядра: %.0f%%",
-                    simulator.getOutputWatts(),
-                    simulator.getHullHeatPercent());
-        }
+        String statusText = getStatusText();
         int textWidth = this.textRenderer.getWidth(statusText);
         int textX = this.guiLeft + Math.max(7, (176 - textWidth) / 2);
         context.drawText(this.textRenderer, Text.literal(statusText), textX, this.guiTop + 127, 0xFFFFFFFF, false);

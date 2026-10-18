@@ -52,9 +52,6 @@ public class ReactorSimulator implements Serializable {
             FuelRod rod = (FuelRod) preview.grid[i];
             int adjRods = preview.countAdjacentRods(i);
             int generatedHeat = rod.calculateHeat(adjRods);
-            if (preview.neutronReflector) {
-                generatedHeat *= 4;
-            }
             preview.distributeHeatToNeighbors(i, generatedHeat);
         }
 
