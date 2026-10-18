@@ -128,6 +128,16 @@ public class BackendApiClient {
         if (mcVersion.length() > 32) mcVersion = mcVersion.substring(0, 32);
 
         JsonObject body = new JsonObject();
+        try {
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client != null && client.getSession() != null) {
+                String username = client.getSession().getUsername();
+                if (username != null && !username.isBlank()) {
+                    body.addProperty("username", username);
+                }
+            }
+        } catch (Throwable ignored) {}
+
         body.addProperty("modVersion", modVersion);
         body.addProperty("mcVersion", mcVersion);
         body.addProperty("eventType", eventType);
