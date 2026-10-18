@@ -30,21 +30,7 @@ public class FontStorageMixin {
     @Unique
     private static Supplier<BakedGlyph> wrapInvisible(Supplier<BakedGlyph> originalSupplier) {
         if (originalSupplier == null) return null;
-        return () -> {
-            BakedGlyph original = originalSupplier.get();
-            if (original == null) return null;
-            return new BakedGlyph() {
-                @Override
-                public GlyphMetrics getMetrics() {
-                    return original.getMetrics();
-                }
-
-                @Override
-                public TextDrawable.DrawnGlyphRect create(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset) {
-                    return null;
-                }
-            };
-        };
+        return new despairscent.skyblockm.tweaks.features.esterminalscroll.InvisibleGlyphSupplier(originalSupplier);
     }
 
     @Inject(method = "getBaked", at = @At("RETURN"), cancellable = true)
