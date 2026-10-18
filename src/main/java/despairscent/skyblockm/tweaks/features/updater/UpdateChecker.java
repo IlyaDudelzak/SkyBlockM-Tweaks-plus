@@ -65,10 +65,60 @@ public class UpdateChecker {
                 });
     }
 
+    public static String getCurrentGitHash() {
+        return FabricLoader.getInstance().getModContainer("skyblockm-tweaks")
+                .or(() -> FabricLoader.getInstance().getModContainer("skyblockm-tweaks-plus"))
+                .map(c -> {
+                    try {
+                        net.fabricmc.loader.api.metadata.CustomValue val = c.getMetadata().getCustomValue("gitHash");
+                        return val != null ? val.getAsString() : "";
+                    } catch (Exception ignored) {
+                        return "";
+                    }
+                })
+                .orElse("");
+    }
+
+    public static String extractCommitHashFromBody(String body) {
+        if (body == null || body.isEmpty()) return "";
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("commit/([a-f0-9]{7,40})").matcher(body);
+        return m.find() ? m.group(1) : "";
+    }
+
+    private static volatile long lastCheckTimestamp = 0L;
+    private static final long MIN_CHECK_INTERVAL_MS = 60_000L;
+    private static String lastChatNotifiedVersion = "";
+    private static java.util.concurrent.ScheduledExecutorService scheduler = null;
+
+    public static synchronized void startPeriodicCheck() {
+        if (scheduler != null && !scheduler.isShutdown()) return;
+        scheduler = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "SkyBlockM-UpdateChecker");
+            t.setDaemon(true);
+            return t;
+        });
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (ModUtils.CONFIG != null && ModUtils.CONFIG.updater != null && ModUtils.CONFIG.updater.enabled) {
+                    checkAsync();
+                }
+            } catch (Throwable ignored) {}
+        }, 30, 30, java.util.concurrent.TimeUnit.MINUTES);
+    }
+
+    public static void onWorldOrServerDisconnect() {
+        promptShown = false;
+        long now = System.currentTimeMillis();
+        if (now - lastCheckTimestamp > MIN_CHECK_INTERVAL_MS) {
+            checkAsync();
+        }
+    }
+
     public static void checkAsync() {
         if (ModUtils.CONFIG == null || ModUtils.CONFIG.updater == null || !ModUtils.CONFIG.updater.enabled) {
             return;
         }
+        lastCheckTimestamp = System.currentTimeMillis();
         checkManually().thenAccept(update -> {
             if (update != null) {
                 availableUpdate = update;
@@ -78,11 +128,23 @@ public class UpdateChecker {
                         if (client.currentScreen instanceof TitleScreen && !promptShown) {
                             promptShown = true;
                             client.setScreen(new UpdatePromptScreen(client.currentScreen, update));
+                        } else if (client.player != null) {
+                            sendUpdateNotificationToChat(client, update);
                         }
                     });
                 }
             }
         });
+    }
+
+    private static void sendUpdateNotificationToChat(MinecraftClient client, UpdateInfo update) {
+        if (client.player == null) return;
+        if (update.version.equals(lastChatNotifiedVersion)) return;
+        lastChatNotifiedVersion = update.version;
+
+        String badge = update.isNightly ? "§e[Dev / Nightly]" : "§a[Релиз]";
+        net.minecraft.text.Text msg = net.minecraft.text.Text.literal("§6[SkyBlockM Tweaks+] §aДоступно обновление " + badge + " §f" + update.version + "§a! Окно установки откроется при выходе в меню.");
+        client.player.sendMessage(msg, false);
     }
 
     public static CompletableFuture<UpdateInfo> checkManually() {
@@ -164,18 +226,63 @@ public class UpdateChecker {
                 }
 
                 if (isNightly) {
-                    // Для Nightly проверяем timestamp публикации относительно сохраненного
+                    boolean isUpdateAvailable = false;
+
+                    // 1. Сравнение Git Hash коммита
+                    String localCommit = getCurrentGitHash();
+                    String remoteCommit = extractCommitHashFromBody(body);
+
+                    if (!localCommit.isEmpty() && !remoteCommit.isEmpty() && !localCommit.equals("unknown")) {
+                        if (remoteCommit.startsWith(localCommit) || localCommit.startsWith(remoteCommit)) {
+                            return null; // Тот же самый коммит, билд уже установлен
+                        } else {
+                            isUpdateAvailable = true;
+                        }
+                    }
+
+                    // 2. Сравнение сохраненного timestamp последней загрузки
                     String lastTimestamp = ModUtils.CONFIG != null && ModUtils.CONFIG.updater != null
                             ? ModUtils.CONFIG.updater.lastNightlyTimestamp
                             : "";
-                    if (publishedAt.equals(lastTimestamp)) {
-                        return null; // Уже установлен этот nightly
+                    if (!lastTimestamp.isEmpty() && !publishedAt.isEmpty()) {
+                        try {
+                            java.time.Instant remoteInstant = java.time.Instant.parse(publishedAt);
+                            java.time.Instant lastInstant = java.time.Instant.parse(lastTimestamp);
+                            if (remoteInstant.isAfter(lastInstant)) {
+                                isUpdateAvailable = true;
+                            } else if (!isUpdateAvailable) {
+                                return null; // Этот или более новый nightly уже был скачан
+                            }
+                        } catch (Exception ignored) {}
                     }
-                    // Также если semver в nightly новее текущего — однозначно обновляем
-                    boolean newerSemver = isNewerVersion(remoteVersion, currentModVersion);
-                    if (!newerSemver && !lastTimestamp.isEmpty()) {
-                        // Если версия та же и timestamp не новее, пропускаем
+
+                    // 3. Сравнение с датой изменения локального jar-файла
+                    if (!isUpdateAvailable) {
+                        try {
+                            java.nio.file.Path currentJar = ModDownloader.getCurrentJarPath();
+                            if (currentJar != null && java.nio.file.Files.exists(currentJar) && !publishedAt.isEmpty()) {
+                                java.time.Instant remoteInstant = java.time.Instant.parse(publishedAt);
+                                java.time.Instant localFileInstant = java.nio.file.Files.getLastModifiedTime(currentJar).toInstant();
+                                if (remoteInstant.isAfter(localFileInstant.plusSeconds(120))) {
+                                    isUpdateAvailable = true;
+                                }
+                            }
+                        } catch (Exception ignored) {}
+                    }
+
+                    // 4. Проверка по SemVer (если в ночной сборке подняли версию)
+                    if (isNewerVersion(remoteVersion, currentModVersion)) {
+                        isUpdateAvailable = true;
+                    }
+
+                    if (!isUpdateAvailable) {
                         return null;
+                    }
+
+                    // Для наглядности в UI добавляем краткий хэш коммита к версии
+                    if (!remoteCommit.isEmpty()) {
+                        String shortCommit = remoteCommit.length() > 7 ? remoteCommit.substring(0, 7) : remoteCommit;
+                        remoteVersion = remoteVersion + " (" + shortCommit + ")";
                     }
                 } else {
                     // Для стабильных релизов проверяем semver

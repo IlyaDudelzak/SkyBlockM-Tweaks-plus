@@ -43,11 +43,19 @@ remapJar {
     archiveVersion = ""
 }
 
+def getGitHash() {
+	try {
+		return "git rev-parse --short HEAD".execute([], rootProject.rootDir).text.trim()
+	} catch (Exception ignored) {
+		return "unknown"
+	}
+}
+
 processResources {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand "version": project.version, "git_hash": getGitHash()
 		filter { String line ->
 			if (line.contains('"minecraft": "*"') && project.hasProperty("minecraft_dependency")) {
 				return line.replace('"minecraft": "*"', '"minecraft": ' + project.minecraft_dependency)
