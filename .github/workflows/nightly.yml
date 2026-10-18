@@ -38,6 +38,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Extract mod version
+        id: mod_version
+        run: |
+          VERSION=$(grep "^mod_version=" gradle.properties | cut -d'=' -f2 | tr -d ' \r\n')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted mod version: $VERSION"
+
       - name: Build all versions with Stonecutter
         run: ./gradlew build -x test
 
@@ -45,7 +52,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag_name != '' && inputs.tag_name || 'nightly' }}
-          name: "Nightly Build (Latest dev)"
+          name: ${{ format('Nightly Build v{0} (Latest dev)', steps.mod_version.outputs.version) }}
           prerelease: true
           make_latest: false
           files: versions/*/build/libs/skyblockm-tweaks-plus-*.jar
@@ -53,6 +60,7 @@ jobs:
             ### 🧪 SkyBlockM Tweaks+ Nightly Build
             Автоматическая тестовая сборка из ветки `dev`.
 
+            - **Версия мода**: `v${{ steps.mod_version.outputs.version }}`
             - **Коммит**: [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
             - **Ветка**: `${{ github.ref_name }}`
             - **Дата сборки**: ${{ github.event.head_commit.timestamp || github.run_id }}

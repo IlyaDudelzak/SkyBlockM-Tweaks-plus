@@ -1,12 +1,14 @@
 package despairscent.skyblockm.tweaks.backend;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import despairscent.skyblockm.tweaks.ModUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -22,6 +24,18 @@ public class BackendApiClient {
             .connectTimeout(Duration.ofSeconds(5))
             .build();
 
+    public static final String SERVER_URL = "http://37.27.211.81:8080";
+    private static final URI CAPTCHA_UPLOAD_URI, TELEMETRY_URI;
+
+    static {
+        try {
+            CAPTCHA_UPLOAD_URI = new URI(SERVER_URL + "/api/v1/captcha/batch");
+            TELEMETRY_URI = new URI(SERVER_URL + "/api/v1/telemetry");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static class CaptchaFrameData {
         public final byte[] colors;
         public final String predictedClass;
@@ -32,17 +46,6 @@ public class BackendApiClient {
             this.predictedClass = predictedClass;
             this.confidence = confidence;
         }
-    }
-
-    public static String getServerUrl() {
-        if (ModUtils.CONFIG != null && ModUtils.CONFIG.backendApi != null && ModUtils.CONFIG.backendApi.serverUrl != null) {
-            String url = ModUtils.CONFIG.backendApi.serverUrl.trim();
-            if (url.endsWith("/")) {
-                url = url.substring(0, url.length() - 1);
-            }
-            return url;
-        }
-        return "http://37.27.211.81:8080";
     }
 
     public static boolean isEnabled() {
@@ -57,45 +60,42 @@ public class BackendApiClient {
             return;
         }
 
-        String baseUrl = getServerUrl();
-        URI uri;
-        try {
-            uri = URI.create(baseUrl + "/api/v1/captcha");
-        } catch (Exception e) {
-            ModUtils.LOGGER.warn("[BackendApiClient] Некорректный URL сервера: " + baseUrl, e);
-            return;
-        }
+        JsonArray captchas = new JsonArray(9);
 
         for (CaptchaFrameData frame : frames) {
             if (frame.colors == null || frame.colors.length < 16384) continue;
 
-            JsonObject body = new JsonObject();
-            body.addProperty("colors", Base64.getEncoder().encodeToString(frame.colors));
-            body.addProperty("predictedClass", frame.predictedClass);
+            JsonObject captcha = new JsonObject();
+            captcha.addProperty("colors", Base64.getEncoder().encodeToString(frame.colors));
+            captcha.addProperty("predictedClass", frame.predictedClass);
             float safeConfidence = Math.min(1.0f, Math.max(0.0f, frame.confidence));
-            body.addProperty("confidence", safeConfidence);
-            body.addProperty("solvedSuccessfully", solvedSuccessfully);
+            captcha.addProperty("confidence", safeConfidence);
+            captcha.addProperty("solvedSuccessfully", solvedSuccessfully);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .timeout(Duration.ofSeconds(8))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(body)))
-                    .build();
-
-            HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenAccept(resp -> {
-                        if (resp.statusCode() == 200 || resp.statusCode() == 201) {
-                            ModUtils.LOGGER.info("[BackendApiClient] Карта капчи успешно сохранена на сервере (" + resp.statusCode() + ")");
-                        } else {
-                            ModUtils.LOGGER.warn("[BackendApiClient] Ошибка ответа сервера при загрузке капчи: " + resp.statusCode() + " " + resp.body());
-                        }
-                    })
-                    .exceptionally(ex -> {
-                        ModUtils.LOGGER.warn("[BackendApiClient] Ошибка отправки карты капчи (сервер недоступен): " + ex.getMessage());
-                        return null;
-                    });
+            captchas.add(captcha);
         }
+        JsonObject body = new JsonObject();
+        body.add("captchas", captchas);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(CAPTCHA_UPLOAD_URI)
+                .timeout(Duration.ofSeconds(8))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(body)))
+                .build();
+
+        HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenAccept(resp -> {
+                    if (resp.statusCode() == 200 || resp.statusCode() == 201) {
+                        ModUtils.LOGGER.info("[BackendApiClient] Карты капч успешно сохранена на сервере (" + resp.statusCode() + ")");
+                    } else {
+                        ModUtils.LOGGER.warn("[BackendApiClient] Ошибка ответа сервера при загрузке капч: " + resp.statusCode() + " " + resp.body());
+                    }
+                })
+                .exceptionally(ex -> {
+                    ModUtils.LOGGER.warn("[BackendApiClient] Ошибка отправки карты капч (сервер недоступен): " + ex.getMessage());
+                    return null;
+                });
         ModUtils.LOGGER.info(String.format("[BackendApiClient] Загрузка %d рамок капчи на сервер (solved=%s)...", frames.size(), solvedSuccessfully));
     }
 
@@ -104,15 +104,6 @@ public class BackendApiClient {
      */
     public static void sendTelemetry(String eventType, Map<String, Object> payload) {
         if (!isEnabled() || !ModUtils.CONFIG.backendApi.sendTelemetry) {
-            return;
-        }
-
-        String baseUrl = getServerUrl();
-        URI uri;
-        try {
-            uri = URI.create(baseUrl + "/api/v1/telemetry");
-        } catch (Exception e) {
-            ModUtils.LOGGER.warn("[BackendApiClient] Некорректный URL сервера: " + baseUrl, e);
             return;
         }
 
@@ -147,7 +138,7 @@ public class BackendApiClient {
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(uri)
+                .uri(TELEMETRY_URI)
                 .timeout(Duration.ofSeconds(5))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(body)))

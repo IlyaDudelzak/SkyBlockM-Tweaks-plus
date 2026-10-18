@@ -3,7 +3,7 @@ plugins {
 }
 
 group = project.mod_group
-version = project.mod_version
+version = rootProject.mod_version
 
 repositories {
 	mavenCentral()
@@ -39,7 +39,7 @@ dependencies {
 }
 
 remapJar {
-    archiveBaseName = "${archive_name}-${mod_version}+mc${minecraft_version}"
+    archiveBaseName = "${archive_name}-${project.version}+mc${minecraft_version}"
     archiveVersion = ""
 }
 

@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skyblockm-tweaks-artifacts
-          path: build/libs/
+          path: versions/*/build/libs/skyblockm-tweaks-plus-*.jar
