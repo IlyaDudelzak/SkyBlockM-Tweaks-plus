@@ -320,6 +320,19 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.updater"), CONFIG.updater.enabled)
+                .setTooltip(i18n("config.updater.tooltip"))
+                .setDefaultValue(Config.DEFAULT.updater.enabled)
+                .setSaveConsumer(value -> CONFIG.updater.enabled = value)
+                .build());
+        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startEnumSelector(i18n("config.updater.channel"), Config.UpdateChannel.class, CONFIG.updater.channel)
+                        .setTooltip(i18n("config.updater.channel.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.updater.channel)
+                        .setSaveConsumer(value -> CONFIG.updater.channel = value)
+                        .build()
+        )).build());
+
         builder.setSavingRunnable(() -> CONFIG.save());
 
         return builder.build();

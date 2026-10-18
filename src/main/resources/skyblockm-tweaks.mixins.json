@@ -29,7 +29,8 @@
     "MinecraftClientMixin",
     "ResourcePackProfileInsertionPositionMixin",
     "ResourcePackProfileMixin",
-    "SplashTextResourceSupplierMixin"
+    "SplashTextResourceSupplierMixin",
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

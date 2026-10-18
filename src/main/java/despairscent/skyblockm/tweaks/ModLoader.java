@@ -66,6 +66,7 @@ public class ModLoader implements ClientModInitializer {
             java.util.Map<String, Object> startPayload = new java.util.HashMap<>();
             startPayload.put("os", System.getProperty("os.name"));
             despairscent.skyblockm.tweaks.backend.BackendApiClient.sendTelemetry("MOD_START", startPayload);
+            despairscent.skyblockm.tweaks.features.updater.UpdateChecker.checkAsync();
         });
     }
 

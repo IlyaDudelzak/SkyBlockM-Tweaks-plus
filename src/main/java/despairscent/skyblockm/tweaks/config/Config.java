@@ -77,6 +77,7 @@ public class Config {
     public AutomaticCaptchaConfig automaticCaptcha = new AutomaticCaptchaConfig();
     public BackendApiConfig backendApi = new BackendApiConfig();
     public NuclearCalculatorConfig nuclearCalculator = new NuclearCalculatorConfig();
+    public UpdaterConfig updater = new UpdaterConfig();
 
     public boolean firstLaunchServersAdded = false;
 
@@ -257,6 +258,18 @@ public class Config {
         public boolean showButtonInReactor = true;
     }
 
+    public enum UpdateChannel {
+        STABLE,
+        NIGHTLY
+    }
+
+    public static class UpdaterConfig {
+        public boolean enabled = true;
+        public UpdateChannel channel = UpdateChannel.STABLE;
+        public String ignoredVersion = "";
+        public String lastNightlyTimestamp = "";
+    }
+
     public static Config load() {
         try (FileReader reader = new FileReader(FabricLoader.getInstance().getConfigDir().resolve(FILENAME).toFile())) {
             Config config = GSON.fromJson(reader, Config.class);
@@ -313,6 +326,9 @@ public class Config {
             }
             if (config.nuclearCalculator == null) {
                 config.nuclearCalculator = new NuclearCalculatorConfig();
+            }
+            if (config.updater == null) {
+                config.updater = new UpdaterConfig();
             }
 
             return config;

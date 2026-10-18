@@ -132,5 +132,11 @@
   "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor": "Open simulator for current reactor",
   "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor.tooltip": "Automatically opens the simulator with the current reactor layout when opening a reactor",
   "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor": "Button in reactor interface",
-  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor.tooltip": "Shows the calculator button (🖩) next to the reactor interface"
+  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor.tooltip": "Shows the calculator button (🖩) next to the reactor interface",
+  "skyblockm-tweaks.config.updater": "Auto Check for Updates",
+  "skyblockm-tweaks.config.updater.tooltip": "Check for new versions on GitHub when the game starts",
+  "skyblockm-tweaks.config.updater.channel": "Update Channel",
+  "skyblockm-tweaks.config.updater.channel.tooltip": "Select release channel for updates",
+  "skyblockm-tweaks.config.updater.channel.STABLE": "Releases (Stable)",
+  "skyblockm-tweaks.config.updater.channel.NIGHTLY": "Dev / Nightly"
 }
