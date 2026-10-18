@@ -22,6 +22,7 @@
     "GameRendererMixin",
     "HandledScreenAccessor",
     "HandledScreenMixin",
+    "IdListPaletteMixin",
     "InGameHudMixin",
     "ItemDisplayEntityMixin",
     "KeyboardInputMixin",

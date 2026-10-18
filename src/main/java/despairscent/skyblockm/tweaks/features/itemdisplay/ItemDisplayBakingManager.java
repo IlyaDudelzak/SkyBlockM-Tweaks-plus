@@ -164,48 +164,8 @@ public class ItemDisplayBakingManager {
             this.matrix = ms.peek().getPositionMatrix();
         }
 
-        private static java.lang.reflect.Field SPRITE_IMAGE_FIELD;
-        static {
-            try {
-                for (java.lang.reflect.Field f : net.minecraft.client.texture.SpriteContents.class.getDeclaredFields()) {
-                    if (f.getType() == net.minecraft.client.texture.NativeImage.class) {
-                        f.setAccessible(true);
-                        SPRITE_IMAGE_FIELD = f;
-                        break;
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }
-
-        private static final ConcurrentHashMap<net.minecraft.util.Identifier, Boolean> TRANSLUCENT_SPRITE_CACHE = new ConcurrentHashMap<>();
-
         public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
-            if (sprite == null) return false;
-            net.minecraft.client.texture.SpriteContents contents = sprite.getContents();
-            if (contents == null) return false;
-            net.minecraft.util.Identifier id = contents.getId();
-            if (id == null) return false;
-            return TRANSLUCENT_SPRITE_CACHE.computeIfAbsent(id, k -> {
-                try {
-                    net.minecraft.client.texture.NativeImage img = null;
-                    if (SPRITE_IMAGE_FIELD != null) {
-                        img = (net.minecraft.client.texture.NativeImage) SPRITE_IMAGE_FIELD.get(contents);
-                    }
-                    if (img != null) {
-                        int w = contents.getWidth();
-                        int h = contents.getHeight();
-                        for (int y = 0; y < h; y++) {
-                            for (int x = 0; x < w; x++) {
-                                int a = Byte.toUnsignedInt(img.getOpacity(x, y));
-                                if (a > 0 && a < 255) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                } catch (Throwable ignored) {}
-                return false;
-            });
+            return SpriteTranslucencyCache.isTranslucent(sprite);
         }
 
         public boolean matches(DisplayEntity.ItemDisplayEntity display) {
@@ -488,6 +448,7 @@ public class ItemDisplayBakingManager {
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
         ModelBoundsCache.clear();
+        SpriteTranslucencyCache.clear();
     }
 
     public static void onResourceReload() {
@@ -678,32 +639,8 @@ public class ItemDisplayBakingManager {
             this.matrix = ms.peek().getPositionMatrix();
         }
 
-        private static final ConcurrentHashMap<net.minecraft.util.Identifier, Boolean> TRANSLUCENT_SPRITE_CACHE = new ConcurrentHashMap<>();
-
         public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
-            if (sprite == null) return false;
-            net.minecraft.client.texture.SpriteContents contents = sprite.getContents();
-            if (contents == null) return false;
-            net.minecraft.util.Identifier id = contents.getId();
-            if (id == null) return false;
-            return TRANSLUCENT_SPRITE_CACHE.computeIfAbsent(id, k -> {
-                try {
-                    net.minecraft.client.texture.NativeImage img = contents.image;
-                    if (img != null) {
-                        int w = contents.getWidth();
-                        int h = contents.getHeight();
-                        for (int y = 0; y < h; y++) {
-                            for (int x = 0; x < w; x++) {
-                                int a = Byte.toUnsignedInt(img.getOpacity(x, y));
-                                if (a > 0 && a < 255) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                } catch (Throwable ignored) {}
-                return false;
-            });
+            return SpriteTranslucencyCache.isTranslucent(sprite);
         }
 
         public boolean matches(DisplayEntity.ItemDisplayEntity display) {
@@ -986,6 +923,7 @@ public class ItemDisplayBakingManager {
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
         ModelBoundsCache.clear();
+        SpriteTranslucencyCache.clear();
     }
 
     public static void onResourceReload() {
@@ -1381,6 +1319,7 @@ public class ItemDisplayBakingManager {
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
         ModelBoundsCache.clear();
+        SpriteTranslucencyCache.clear();
     }
 
     public static void onResourceReload() {
@@ -1777,6 +1716,7 @@ public class ItemDisplayBakingManager {
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
         ModelBoundsCache.clear();
+        SpriteTranslucencyCache.clear();
     }
 
     public static void onResourceReload() {

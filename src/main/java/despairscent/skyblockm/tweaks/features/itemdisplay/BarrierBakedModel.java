@@ -193,32 +193,8 @@ public class BarrierBakedModel extends ForwardingBakedModel {
         }
     }
 
-    private static final java.util.concurrent.ConcurrentHashMap<net.minecraft.util.Identifier, Boolean> TRANSLUCENT_SPRITE_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
-
     public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
-        if (sprite == null) return false;
-        net.minecraft.client.texture.SpriteContents contents = sprite.getContents();
-        if (contents == null) return false;
-        net.minecraft.util.Identifier id = contents.getId();
-        if (id == null) return false;
-        return TRANSLUCENT_SPRITE_CACHE.computeIfAbsent(id, k -> {
-            try {
-                net.minecraft.client.texture.NativeImage img = contents.image;
-                if (img != null) {
-                    int w = contents.getWidth();
-                    int h = contents.getHeight();
-                    for (int y = 0; y < h; y++) {
-                        for (int x = 0; x < w; x++) {
-                            int a = Byte.toUnsignedInt(img.getOpacity(x, y));
-                            if (a > 0 && a < 255) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-            return false;
-        });
+        return SpriteTranslucencyCache.isTranslucent(sprite);
     }
 
     @Override
@@ -627,32 +603,8 @@ public class BarrierBakedModel extends ForwardingBakedModel {
         }
     }
 
-    private static final java.util.concurrent.ConcurrentHashMap<net.minecraft.util.Identifier, Boolean> TRANSLUCENT_SPRITE_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
-
     public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
-        if (sprite == null) return false;
-        net.minecraft.client.texture.SpriteContents contents = sprite.getContents();
-        if (contents == null) return false;
-        net.minecraft.util.Identifier id = contents.getId();
-        if (id == null) return false;
-        return TRANSLUCENT_SPRITE_CACHE.computeIfAbsent(id, k -> {
-            try {
-                net.minecraft.client.texture.NativeImage img = contents.image;
-                if (img != null) {
-                    int w = contents.getWidth();
-                    int h = contents.getHeight();
-                    for (int y = 0; y < h; y++) {
-                        for (int x = 0; x < w; x++) {
-                            int a = Byte.toUnsignedInt(img.getOpacity(x, y));
-                            if (a > 5 && a < 250) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-            return false;
-        });
+        return SpriteTranslucencyCache.isTranslucent(sprite);
     }
 
     @Override
@@ -856,32 +808,8 @@ public class BarrierBakedModel extends ForwardingBakedModel {
         }
     }
 
-    private static final java.util.concurrent.ConcurrentHashMap<net.minecraft.util.Identifier, Boolean> TRANSLUCENT_SPRITE_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
-
     public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
-        if (sprite == null) return false;
-        net.minecraft.client.texture.SpriteContents contents = sprite.getContents();
-        if (contents == null) return false;
-        net.minecraft.util.Identifier id = contents.getId();
-        if (id == null) return false;
-        return TRANSLUCENT_SPRITE_CACHE.computeIfAbsent(id, k -> {
-            try {
-                net.minecraft.client.texture.NativeImage img = contents.image;
-                if (img != null) {
-                    int w = contents.getWidth();
-                    int h = contents.getHeight();
-                    for (int y = 0; y < h; y++) {
-                        for (int x = 0; x < w; x++) {
-                            int a = Byte.toUnsignedInt(img.getOpacity(x, y));
-                            if (a > 0 && a < 255) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-            return false;
-        });
+        return SpriteTranslucencyCache.isTranslucent(sprite);
     }
 
     @Override

@@ -21,6 +21,7 @@
     "FontStorageMixin",
     "HandledScreenAccessor",
     "HandledScreenMixin",
+    "IdListPaletteMixin",
     "InGameHudMixin",
     "ItemDisplayEntityMixin",
     "ItemRenderStateMixin",
