@@ -291,6 +291,16 @@ public class Config {
 
             if (config.itemDisplayBaking == null) {
                 config.itemDisplayBaking = new ItemDisplayBakingConfig();
+            } else {
+                if (config.itemDisplayBaking.chunkRebuildCooldown < 0.0) {
+                    config.itemDisplayBaking.chunkRebuildCooldown = 0.0;
+                }
+                if (config.itemDisplayBaking.chunkSettleTime < 0.0) {
+                    config.itemDisplayBaking.chunkSettleTime = 0.0;
+                }
+                if (config.itemDisplayBaking.maxRebuildsPerFrame <= 0) {
+                    config.itemDisplayBaking.maxRebuildsPerFrame = 8;
+                }
             }
             if (config.itemDisplayHitbox == null) {
                 config.itemDisplayHitbox = new ItemDisplayHitboxConfig();

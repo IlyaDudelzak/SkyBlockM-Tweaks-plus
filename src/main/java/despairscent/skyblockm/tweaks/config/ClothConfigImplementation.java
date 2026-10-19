@@ -184,12 +184,19 @@ public class ClothConfigImplementation {
                 builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.chunkSettleTime"), CONFIG.itemDisplayBaking.chunkSettleTime)
                         .setTooltip(i18n("config.itemDisplayBaking.chunkSettleTime.tooltip"))
                         .setDefaultValue(Config.DEFAULT.itemDisplayBaking.chunkSettleTime)
+                        .setMin(0.0)
                         .setSaveConsumer(value -> CONFIG.itemDisplayBaking.chunkSettleTime = value)
                         .build(),
                 builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.chunkRebuildCooldown"), CONFIG.itemDisplayBaking.chunkRebuildCooldown)
                         .setTooltip(i18n("config.itemDisplayBaking.chunkRebuildCooldown.tooltip"))
                         .setDefaultValue(Config.DEFAULT.itemDisplayBaking.chunkRebuildCooldown)
+                        .setMin(0.0)
                         .setSaveConsumer(value -> CONFIG.itemDisplayBaking.chunkRebuildCooldown = value)
+                        .build(),
+                builder.entryBuilder().startIntSlider(i18n("config.itemDisplayBaking.maxRebuildsPerFrame"), CONFIG.itemDisplayBaking.maxRebuildsPerFrame, 1, 64)
+                        .setTooltip(i18n("config.itemDisplayBaking.maxRebuildsPerFrame.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.maxRebuildsPerFrame)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.maxRebuildsPerFrame = value)
                         .build(),
                 builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayBaking.hideBakeableEntities"), CONFIG.itemDisplayBaking.hideBakeableEntities)
                         .setTooltip(i18n("config.itemDisplayBaking.hideBakeableEntities.tooltip"))

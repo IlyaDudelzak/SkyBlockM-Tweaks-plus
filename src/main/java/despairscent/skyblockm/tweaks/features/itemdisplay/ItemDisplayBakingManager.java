@@ -381,6 +381,7 @@ public class ItemDisplayBakingManager {
     }
 
     public static void markSectionDirty(BlockPos pos) {
+        if (CONFIG == null || CONFIG.itemDisplayBaking == null) return;
         int cx = pos.getX() >> 4;
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
@@ -388,8 +389,17 @@ public class ItemDisplayBakingManager {
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
+        long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
-        PENDING_SECTION_REBUILDS.put(sectionLong, now + settleDelayMs);
+        long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
+        long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
+        
+        Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
+        if (existingTarget != null) {
+            targetTime = Math.max(targetTime, existingTarget);
+        }
+        
+        PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -458,7 +468,8 @@ public class ItemDisplayBakingManager {
         
         var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
-        while (iterator.hasNext() && processed < 8) {
+        int maxPerFrame = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? Math.max(1, CONFIG.itemDisplayBaking.maxRebuildsPerFrame) : 8;
+        while (iterator.hasNext() && processed < maxPerFrame) {
             var entry = iterator.next();
             if (now >= entry.getValue()) {
                 long sectionLong = entry.getKey();
@@ -893,6 +904,7 @@ public class ItemDisplayBakingManager {
     }
 
     public static void markSectionDirty(BlockPos pos) {
+        if (CONFIG == null || CONFIG.itemDisplayBaking == null) return;
         int cx = pos.getX() >> 4;
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
@@ -900,8 +912,17 @@ public class ItemDisplayBakingManager {
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
+        long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
-        PENDING_SECTION_REBUILDS.put(sectionLong, now + settleDelayMs);
+        long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
+        long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
+        
+        Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
+        if (existingTarget != null) {
+            targetTime = Math.max(targetTime, existingTarget);
+        }
+        
+        PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -970,7 +991,8 @@ public class ItemDisplayBakingManager {
         
         var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
-        while (iterator.hasNext() && processed < 8) {
+        int maxPerFrame = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? Math.max(1, CONFIG.itemDisplayBaking.maxRebuildsPerFrame) : 8;
+        while (iterator.hasNext() && processed < maxPerFrame) {
             var entry = iterator.next();
             if (now >= entry.getValue()) {
                 long sectionLong = entry.getKey();
@@ -1347,8 +1369,17 @@ public class ItemDisplayBakingManager {
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
+        long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
-        PENDING_SECTION_REBUILDS.put(sectionLong, now + settleDelayMs);
+        long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
+        long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
+        
+        Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
+        if (existingTarget != null) {
+            targetTime = Math.max(targetTime, existingTarget);
+        }
+        
+        PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -1413,8 +1444,8 @@ public class ItemDisplayBakingManager {
         
         var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
-        // Process up to 8 sections per frame to eliminate any rebuild delays
-        while (iterator.hasNext() && processed < 8) {
+        int maxPerFrame = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? Math.max(1, CONFIG.itemDisplayBaking.maxRebuildsPerFrame) : 8;
+        while (iterator.hasNext() && processed < maxPerFrame) {
             var entry = iterator.next();
             if (now >= entry.getValue()) {
                 long sectionLong = entry.getKey();
@@ -1792,8 +1823,17 @@ public class ItemDisplayBakingManager {
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
+        long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
-        PENDING_SECTION_REBUILDS.put(sectionLong, now + settleDelayMs);
+        long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
+        long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
+        
+        Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
+        if (existingTarget != null) {
+            targetTime = Math.max(targetTime, existingTarget);
+        }
+        
+        PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -1858,8 +1898,8 @@ public class ItemDisplayBakingManager {
         
         var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
-        // Process up to 8 sections per frame to eliminate any rebuild delays
-        while (iterator.hasNext() && processed < 8) {
+        int maxPerFrame = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? Math.max(1, CONFIG.itemDisplayBaking.maxRebuildsPerFrame) : 8;
+        while (iterator.hasNext() && processed < maxPerFrame) {
             var entry = iterator.next();
             if (now >= entry.getValue()) {
                 long sectionLong = entry.getKey();

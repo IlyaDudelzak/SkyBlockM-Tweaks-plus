@@ -59,6 +59,8 @@
   "skyblockm-tweaks.config.itemDisplayBaking.chunkSettleTime.tooltip": "Время в секундах без новых блоков в чанке перед его пересборкой (устраняет фризы на границе)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown": "Кулдаун пересборки того же чанка (сек)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown.tooltip": "Минимальный интервал между повторными пересборками одного и того же чанка (предотвращает спам от активных механизмов)",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame": "Максимум пересборок чанков в кадр",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame.tooltip": "Максимальное количество секций чанков, отправляемых на пересборку за один кадр (меньше - меньше фризов при частых изменениях, больше - быстрее обновляется визуально)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Скрывать сущности до запекания",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Полностью отключает динамический рендер запекаемых сущностей, устраняя просадку FPS при приближении к базе",
   "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомные хитбоксы барьеров",

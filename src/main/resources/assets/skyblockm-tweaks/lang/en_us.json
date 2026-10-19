@@ -59,6 +59,8 @@
   "skyblockm-tweaks.config.itemDisplayBaking.chunkSettleTime.tooltip": "Time in seconds without new blocks in the chunk before rebuilding it (prevents boundary stutters)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown": "Same Chunk Rebuild Cooldown (seconds)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown.tooltip": "Minimum interval between consecutive rebuilds of the same chunk (prevents spam from active machines)",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame": "Max Chunk Rebuilds Per Frame",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame.tooltip": "Maximum number of chunk sections scheduled for rebuilding per frame (lower = smoother fps during frequent updates, higher = faster visual updates)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Hide Entities Pending Bake",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Completely disables dynamic rendering of bakeable entities, preventing FPS drops when approaching bases",
   "skyblockm-tweaks.config.itemDisplayHitbox": "Custom Barrier Hitboxes",

@@ -59,6 +59,8 @@
   "skyblockm-tweaks.config.itemDisplayBaking.chunkSettleTime.tooltip": "Час у секундах без нових блоків у чанку перед його перебудовою (усуває фризи на межах)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown": "Кулдаун перебудови того самого чанку (сек)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown.tooltip": "Мінімальний інтервал між повторними перебудовами того самого чанку (запобігає спаму від активних механізмів)",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame": "Максимум перебудов чанків за кадр",
+  "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame.tooltip": "Максимальна кількість секцій чанків, які відправляються на перебудову за один кадр (менше - менше фризів при частих змінах, більше - швидше оновлюється візуально)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Приховувати сутності до запікання",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Повністю вимикає динамічний рендер сутностей для запікання, усуваючи просідання FPS при наближенні до бази",
   "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомні хітбокси бар'єрів",
