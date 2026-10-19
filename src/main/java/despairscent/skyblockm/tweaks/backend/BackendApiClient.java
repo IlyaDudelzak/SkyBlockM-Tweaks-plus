@@ -167,4 +167,16 @@ public class BackendApiClient {
                     return null;
                 });
     }
+
+    /**
+     * Вызывается при переключении аккаунта (например, через In-Game Account Switcher) для обновления телеметрии на сервере.
+     */
+    public static void onAccountSwitch(String oldUsername, String newUsername) {
+        ModUtils.LOGGER.info(String.format("[BackendApiClient] Обнаружено переключение аккаунта: %s -> %s, обновление телеметрии...", oldUsername, newUsername));
+        Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("previousUsername", oldUsername);
+        payload.put("newUsername", newUsername);
+        payload.put("os", System.getProperty("os.name"));
+        sendTelemetry("ACCOUNT_SWITCH", payload);
+    }
 }

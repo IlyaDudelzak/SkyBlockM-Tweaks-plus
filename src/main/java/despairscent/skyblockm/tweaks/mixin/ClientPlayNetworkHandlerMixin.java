@@ -5,7 +5,9 @@ import despairscent.skyblockm.tweaks.features.itemdisplay.ItemDisplayBakingManag
 import despairscent.skyblockm.tweaks.features.inventorydesyncfix.InventoryDesyncFixModule;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.c2s.play.TeleportConfirmC2SPacket;
+import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -97,15 +99,30 @@ public class ClientPlayNetworkHandlerMixin {
         }
     }
 
+    @Inject(method = "onPlayerRespawn", at = @At("HEAD"))
+    private void onPlayerRespawn(PlayerRespawnS2CPacket packet, CallbackInfo ci) {
+        despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.onServerOrWorldChange();
+    }
+
+    @Inject(method = "onGameJoin", at = @At("HEAD"))
+    private void onGameJoin(GameJoinS2CPacket packet, CallbackInfo ci) {
+        despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.onServerOrWorldChange();
+    }
+
     @Inject(method = "clearWorld", at = @At("HEAD"))
     private void onClearWorld(CallbackInfo ci) {
         despairscent.skyblockm.tweaks.features.itemdisplay.ItemDisplayBakingManager.clear();
+        despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.resetSessionState();
     }
 
     @Inject(method = "sendChatCommand", at = @At("HEAD"), cancellable = true)
     private void onSendChatCommand(String command, CallbackInfo ci) {
         if (command == null) return;
         String trimmed = command.trim();
+        String lower = trimmed.toLowerCase();
+        if (lower.startsWith("server ") || lower.equals("hub") || lower.equals("lobby") || lower.equals("is") || lower.equals("island")) {
+            despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.onServerOrWorldChange();
+        }
         if (trimmed.equalsIgnoreCase("ads off")) {
             if (CONFIG != null && CONFIG.adBlocker != null) {
                 CONFIG.adBlocker.enabled = true;

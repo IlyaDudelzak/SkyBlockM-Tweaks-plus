@@ -184,6 +184,7 @@
 | **Поддерживаемые версии MC** | `1.20.1`, `1.20.4`, `1.21.1`, `1.21.3` |
 | **Обязательные зависимости** | [Fabric API](https://modrinth.com/mod/fabric-api) |
 | **Опционально (для меню настроек)** | [Mod Menu](https://modrinth.com/mod/modmenu) и [Cloth Config](https://modrinth.com/mod/cloth-config) (нужны только для красивого графического меню настроек в игре; без них мод работает полноценно) |
+| **Опционально (переключение аккаунтов)** | [In-Game Account Switcher](https://github.com/The-Fireplace-Minecraft-Mods/In-Game-Account-Switcher) (поддерживается автоматическое обновление сессии и телеметрии при смене аккаунта) |
 | **Графические оптимизации** | Полная совместимость с **Sodium** и **Iris**. Для версий с Sodium требуется установленный [Indium](https://modrinth.com/mod/indium) для поддержки Fabric Rendering API. |
 
 ---
@@ -196,6 +197,7 @@
    * `Indium` *(обязательно, если используется Sodium)*
    * `Cloth Config API` *(опционально, для внутриигрового меню настроек)*
    * `Mod Menu` *(опционально, для доступа к настройкам из игры)*
+   * `In-Game Account Switcher` *(опционально, для удобной смены аккаунтов)*
    * Скачанный файл **SkyBlockM-Tweaks-plus-X.X.X.jar**
 3. Запустите игру.
 

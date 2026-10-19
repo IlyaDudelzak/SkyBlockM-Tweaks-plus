@@ -65,7 +65,7 @@ public abstract class DisconnectedScreenMixin extends Screen {
 
             this.remove(vanillaButton);
 
-            int delaySec = Math.max(1, CONFIG.autoReconnect.delaySeconds);
+            int delaySec = Math.max(0, CONFIG.autoReconnect.delaySeconds);
 
             // Текст обратного отсчета над кнопками на всю ширину экрана (центрированный)
             //? if >=1.21.11 {

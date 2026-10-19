@@ -220,7 +220,7 @@ public class Config {
     }
 
     public static class AdBlockerConfig {
-        public boolean enabled = false;
+        public boolean enabled = true;
     }
 
     public static class TerminalStackCountConfig {
@@ -232,7 +232,11 @@ public class Config {
 
     public static class AutoReconnectConfig {
         public boolean enabled = true;
-        public int delaySeconds = 60;
+        public int delaySeconds = 5;
+        public boolean autoJoinSkyBlock = true;
+        public int hubJoinDelaySeconds = 60;
+        public boolean autoLogin = false;
+        public String password = "";
     }
 
     public static class SplashesConfig {
@@ -317,6 +321,16 @@ public class Config {
             }
             if (config.autoReconnect == null) {
                 config.autoReconnect = new AutoReconnectConfig();
+            } else {
+                if (config.autoReconnect.password == null) {
+                    config.autoReconnect.password = "";
+                }
+                if (config.autoReconnect.delaySeconds < 0) {
+                    config.autoReconnect.delaySeconds = 0;
+                }
+                if (config.autoReconnect.hubJoinDelaySeconds < 0) {
+                    config.autoReconnect.hubJoinDelaySeconds = 0;
+                }
             }
             if (config.automaticCaptcha == null) {
                 config.automaticCaptcha = new AutomaticCaptchaConfig();

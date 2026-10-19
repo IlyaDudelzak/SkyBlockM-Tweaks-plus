@@ -4,9 +4,9 @@
   "version": "${version}",
 
   "name": "SkyBlockM Tweaks+",
-  "description": "Fork SkyBlockM Tweaks (DespairScent) with AI Captcha Solver & performance fixes",
+  "description": "Улучшенная версия оригинального SkyBlockM Tweaks с улучшениями и новыми функциями",
   "authors": [
-    "Ilya Dudelzak (Fork & AI Solver)",
+    "Ilya Dudelzak (Fork Creator)",
     "DespairScent (Original Author)"
   ],
   "contact": {
@@ -39,6 +39,9 @@
   "recommends": {
     "modmenu": "*",
     "cloth-config2": "*"
+  },
+  "suggests": {
+    "ias": "*"
   },
   "custom": {
     "gitHash": "${git_hash}"

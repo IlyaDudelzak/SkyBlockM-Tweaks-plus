@@ -282,10 +282,30 @@ public class ClothConfigImplementation {
                 .setSaveConsumer(value -> CONFIG.autoReconnect.enabled = value)
                 .build());
         base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startIntSlider(i18n("config.autoReconnect.delaySeconds"), CONFIG.autoReconnect.delaySeconds, 1, 60)
+                builder.entryBuilder().startIntSlider(i18n("config.autoReconnect.delaySeconds"), CONFIG.autoReconnect.delaySeconds, 0, 60)
                         .setTooltip(i18n("config.autoReconnect.delaySeconds.tooltip"))
                         .setDefaultValue(Config.DEFAULT.autoReconnect.delaySeconds)
                         .setSaveConsumer(value -> CONFIG.autoReconnect.delaySeconds = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.autoReconnect.autoJoinSkyBlock"), CONFIG.autoReconnect.autoJoinSkyBlock)
+                        .setTooltip(i18n("config.autoReconnect.autoJoinSkyBlock.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.autoReconnect.autoJoinSkyBlock)
+                        .setSaveConsumer(value -> CONFIG.autoReconnect.autoJoinSkyBlock = value)
+                        .build(),
+                builder.entryBuilder().startIntSlider(i18n("config.autoReconnect.hubJoinDelaySeconds"), CONFIG.autoReconnect.hubJoinDelaySeconds, 0, 120)
+                        .setTooltip(i18n("config.autoReconnect.hubJoinDelaySeconds.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.autoReconnect.hubJoinDelaySeconds)
+                        .setSaveConsumer(value -> CONFIG.autoReconnect.hubJoinDelaySeconds = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.autoReconnect.autoLogin"), CONFIG.autoReconnect.autoLogin)
+                        .setTooltip(i18n("config.autoReconnect.autoLogin.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.autoReconnect.autoLogin)
+                        .setSaveConsumer(value -> CONFIG.autoReconnect.autoLogin = value)
+                        .build(),
+                builder.entryBuilder().startStrField(i18n("config.autoReconnect.password"), CONFIG.autoReconnect.password)
+                        .setTooltip(i18n("config.autoReconnect.password.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.autoReconnect.password)
+                        .setSaveConsumer(value -> CONFIG.autoReconnect.password = value)
                         .build()
         )).build());
 
@@ -301,6 +321,12 @@ public class ClothConfigImplementation {
                         .setSaveConsumer(value -> CONFIG.automaticCaptcha.disablePlayerInput = value)
                         .build()
         )).build());
+
+        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.adBlocker"), CONFIG.adBlocker.enabled)
+                .setTooltip(i18n("config.adBlocker.tooltip"))
+                .setDefaultValue(Config.DEFAULT.adBlocker.enabled)
+                .setSaveConsumer(value -> CONFIG.adBlocker.enabled = value)
+                .build());
 
         base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator"), CONFIG.nuclearCalculator.enabled)
                 .setTooltip(i18n("config.nuclearCalculator.tooltip"))

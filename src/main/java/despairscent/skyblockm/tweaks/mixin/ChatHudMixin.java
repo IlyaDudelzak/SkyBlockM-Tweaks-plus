@@ -24,6 +24,10 @@ public abstract class ChatHudMixin {
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true)
     private void onAddMessage(Text message, CallbackInfo ci) {
+        if (message != null) {
+            despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.onChatMessage(message.getString());
+        }
+
         if (CONFIG != null && CONFIG.adBlocker != null && CONFIG.adBlocker.enabled) {
             if (AdBlockerState.processMessage(message.getString(), this.messages, this::reset)) {
                 ci.cancel();
