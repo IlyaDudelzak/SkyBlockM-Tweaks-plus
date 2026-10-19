@@ -51,7 +51,7 @@ public class SpriteTranslucencyCache {
             }
 
             String path = k.getPath().toLowerCase();
-            return path.contains("translucent") || path.contains("overlay") || path.contains("glass");
+            return path.contains("translucent") || path.contains("overlay") || path.contains("glass") || path.contains("completed");
         });
     }
 

@@ -21,12 +21,17 @@ public class IdListPaletteMixin<T> {
     @Unique
     private static final Logger skyblockm$LOGGER = LoggerFactory.getLogger("skyblockm-tweaks");
 
+    @Unique
+    private static final java.util.Set<Integer> skyblockm$LOGGED_IDS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     @Inject(method = "get", at = @At("HEAD"), cancellable = true)
     private void skyblockm$onGet(int id, CallbackInfoReturnable<T> cir) {
         T object = this.idList.get(id);
         if (object == null) {
             T fallback = this.idList.get(0);
-            skyblockm$LOGGER.warn("SkyBlockM Tweaks: Missing palette entry for ID {}, falling back to default entry to prevent chunk load drop", id);
+            if (skyblockm$LOGGED_IDS.add(id)) {
+                skyblockm$LOGGER.warn("SkyBlockM Tweaks: Missing palette entry for ID {}, falling back to default entry to prevent chunk load drop", id);
+            }
             cir.setReturnValue(fallback);
         }
     }

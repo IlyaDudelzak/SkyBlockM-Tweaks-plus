@@ -262,6 +262,12 @@ public class ItemDisplayBakingManager {
         if (client == null || client.getItemModelManager() == null) {
             return false;
         }
+        if (d.itemStack().getItem() instanceof BlockItem blockItem && !d.itemStack().isOf(net.minecraft.item.Items.BARRIER)) {
+            BlockRenderLayer blockLayer = BlockRenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+            if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
+                return false;
+            }
+        }
         ItemRenderState itemRenderState = new ItemRenderState();
         try {
             client.getItemModelManager().updateForNonLivingEntity(itemRenderState, d.itemStack(), d.itemTransform(), display);
@@ -280,15 +286,46 @@ public class ItemDisplayBakingManager {
                         return false;
                     }
                 }
+                List<BakedQuad> layerQuads = layers[l].getQuads();
+                if (layerQuads != null) {
+                    for (BakedQuad quad : layerQuads) {
+                        if (SpriteTranslucencyCache.isTranslucent(quad.sprite())) {
+                            return false;
+                        }
+                    }
+                }
             }
         }
 
         Box box = getCachedBox(display);
         if (box == null) return false;
+        double sizeX = box.maxX - box.minX;
+        double sizeY = box.maxY - box.minY;
+        double sizeZ = box.maxZ - box.minZ;
         double maxSize = CONFIG.itemDisplayBaking.maxBakeSize;
-        return (box.maxX - box.minX) <= maxSize && 
-               (box.maxY - box.minY) <= maxSize && 
-               (box.maxZ - box.minZ) <= maxSize;
+        if (sizeX > maxSize || sizeY > maxSize || sizeZ > maxSize) {
+            return false;
+        }
+        if (sizeX > 1.05 || sizeY > 1.05 || sizeZ > 1.05) {
+            if (itemRenderState instanceof IItemRenderStateAccessor itemAccessor) {
+                int layerCount = itemAccessor.skyblockm$getLayerCount();
+                ItemRenderState.LayerRenderState[] layers = itemAccessor.skyblockm$getLayers();
+                for (int l = 0; l < layerCount && l < layers.length; l++) {
+                    List<BakedQuad> layerQuads = layers[l].getQuads();
+                    if (layerQuads != null) {
+                        for (BakedQuad quad : layerQuads) {
+                            if (quad.sprite() != null && quad.sprite().getContents() != null) {
+                                String path = quad.sprite().getContents().getId().getPath().toLowerCase();
+                                if (path.contains("completed") || path.contains("overlay")) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     public static boolean shouldHideEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -737,6 +774,12 @@ public class ItemDisplayBakingManager {
         if (client == null || client.getItemModelManager() == null) {
             return false;
         }
+        if (d.itemStack().getItem() instanceof BlockItem blockItem && !d.itemStack().isOf(net.minecraft.item.Items.BARRIER)) {
+            BlockRenderLayer blockLayer = RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
+            if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
+                return false;
+            }
+        }
         ItemRenderState itemRenderState = new ItemRenderState();
         try {
             client.getItemModelManager().updateForNonLivingEntity(itemRenderState, d.itemStack(), d.itemTransform(), display);
@@ -755,15 +798,46 @@ public class ItemDisplayBakingManager {
                         return false;
                     }
                 }
+                List<BakedQuad> layerQuads = layers[l].getQuads();
+                if (layerQuads != null) {
+                    for (BakedQuad quad : layerQuads) {
+                        if (SpriteTranslucencyCache.isTranslucent(quad.sprite())) {
+                            return false;
+                        }
+                    }
+                }
             }
         }
 
         Box box = getCachedBox(display);
         if (box == null) return false;
+        double sizeX = box.maxX - box.minX;
+        double sizeY = box.maxY - box.minY;
+        double sizeZ = box.maxZ - box.minZ;
         double maxSize = CONFIG.itemDisplayBaking.maxBakeSize;
-        return (box.maxX - box.minX) <= maxSize && 
-               (box.maxY - box.minY) <= maxSize && 
-               (box.maxZ - box.minZ) <= maxSize;
+        if (sizeX > maxSize || sizeY > maxSize || sizeZ > maxSize) {
+            return false;
+        }
+        if (sizeX > 1.05 || sizeY > 1.05 || sizeZ > 1.05) {
+            if (itemRenderState instanceof IItemRenderStateAccessor itemAccessor) {
+                int layerCount = itemAccessor.skyblockm$getLayerCount();
+                ItemRenderState.LayerRenderState[] layers = itemAccessor.skyblockm$getLayers();
+                for (int l = 0; l < layerCount && l < layers.length; l++) {
+                    List<BakedQuad> layerQuads = layers[l].getQuads();
+                    if (layerQuads != null) {
+                        for (BakedQuad quad : layerQuads) {
+                            if (quad.sprite() != null && quad.sprite().getContents() != null) {
+                                String path = quad.sprite().getContents().getId().getPath().toLowerCase();
+                                if (path.contains("completed") || path.contains("overlay")) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     public static boolean shouldHideEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -955,12 +1029,17 @@ public class ItemDisplayBakingManager {
 *///?} elif >=1.21 {
 /*import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.entity.decoration.DisplayEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
@@ -1143,17 +1222,60 @@ public class ItemDisplayBakingManager {
         if (d == null || d.itemStack().isEmpty()) {
             return false;
         }
+        if (d.itemStack().getItem() instanceof BlockItem blockItem && !d.itemStack().isOf(net.minecraft.item.Items.BARRIER)) {
+            if (RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState()) == RenderLayer.getTranslucent()) {
+                return false;
+            }
+        }
         BakedModel model = MinecraftClient.getInstance().getItemRenderer().getModel(d.itemStack(), null, null, 0);
         if (model == null || model.isBuiltin()) {
             return false;
         }
 
+        try {
+            net.minecraft.util.math.random.Random random = net.minecraft.util.math.random.Random.create(42L);
+            Direction[] dirs = new Direction[]{null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+            for (Direction dir : dirs) {
+                List<BakedQuad> quads = model.getQuads(null, dir, random);
+                if (quads != null) {
+                    for (BakedQuad quad : quads) {
+                        if (SpriteTranslucencyCache.isTranslucent(quad.getSprite())) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
         Box box = getCachedBox(display);
         if (box == null) return false;
+        double sizeX = box.maxX - box.minX;
+        double sizeY = box.maxY - box.minY;
+        double sizeZ = box.maxZ - box.minZ;
         double maxSize = CONFIG.itemDisplayBaking.maxBakeSize;
-        return (box.maxX - box.minX) <= maxSize && 
-               (box.maxY - box.minY) <= maxSize && 
-               (box.maxZ - box.minZ) <= maxSize;
+        if (sizeX > maxSize || sizeY > maxSize || sizeZ > maxSize) {
+            return false;
+        }
+        if (sizeX > 1.05 || sizeY > 1.05 || sizeZ > 1.05) {
+            try {
+                net.minecraft.util.math.random.Random random = net.minecraft.util.math.random.Random.create(42L);
+                Direction[] dirs = new Direction[]{null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+                for (Direction dir : dirs) {
+                    List<BakedQuad> quads = model.getQuads(null, dir, random);
+                    if (quads != null) {
+                        for (BakedQuad quad : quads) {
+                            if (quad.getSprite() != null && quad.getSprite().getContents() != null) {
+                                String path = quad.getSprite().getContents().getId().getPath().toLowerCase();
+                                if (path.contains("completed") || path.contains("overlay")) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+        return true;
     }
 
     public static boolean shouldHideEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -1352,12 +1474,17 @@ public class ItemDisplayBakingManager {
 
 /*import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.entity.decoration.DisplayEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
@@ -1540,17 +1667,60 @@ public class ItemDisplayBakingManager {
         if (d == null || d.itemStack().isEmpty()) {
             return false;
         }
+        if (d.itemStack().getItem() instanceof BlockItem blockItem && !d.itemStack().isOf(net.minecraft.item.Items.BARRIER)) {
+            if (RenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState()) == RenderLayer.getTranslucent()) {
+                return false;
+            }
+        }
         BakedModel model = MinecraftClient.getInstance().getItemRenderer().getModel(d.itemStack(), null, null, 0);
         if (model == null || model.isBuiltin()) {
             return false;
         }
 
+        try {
+            net.minecraft.util.math.random.Random random = net.minecraft.util.math.random.Random.create(42L);
+            Direction[] dirs = new Direction[]{null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+            for (Direction dir : dirs) {
+                List<BakedQuad> quads = model.getQuads(null, dir, random);
+                if (quads != null) {
+                    for (BakedQuad quad : quads) {
+                        if (SpriteTranslucencyCache.isTranslucent(quad.getSprite())) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
         Box box = getCachedBox(display);
         if (box == null) return false;
+        double sizeX = box.maxX - box.minX;
+        double sizeY = box.maxY - box.minY;
+        double sizeZ = box.maxZ - box.minZ;
         double maxSize = CONFIG.itemDisplayBaking.maxBakeSize;
-        return (box.maxX - box.minX) <= maxSize && 
-               (box.maxY - box.minY) <= maxSize && 
-               (box.maxZ - box.minZ) <= maxSize;
+        if (sizeX > maxSize || sizeY > maxSize || sizeZ > maxSize) {
+            return false;
+        }
+        if (sizeX > 1.05 || sizeY > 1.05 || sizeZ > 1.05) {
+            try {
+                net.minecraft.util.math.random.Random random = net.minecraft.util.math.random.Random.create(42L);
+                Direction[] dirs = new Direction[]{null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
+                for (Direction dir : dirs) {
+                    List<BakedQuad> quads = model.getQuads(null, dir, random);
+                    if (quads != null) {
+                        for (BakedQuad quad : quads) {
+                            if (quad.getSprite() != null && quad.getSprite().getContents() != null) {
+                                String path = quad.getSprite().getContents().getId().getPath().toLowerCase();
+                                if (path.contains("completed") || path.contains("overlay")) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+        return true;
     }
 
     public static boolean shouldHideEntity(DisplayEntity.ItemDisplayEntity display) {
