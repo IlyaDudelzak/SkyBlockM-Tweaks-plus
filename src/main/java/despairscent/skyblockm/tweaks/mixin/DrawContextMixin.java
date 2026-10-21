@@ -1,6 +1,7 @@
 package despairscent.skyblockm.tweaks.mixin;
 
 import despairscent.skyblockm.tweaks.features.renderiteminside.StoredCountUtils;
+import despairscent.skyblockm.tweaks.features.renderiteminside.ItemInsideResolver;
 
 //? if >=1.21.11 {
 
@@ -78,7 +79,7 @@ public abstract class DrawContextMixin {
             itemInside = itemStackFromNbtPre1_20_5(
                     customData.getListOrEmpty("ElectricStorage.RecipeResults")
                             .getCompoundOrEmpty(0));
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!customData.contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 return;
@@ -215,19 +216,7 @@ public abstract class DrawContextMixin {
 
     @Unique
     private static ItemStack itemStackFromNbtPre1_20_5(NbtCompound stackNbt) {
-        ItemStack stack = ItemStack.EMPTY;
-        try {
-            Item item = Registries.ITEM.get(Identifier.tryParse(stackNbt.getString("id", "")));
-            stack = new ItemStack(item);
-            if (stackNbt.contains("tag")) {
-                NbtCompound nbt = stackNbt.getCompoundOrEmpty("tag");
-                if (nbt.contains("CustomModelData")) {
-                    stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(List.of((float) nbt.getInt("CustomModelData", 0)), List.of(), List.of(), List.of()));
-                }
-            }
-        } catch (Exception e) {
-        }
-        return stack;
+        return ItemInsideResolver.resolveItemInside(stackNbt);
     }
 
     @org.spongepowered.asm.mixin.injection.ModifyVariable(
@@ -360,7 +349,7 @@ public abstract class DrawContextMixin {
             itemInside = itemStackFromNbtPre1_20_5(
                     customData.getListOrEmpty("ElectricStorage.RecipeResults")
                             .getCompoundOrEmpty(0));
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!customData.contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 return;
@@ -497,19 +486,7 @@ public abstract class DrawContextMixin {
 
     @Unique
     private static ItemStack itemStackFromNbtPre1_20_5(NbtCompound stackNbt) {
-        ItemStack stack = ItemStack.EMPTY;
-        try {
-            Item item = Registries.ITEM.get(Identifier.tryParse(stackNbt.getString("id", "")));
-            stack = new ItemStack(item);
-            if (stackNbt.contains("tag")) {
-                NbtCompound nbt = stackNbt.getCompoundOrEmpty("tag");
-                if (nbt.contains("CustomModelData")) {
-                    stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(List.of((float) nbt.getInt("CustomModelData", 0)), List.of(), List.of(), List.of()));
-                }
-            }
-        } catch (Exception e) {
-        }
-        return stack;
+        return ItemInsideResolver.resolveItemInside(stackNbt);
     }
 
     @org.spongepowered.asm.mixin.injection.ModifyVariable(
@@ -632,7 +609,7 @@ public class DrawContextMixin {
                 return;
             }
             bgColor = CONFIG.renderItemInside.esPattern.bgColor;
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!customData.contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 return;
@@ -686,7 +663,7 @@ public class DrawContextMixin {
             itemInside = itemStackFromNbtPre1_20_5(
                     customData.getList("ElectricStorage.RecipeResults", NbtElement.COMPOUND_TYPE)
                             .getCompound(0));
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!customData.contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
@@ -826,19 +803,7 @@ public class DrawContextMixin {
 
     @Unique
     private static ItemStack itemStackFromNbtPre1_20_5(NbtCompound stackNbt) {
-        ItemStack stack = ItemStack.EMPTY;
-        try {
-            Item item = Registries.ITEM.get(Identifier.tryParse(stackNbt.getString("id")));
-            stack = new ItemStack(item);
-            if (stackNbt.contains("tag", NbtElement.COMPOUND_TYPE)) {
-                NbtCompound nbt = stackNbt.getCompound("tag");
-                if (nbt.contains("CustomModelData", NbtElement.NUMBER_TYPE)) {
-                    stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(nbt.getInt("CustomModelData")));
-                }
-            }
-        } catch (Exception e) {
-        }
-        return stack;
+        return ItemInsideResolver.resolveItemInside(stackNbt);
     }
 
     @org.spongepowered.asm.mixin.injection.ModifyVariable(
@@ -958,7 +923,7 @@ public class DrawContextMixin {
                 return;
             }
             bgColor = CONFIG.renderItemInside.esPattern.bgColor;
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!customData.contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 return;
@@ -1012,7 +977,7 @@ public class DrawContextMixin {
             itemInside = itemStackFromNbtPre1_20_5(
                     customData.getList("ElectricStorage.RecipeResults", NbtElement.COMPOUND_TYPE)
                             .getCompound(0));
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!customData.contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
@@ -1152,19 +1117,7 @@ public class DrawContextMixin {
 
     @Unique
     private static ItemStack itemStackFromNbtPre1_20_5(NbtCompound stackNbt) {
-        ItemStack stack = ItemStack.EMPTY;
-        try {
-            Item item = Registries.ITEM.get(Identifier.tryParse(stackNbt.getString("id")));
-            stack = new ItemStack(item);
-            if (stackNbt.contains("tag", NbtElement.COMPOUND_TYPE)) {
-                NbtCompound nbt = stackNbt.getCompound("tag");
-                if (nbt.contains("CustomModelData", NbtElement.NUMBER_TYPE)) {
-                    stack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(nbt.getInt("CustomModelData")));
-                }
-            }
-        } catch (Exception e) {
-        }
-        return stack;
+        return ItemInsideResolver.resolveItemInside(stackNbt);
     }
 
     @org.spongepowered.asm.mixin.injection.ModifyVariable(
@@ -1280,7 +1233,7 @@ public class DrawContextMixin {
                 return;
             }
             bgColor = CONFIG.renderItemInside.esPattern.bgColor;
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!itemStack.getNbt().contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 return;
@@ -1328,17 +1281,17 @@ public class DrawContextMixin {
                 return;
             }
             drawOriginal = CONFIG.renderItemInside.esPattern.drawOriginal;
-            itemInside = ItemStack.fromNbt(
+            itemInside = ItemInsideResolver.resolveItemInside(
                     itemStack.getNbt().getList("ElectricStorage.RecipeResults", NbtElement.COMPOUND_TYPE)
                             .getCompound(0));
-        } else if (itemStack.getItem() == Items.BARRIER && modelId >= 1010 && modelId <= 1013) {
+        } else if (itemStack.getItem() == Items.BARRIER && ((modelId >= 1010 && modelId <= 1013) || (modelId >= 1020 && modelId <= 1023))) {
             if (!itemStack.getNbt().contains("ItemStack") ||
                     !testRender(CONFIG.renderItemInside.storage)) {
                 itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
                 return;
             }
             drawOriginal = CONFIG.renderItemInside.storage.drawOriginal;
-            itemInside = ItemStack.fromNbt(itemStack.getNbt().getCompound("ItemStack"));
+            itemInside = ItemInsideResolver.resolveItemInside(itemStack.getNbt().getCompound("ItemStack"));
         } else if (itemStack.getItem() == Items.IRON_HORSE_ARMOR && modelId == 2001) {
             if (!testRender(CONFIG.renderItemInside.crystalMemory)) {
                 itemRenderer.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
