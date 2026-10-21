@@ -70,8 +70,8 @@ public abstract class EntityMixin {
                 Math.abs(MathHelper.wrapDegrees(display.getYaw() - yaw)) > 0.05f ||
                 Math.abs(MathHelper.wrapDegrees(display.getPitch() - pitch)) > 0.05f) {
                 ItemDisplayBakingManager.invalidateCache(display);
-                if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
-                    ItemDisplayBakingManager.removeEntity(display);
+                if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled) {
+                    ItemDisplayBakingManager.onEntityDataChanged(display);
                 }
             }
         }
@@ -84,8 +84,8 @@ public abstract class EntityMixin {
                 Math.abs(MathHelper.wrapDegrees(display.getYaw() - yaw)) > 0.05f ||
                 Math.abs(MathHelper.wrapDegrees(display.getPitch() - pitch)) > 0.05f) {
                 ItemDisplayBakingManager.invalidateCache(display);
-                if (display instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {
-                    ItemDisplayBakingManager.removeEntity(display);
+                if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled) {
+                    ItemDisplayBakingManager.onEntityDataChanged(display);
                 }
             }
         }

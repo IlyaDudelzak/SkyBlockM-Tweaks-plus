@@ -64,8 +64,8 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
         }
         if ((Object) this instanceof DisplayEntity.ItemDisplayEntity display) {
             ItemDisplayBakingManager.invalidateCache(display);
-            if (this.skyblockm$isBaked) {
-                ItemDisplayBakingManager.removeEntity(display);
+            if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled) {
+                ItemDisplayBakingManager.onEntityDataChanged(display);
             }
         }
     }
@@ -77,8 +77,8 @@ public abstract class DisplayEntityMixin implements IBakedDisplay {
                 Math.abs(net.minecraft.util.math.MathHelper.wrapDegrees(display.getYaw() - yaw)) > 0.05f ||
                 Math.abs(net.minecraft.util.math.MathHelper.wrapDegrees(display.getPitch() - pitch)) > 0.05f) {
                 ItemDisplayBakingManager.invalidateCache(display);
-                if (this.skyblockm$isBaked) {
-                    ItemDisplayBakingManager.removeEntity(display);
+                if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled) {
+                    ItemDisplayBakingManager.onEntityDataChanged(display);
                 }
             }
         }
