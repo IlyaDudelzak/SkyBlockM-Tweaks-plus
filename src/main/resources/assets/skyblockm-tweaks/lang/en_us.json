@@ -148,5 +148,10 @@
   "skyblockm-tweaks.config.updater.channel": "Update Channel",
   "skyblockm-tweaks.config.updater.channel.tooltip": "Select release channel for updates",
   "skyblockm-tweaks.config.updater.channel.STABLE": "Releases (Stable)",
-  "skyblockm-tweaks.config.updater.channel.NIGHTLY": "Dev / Nightly"
+  "skyblockm-tweaks.config.updater.channel.NIGHTLY": "Dev / Nightly",
+  "category.skyblockm-tweaks": "SkyBlockM Tweaks",
+  "key.skyblockm-tweaks.home": "Teleport to Island (/i tp)",
+  "key.skyblockm-tweaks.load_reactor_cell_1": "Load reactor cell 1",
+  "key.skyblockm-tweaks.load_reactor_cell_2": "Load reactor cell 2",
+  "key.skyblockm-tweaks.load_reactor_cell_3": "Load reactor cell 3"
 }

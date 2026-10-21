@@ -35,6 +35,7 @@ public class ModLoader implements ClientModInitializer {
         DependencyDownloader.initAsync();
         GameMenuCalculatorButton.init();
         NuclearReactorDetectorModule.init();
+        despairscent.skyblockm.tweaks.features.keybinds.KeyBindingsManager.init();
 
         net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(new despairscent.skyblockm.tweaks.features.itemdisplay.BarrierModelPlugin());
         //? if <1.21.8 {

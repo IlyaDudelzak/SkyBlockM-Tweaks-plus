@@ -103,6 +103,9 @@ public class NuclearCalculatorScreen extends Screen {
 
     public NuclearCalculatorScreen(Text title, Screen parent, boolean fromReactor) {
         super(title);
+        //? if <1.21.11 {
+        /*this.client = net.minecraft.client.MinecraftClient.getInstance();
+        *///?}
         this.parent = parent;
         this.simulator = new ReactorSimulator(this.grid);
         this.fromReactor = fromReactor;
@@ -952,7 +955,12 @@ public class NuclearCalculatorScreen extends Screen {
         }
     }
 
-    private void loadFromSlot(int slotIndex) {
+    public void loadPresetAndInsert(int slotIndex){
+        loadFromSlot(slotIndex);
+        insertIntoReactor();
+    }
+
+    public void loadFromSlot(int slotIndex) {
         ReactorPresetManager.PresetSlot preset = ReactorPresetManager.getSlot(slotIndex);
         if (preset == null || preset.isEmpty()) {
             if (this.client != null && this.client.player != null) {
@@ -989,7 +997,7 @@ public class NuclearCalculatorScreen extends Screen {
         }
     }
 
-    private void extractFromReactor() {
+    public void extractFromReactor() {
         if (!(this.parent instanceof HandledScreen<?> handledScreen) || !this.fromReactor) {
             if (this.client != null && this.client.player != null) {
                 this.client.player.sendMessage(Text.literal("§cРеактор не открыт в фоне"), true);
@@ -1015,7 +1023,7 @@ public class NuclearCalculatorScreen extends Screen {
         }
     }
 
-    private void insertIntoReactor() {
+    public void insertIntoReactor() {
         if (!(this.parent instanceof HandledScreen<?> handledScreen) || !this.fromReactor) {
             if (this.client != null && this.client.player != null) {
                 this.client.player.sendMessage(Text.literal("§cРеактор не открыт в фоне"), true);

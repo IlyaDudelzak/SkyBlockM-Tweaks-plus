@@ -148,5 +148,10 @@
   "skyblockm-tweaks.config.updater.channel": "Канал обновлений",
   "skyblockm-tweaks.config.updater.channel.tooltip": "Выбор канала для получения обновлений",
   "skyblockm-tweaks.config.updater.channel.STABLE": "Релизы (Stable)",
-  "skyblockm-tweaks.config.updater.channel.NIGHTLY": "Тестовые сборки (Dev / Nightly)"
+  "skyblockm-tweaks.config.updater.channel.NIGHTLY": "Тестовые сборки (Dev / Nightly)",
+  "category.skyblockm-tweaks": "SkyBlockM Tweaks",
+  "key.skyblockm-tweaks.home": "Телепортация на остров (/i tp)",
+  "key.skyblockm-tweaks.load_reactor_cell_1": "Загрузить в реактор ячейку 1",
+  "key.skyblockm-tweaks.load_reactor_cell_2": "Загрузить в реактор ячейку 2",
+  "key.skyblockm-tweaks.load_reactor_cell_3": "Загрузить в реактор ячейку 3"
 }

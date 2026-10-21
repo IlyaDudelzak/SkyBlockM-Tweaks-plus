@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 
 import java.util.regex.Pattern;
@@ -41,6 +42,11 @@ public class NuclearReactorDetectorModule {
     }
 
     public static void openSimulatorForReactor(net.minecraft.client.MinecraftClient client, HandledScreen<?> handledScreen) {
+        NuclearCalculatorScreen calcScreen = createSimulatorForReactor(client, handledScreen);
+        client.setScreen(calcScreen);
+    }
+
+    public static NuclearCalculatorScreen createSimulatorForReactor(net.minecraft.client.MinecraftClient client, HandledScreen<?> handledScreen) {
         lastAutoOpenedScreen = handledScreen;
 
         NuclearCalculatorScreen calcScreen = new NuclearCalculatorScreen(
@@ -92,8 +98,7 @@ public class NuclearReactorDetectorModule {
                 }
             } catch (Exception ignored) {}
         }
-
-        client.setScreen(calcScreen);
+        return calcScreen;
     }
 
     public static void init() {
@@ -126,5 +131,13 @@ public class NuclearReactorDetectorModule {
                 }
             }
         });
+    }
+
+    public static void loadPresetIntoReactor(net.minecraft.client.MinecraftClient client, HandledScreen<?> handledScreen, int slotIndex) {
+        if (client == null || client.interactionManager == null || client.player == null || handledScreen == null) {
+            return;
+        }
+        NuclearCalculatorScreen calcScreen = createSimulatorForReactor(client, handledScreen);
+        calcScreen.loadPresetAndInsert(slotIndex);
     }
 }

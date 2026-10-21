@@ -142,5 +142,10 @@
   "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor": "Відкривати симулятор поточного реактора",
   "skyblockm-tweaks.config.nuclearCalculator.openCurrentReactor.tooltip": "Автоматично відкривати симулятор з параметрами поточного реактора при його відкритті",
   "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor": "Кнопка в інтерфейсі реактора",
-  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor.tooltip": "Показувати кнопку виклику калькулятора (🖩) поруч з інтерфейсом реактора"
+  "skyblockm-tweaks.config.nuclearCalculator.showButtonInReactor.tooltip": "Показувати кнопку виклику калькулятора (🖩) поруч з інтерфейсом реактора",
+  "category.skyblockm-tweaks": "SkyBlockM Tweaks",
+  "key.skyblockm-tweaks.home": "Телепортація на острів (/i tp)",
+  "key.skyblockm-tweaks.load_reactor_cell_1": "Завантажити в реактор комірку 1",
+  "key.skyblockm-tweaks.load_reactor_cell_2": "Завантажити в реактор комірку 2",
+  "key.skyblockm-tweaks.load_reactor_cell_3": "Завантажити в реактор комірку 3"
 }
