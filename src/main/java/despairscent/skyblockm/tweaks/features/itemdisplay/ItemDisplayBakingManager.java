@@ -215,6 +215,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
         int id = display.getId();
@@ -411,7 +412,7 @@ public class ItemDisplayBakingManager {
         
         Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
         if (existingTarget != null) {
-            targetTime = Math.max(targetTime, existingTarget);
+            targetTime = Math.min(targetTime, existingTarget);
         }
         
         PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
@@ -469,17 +470,77 @@ public class ItemDisplayBakingManager {
         if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
             CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.remove(pos);
             if (list != null) {
+                MinecraftClient client = MinecraftClient.getInstance();
                 for (BakedEntityInfo info : list) {
                     ENTITY_ID_TO_POS.remove(info.entityId);
+                    PENDING_CULLED_ENTITIES.remove(info.entityId);
+                    if (client != null && client.world != null) {
+                        net.minecraft.entity.Entity e = client.world.getEntityById(info.entityId);
+                        if (e instanceof IBakedDisplay baked) {
+                            baked.skyblockm$setBaked(false);
+                        }
+                    }
                 }
                 markSectionDirty(pos);
             }
         }
     }
 
+    public static void fullRebuildSection(int cx, int cy, int cz) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.world == null || client.worldRenderer == null) return;
+
+        STATIC_DISPLAYS.keySet().removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getY() >> 4) == cy && (pos.getZ() >> 4) == cz);
+
+        Box sectionBox = new Box(cx << 4, cy << 4, cz << 4, (cx + 1) << 4, (cy + 1) << 4, (cz + 1) << 4);
+        List<DisplayEntity.ItemDisplayEntity> entities = client.world.getEntitiesByClass(
+                DisplayEntity.ItemDisplayEntity.class, sectionBox, e -> true
+        );
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            PENDING_CULLED_ENTITIES.remove(display.getId());
+            if (display instanceof IBakedDisplay baked) {
+                baked.skyblockm$setBaked(false);
+            }
+        }
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            updateEntity(display);
+        }
+
+        long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+        int bx = (cx << 4) + 8;
+        int by = (cy << 4) + 8;
+        int bz = (cz << 4) + 8;
+        client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
+        SECTION_LAST_REBUILD.put(sectionLong, System.currentTimeMillis());
+        PENDING_SECTION_REBUILDS.remove(sectionLong);
+    }
+
     public static void tickRebuilds() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.worldRenderer == null) return;
+
+        long now = System.currentTimeMillis();
+
+        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled
+                && CONFIG.itemDisplayBaking.playerChunkRebuildInterval > 0 && client.player != null && client.world != null) {
+            long intervalMs = (long) (CONFIG.itemDisplayBaking.playerChunkRebuildInterval * 1000.0);
+            if (now - LAST_PLAYER_CHUNK_REBUILD >= intervalMs) {
+                LAST_PLAYER_CHUNK_REBUILD = now;
+                int px = ((int) Math.floor(client.player.getX())) >> 4;
+                int py = ((int) Math.floor(client.player.getY())) >> 4;
+                int pz = ((int) Math.floor(client.player.getZ())) >> 4;
+                int minY = client.world.getBottomY() >> 4;
+                int maxY = (client.world.getBottomY() + client.world.getHeight()) >> 4;
+                for (int dy = -1; dy <= 1; dy++) {
+                    int cy = py + dy;
+                    if (cy >= minY && cy <= maxY) {
+                        fullRebuildSection(px, cy, pz);
+                    }
+                }
+            }
+        }
 
         if (!PENDING_CULLED_ENTITIES.isEmpty() && client.world != null) {
             var culledIterator = PENDING_CULLED_ENTITIES.iterator();
@@ -503,7 +564,6 @@ public class ItemDisplayBakingManager {
         }
 
         if (PENDING_SECTION_REBUILDS.isEmpty()) return;
-        long now = System.currentTimeMillis();
 
         java.util.List<Long> readySections = new java.util.ArrayList<>();
         for (var entry : PENDING_SECTION_REBUILDS.entrySet()) {
@@ -570,8 +630,24 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
         SpriteTranslucencyCache.clear();
+    }
+
+    public static void onChunkReload() {
+        clear();
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.world != null) {
+            for (net.minecraft.entity.Entity entity : client.world.getEntities()) {
+                if (entity instanceof IBakedDisplay baked) {
+                    baked.skyblockm$setBaked(false);
+                }
+                if (entity instanceof DisplayEntity.ItemDisplayEntity display) {
+                    updateEntity(display);
+                }
+            }
+        }
     }
 
     public static void onResourceReload() {
@@ -813,6 +889,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
         int id = display.getId();
@@ -1009,7 +1086,7 @@ public class ItemDisplayBakingManager {
         
         Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
         if (existingTarget != null) {
-            targetTime = Math.max(targetTime, existingTarget);
+            targetTime = Math.min(targetTime, existingTarget);
         }
         
         PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
@@ -1067,17 +1144,77 @@ public class ItemDisplayBakingManager {
         if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
             CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.remove(pos);
             if (list != null) {
+                MinecraftClient client = MinecraftClient.getInstance();
                 for (BakedEntityInfo info : list) {
                     ENTITY_ID_TO_POS.remove(info.entityId);
+                    PENDING_CULLED_ENTITIES.remove(info.entityId);
+                    if (client != null && client.world != null) {
+                        net.minecraft.entity.Entity e = client.world.getEntityById(info.entityId);
+                        if (e instanceof IBakedDisplay baked) {
+                            baked.skyblockm$setBaked(false);
+                        }
+                    }
                 }
                 markSectionDirty(pos);
             }
         }
     }
 
+    public static void fullRebuildSection(int cx, int cy, int cz) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.world == null || client.worldRenderer == null) return;
+
+        STATIC_DISPLAYS.keySet().removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getY() >> 4) == cy && (pos.getZ() >> 4) == cz);
+
+        Box sectionBox = new Box(cx << 4, cy << 4, cz << 4, (cx + 1) << 4, (cy + 1) << 4, (cz + 1) << 4);
+        List<DisplayEntity.ItemDisplayEntity> entities = client.world.getEntitiesByClass(
+                DisplayEntity.ItemDisplayEntity.class, sectionBox, e -> true
+        );
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            PENDING_CULLED_ENTITIES.remove(display.getId());
+            if (display instanceof IBakedDisplay baked) {
+                baked.skyblockm$setBaked(false);
+            }
+        }
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            updateEntity(display);
+        }
+
+        long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+        int bx = (cx << 4) + 8;
+        int by = (cy << 4) + 8;
+        int bz = (cz << 4) + 8;
+        client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
+        SECTION_LAST_REBUILD.put(sectionLong, System.currentTimeMillis());
+        PENDING_SECTION_REBUILDS.remove(sectionLong);
+    }
+
     public static void tickRebuilds() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.worldRenderer == null) return;
+
+        long now = System.currentTimeMillis();
+
+        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled
+                && CONFIG.itemDisplayBaking.playerChunkRebuildInterval > 0 && client.player != null && client.world != null) {
+            long intervalMs = (long) (CONFIG.itemDisplayBaking.playerChunkRebuildInterval * 1000.0);
+            if (now - LAST_PLAYER_CHUNK_REBUILD >= intervalMs) {
+                LAST_PLAYER_CHUNK_REBUILD = now;
+                int px = ((int) Math.floor(client.player.getX())) >> 4;
+                int py = ((int) Math.floor(client.player.getY())) >> 4;
+                int pz = ((int) Math.floor(client.player.getZ())) >> 4;
+                int minY = client.world.getBottomY() >> 4;
+                int maxY = (client.world.getBottomY() + client.world.getHeight()) >> 4;
+                for (int dy = -1; dy <= 1; dy++) {
+                    int cy = py + dy;
+                    if (cy >= minY && cy <= maxY) {
+                        fullRebuildSection(px, cy, pz);
+                    }
+                }
+            }
+        }
 
         if (!PENDING_CULLED_ENTITIES.isEmpty() && client.world != null) {
             var culledIterator = PENDING_CULLED_ENTITIES.iterator();
@@ -1101,7 +1238,6 @@ public class ItemDisplayBakingManager {
         }
 
         if (PENDING_SECTION_REBUILDS.isEmpty()) return;
-        long now = System.currentTimeMillis();
 
         java.util.List<Long> readySections = new java.util.ArrayList<>();
         for (var entry : PENDING_SECTION_REBUILDS.entrySet()) {
@@ -1168,8 +1304,24 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
         SpriteTranslucencyCache.clear();
+    }
+
+    public static void onChunkReload() {
+        clear();
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.world != null) {
+            for (net.minecraft.entity.Entity entity : client.world.getEntities()) {
+                if (entity instanceof IBakedDisplay baked) {
+                    baked.skyblockm$setBaked(false);
+                }
+                if (entity instanceof DisplayEntity.ItemDisplayEntity display) {
+                    updateEntity(display);
+                }
+            }
+        }
     }
 
     public static void onResourceReload() {
@@ -1352,6 +1504,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
         int id = display.getId();
@@ -1538,7 +1691,7 @@ public class ItemDisplayBakingManager {
         
         Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
         if (existingTarget != null) {
-            targetTime = Math.max(targetTime, existingTarget);
+            targetTime = Math.min(targetTime, existingTarget);
         }
         
         PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
@@ -1592,17 +1745,77 @@ public class ItemDisplayBakingManager {
         if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
             CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.remove(pos);
             if (list != null) {
+                MinecraftClient client = MinecraftClient.getInstance();
                 for (BakedEntityInfo info : list) {
                     ENTITY_ID_TO_POS.remove(info.entityId);
+                    PENDING_CULLED_ENTITIES.remove(info.entityId);
+                    if (client != null && client.world != null) {
+                        net.minecraft.entity.Entity e = client.world.getEntityById(info.entityId);
+                        if (e instanceof IBakedDisplay baked) {
+                            baked.skyblockm$setBaked(false);
+                        }
+                    }
                 }
                 markSectionDirty(pos);
             }
         }
     }
 
+    public static void fullRebuildSection(int cx, int cy, int cz) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.world == null || client.worldRenderer == null) return;
+
+        STATIC_DISPLAYS.keySet().removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getY() >> 4) == cy && (pos.getZ() >> 4) == cz);
+
+        Box sectionBox = new Box(cx << 4, cy << 4, cz << 4, (cx + 1) << 4, (cy + 1) << 4, (cz + 1) << 4);
+        List<DisplayEntity.ItemDisplayEntity> entities = client.world.getEntitiesByClass(
+                DisplayEntity.ItemDisplayEntity.class, sectionBox, e -> true
+        );
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            PENDING_CULLED_ENTITIES.remove(display.getId());
+            if (display instanceof IBakedDisplay baked) {
+                baked.skyblockm$setBaked(false);
+            }
+        }
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            updateEntity(display);
+        }
+
+        long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+        int bx = (cx << 4) + 8;
+        int by = (cy << 4) + 8;
+        int bz = (cz << 4) + 8;
+        client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
+        SECTION_LAST_REBUILD.put(sectionLong, System.currentTimeMillis());
+        PENDING_SECTION_REBUILDS.remove(sectionLong);
+    }
+
     public static void tickRebuilds() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.worldRenderer == null) return;
+
+        long now = System.currentTimeMillis();
+
+        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled
+                && CONFIG.itemDisplayBaking.playerChunkRebuildInterval > 0 && client.player != null && client.world != null) {
+            long intervalMs = (long) (CONFIG.itemDisplayBaking.playerChunkRebuildInterval * 1000.0);
+            if (now - LAST_PLAYER_CHUNK_REBUILD >= intervalMs) {
+                LAST_PLAYER_CHUNK_REBUILD = now;
+                int px = ((int) Math.floor(client.player.getX())) >> 4;
+                int py = ((int) Math.floor(client.player.getY())) >> 4;
+                int pz = ((int) Math.floor(client.player.getZ())) >> 4;
+                int minY = client.world.getBottomY() >> 4;
+                int maxY = (client.world.getBottomY() + client.world.getHeight()) >> 4;
+                for (int dy = -1; dy <= 1; dy++) {
+                    int cy = py + dy;
+                    if (cy >= minY && cy <= maxY) {
+                        fullRebuildSection(px, cy, pz);
+                    }
+                }
+            }
+        }
 
         if (!PENDING_CULLED_ENTITIES.isEmpty() && client.world != null) {
             var culledIterator = PENDING_CULLED_ENTITIES.iterator();
@@ -1626,7 +1839,6 @@ public class ItemDisplayBakingManager {
         }
 
         if (PENDING_SECTION_REBUILDS.isEmpty()) return;
-        long now = System.currentTimeMillis();
 
         java.util.List<Long> readySections = new java.util.ArrayList<>();
         for (var entry : PENDING_SECTION_REBUILDS.entrySet()) {
@@ -1693,8 +1905,24 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
         SpriteTranslucencyCache.clear();
+    }
+
+    public static void onChunkReload() {
+        clear();
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.world != null) {
+            for (net.minecraft.entity.Entity entity : client.world.getEntities()) {
+                if (entity instanceof IBakedDisplay baked) {
+                    baked.skyblockm$setBaked(false);
+                }
+                if (entity instanceof DisplayEntity.ItemDisplayEntity display) {
+                    updateEntity(display);
+                }
+            }
+        }
     }
 
     public static void onResourceReload() {
@@ -1878,6 +2106,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
         int id = display.getId();
@@ -2064,7 +2293,7 @@ public class ItemDisplayBakingManager {
         
         Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
         if (existingTarget != null) {
-            targetTime = Math.max(targetTime, existingTarget);
+            targetTime = Math.min(targetTime, existingTarget);
         }
         
         PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
@@ -2118,17 +2347,77 @@ public class ItemDisplayBakingManager {
         if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
             CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.remove(pos);
             if (list != null) {
+                MinecraftClient client = MinecraftClient.getInstance();
                 for (BakedEntityInfo info : list) {
                     ENTITY_ID_TO_POS.remove(info.entityId);
+                    PENDING_CULLED_ENTITIES.remove(info.entityId);
+                    if (client != null && client.world != null) {
+                        net.minecraft.entity.Entity e = client.world.getEntityById(info.entityId);
+                        if (e instanceof IBakedDisplay baked) {
+                            baked.skyblockm$setBaked(false);
+                        }
+                    }
                 }
                 markSectionDirty(pos);
             }
         }
     }
 
+    public static void fullRebuildSection(int cx, int cy, int cz) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.world == null || client.worldRenderer == null) return;
+
+        STATIC_DISPLAYS.keySet().removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getY() >> 4) == cy && (pos.getZ() >> 4) == cz);
+
+        Box sectionBox = new Box(cx << 4, cy << 4, cz << 4, (cx + 1) << 4, (cy + 1) << 4, (cz + 1) << 4);
+        List<DisplayEntity.ItemDisplayEntity> entities = client.world.getEntitiesByClass(
+                DisplayEntity.ItemDisplayEntity.class, sectionBox, e -> true
+        );
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            PENDING_CULLED_ENTITIES.remove(display.getId());
+            if (display instanceof IBakedDisplay baked) {
+                baked.skyblockm$setBaked(false);
+            }
+        }
+
+        for (DisplayEntity.ItemDisplayEntity display : entities) {
+            updateEntity(display);
+        }
+
+        long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+        int bx = (cx << 4) + 8;
+        int by = (cy << 4) + 8;
+        int bz = (cz << 4) + 8;
+        client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
+        SECTION_LAST_REBUILD.put(sectionLong, System.currentTimeMillis());
+        PENDING_SECTION_REBUILDS.remove(sectionLong);
+    }
+
     public static void tickRebuilds() {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.worldRenderer == null) return;
+
+        long now = System.currentTimeMillis();
+
+        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled
+                && CONFIG.itemDisplayBaking.playerChunkRebuildInterval > 0 && client.player != null && client.world != null) {
+            long intervalMs = (long) (CONFIG.itemDisplayBaking.playerChunkRebuildInterval * 1000.0);
+            if (now - LAST_PLAYER_CHUNK_REBUILD >= intervalMs) {
+                LAST_PLAYER_CHUNK_REBUILD = now;
+                int px = ((int) Math.floor(client.player.getX())) >> 4;
+                int py = ((int) Math.floor(client.player.getY())) >> 4;
+                int pz = ((int) Math.floor(client.player.getZ())) >> 4;
+                int minY = client.world.getBottomY() >> 4;
+                int maxY = (client.world.getBottomY() + client.world.getHeight()) >> 4;
+                for (int dy = -1; dy <= 1; dy++) {
+                    int cy = py + dy;
+                    if (cy >= minY && cy <= maxY) {
+                        fullRebuildSection(px, cy, pz);
+                    }
+                }
+            }
+        }
 
         if (!PENDING_CULLED_ENTITIES.isEmpty() && client.world != null) {
             var culledIterator = PENDING_CULLED_ENTITIES.iterator();
@@ -2152,7 +2441,6 @@ public class ItemDisplayBakingManager {
         }
 
         if (PENDING_SECTION_REBUILDS.isEmpty()) return;
-        long now = System.currentTimeMillis();
 
         java.util.List<Long> readySections = new java.util.ArrayList<>();
         for (var entry : PENDING_SECTION_REBUILDS.entrySet()) {
@@ -2219,8 +2507,24 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
         SpriteTranslucencyCache.clear();
+    }
+
+    public static void onChunkReload() {
+        clear();
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client != null && client.world != null) {
+            for (net.minecraft.entity.Entity entity : client.world.getEntities()) {
+                if (entity instanceof IBakedDisplay baked) {
+                    baked.skyblockm$setBaked(false);
+                }
+                if (entity instanceof DisplayEntity.ItemDisplayEntity display) {
+                    updateEntity(display);
+                }
+            }
+        }
     }
 
     public static void onResourceReload() {

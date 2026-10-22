@@ -21,6 +21,13 @@ public class ClientWorldMixin {
         ItemDisplayBakingManager.onBlockChanged(pos, state);
     }
 
+    @Inject(method = "scheduleBlockRerenderIfNeeded", at = @At("HEAD"), require = 0)
+    private void onScheduleBlockRerenderIfNeeded(BlockPos pos, BlockState oldState, BlockState newState, CallbackInfo ci) {
+        if (oldState.isOf(net.minecraft.block.Blocks.BARRIER) || newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
+            ItemDisplayBakingManager.onBlockChanged(pos, newState);
+        }
+    }
+
     @Inject(method = "tickEntity", at = @At("HEAD"), cancellable = true)
     private void onTickEntity(Entity entity, CallbackInfo ci) {
         if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled && entity instanceof IBakedDisplay baked && baked.skyblockm$isBaked()) {

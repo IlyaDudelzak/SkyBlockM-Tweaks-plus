@@ -207,6 +207,13 @@ public class ClothConfigImplementation {
                         .setTooltip(i18n("config.itemDisplayBaking.entityCullingIntegration.tooltip"))
                         .setDefaultValue(Config.DEFAULT.itemDisplayBaking.entityCullingIntegration)
                         .setSaveConsumer(value -> CONFIG.itemDisplayBaking.entityCullingIntegration = value)
+                        .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.playerChunkRebuildInterval"), CONFIG.itemDisplayBaking.playerChunkRebuildInterval)
+                        .setTooltip(i18n("config.itemDisplayBaking.playerChunkRebuildInterval.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.playerChunkRebuildInterval)
+                        .setMin(0.0)
+                        .setMax(30.0)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.playerChunkRebuildInterval = value)
                         .build()
         )).build());
 

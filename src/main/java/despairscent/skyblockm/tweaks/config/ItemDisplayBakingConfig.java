@@ -9,4 +9,5 @@ public class ItemDisplayBakingConfig {
     public int maxRebuildsPerFrame = 8;
     public boolean hideBakeableEntities = true;
     public boolean entityCullingIntegration = true;
+    public double playerChunkRebuildInterval = 2.0;
 }

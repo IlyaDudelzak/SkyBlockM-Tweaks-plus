@@ -31,7 +31,8 @@
     "ResourcePackProfileInsertionPositionMixin",
     "ResourcePackProfileMixin",
     "SplashTextResourceSupplierMixin",
-    "TitleScreenMixin"
+    "TitleScreenMixin",
+    "WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

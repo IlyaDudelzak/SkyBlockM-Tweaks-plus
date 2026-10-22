@@ -65,6 +65,8 @@
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Полностью отключает динамический рендер запекаемых сущностей, устраняя просадку FPS при приближении к базе",
   "skyblockm-tweaks.config.itemDisplayBaking.entityCullingIntegration": "Интеграция с Entity Culling",
   "skyblockm-tweaks.config.itemDisplayBaking.entityCullingIntegration.tooltip": "Не перепекает чанки от механизмов, которые отсечены Entity Culling (скрыты за стенами или вне поля зрения), экономя FPS",
+  "skyblockm-tweaks.config.itemDisplayBaking.playerChunkRebuildInterval": "Периодическая пересборка чанка игрока",
+  "skyblockm-tweaks.config.itemDisplayBaking.playerChunkRebuildInterval.tooltip": "Интервал полной пересборки чанка, в котором находится игрок (в секундах, 0 - выключено). Очищает геометрию, включает сущности и пересобирает всё начисто.",
   "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомные хитбоксы барьеров",
   "skyblockm-tweaks.config.itemDisplayHitbox.tooltip": "Изменяет хитбокс барьеров под форму кастомных блоков для удобного взаимодействия сквозь трубы и провода",
   "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Тип хитбокса",
