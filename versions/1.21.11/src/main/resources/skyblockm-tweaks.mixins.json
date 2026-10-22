@@ -31,7 +31,8 @@
     "MinecraftClientMixin",
     "ResourcePackProfileInsertionPositionMixin",
     "ResourcePackProfileMixin",
-    "SplashTextResourceSupplierMixin"
+    "SplashTextResourceSupplierMixin",
+    "WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -128,26 +128,26 @@ public class ItemDisplayBakingManager {
                                     }
                                     Matrix4f layerMatrix = new Matrix4f(layerMs.peek().getPositionMatrix());
 
-                                    BlockRenderLayer defaultLayer = BlockRenderLayer.CUTOUT;
+                                    BlockRenderLayer layerBlockRenderLayer = BlockRenderLayer.TRANSLUCENT;
                                     if (stack.getItem() instanceof BlockItem blockItem && !stack.isOf(net.minecraft.item.Items.BARRIER)) {
                                         BlockRenderLayer blockLayer = BlockRenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
-                                        if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
-                                            defaultLayer = BlockRenderLayer.TRANSLUCENT;
+                                        if (blockLayer == BlockRenderLayer.CUTOUT) {
+                                            layerBlockRenderLayer = BlockRenderLayer.CUTOUT;
+                                        } else if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
+                                            layerBlockRenderLayer = BlockRenderLayer.TRANSLUCENT;
+                                        } else {
+                                            layerBlockRenderLayer = BlockRenderLayer.CUTOUT;
                                         }
                                     }
                                     int[] tints = layerAccessor.skyblockm$getTints();
                                     List<BakedQuad> layerQuads = layer.getQuads();
                                     if (layerQuads != null) {
                                         for (BakedQuad quad : layerQuads) {
-                                            BlockRenderLayer quadRenderLayer = defaultLayer;
-                                            if (quadRenderLayer != BlockRenderLayer.TRANSLUCENT && isSpriteTranslucent(quad.sprite())) {
-                                                quadRenderLayer = BlockRenderLayer.TRANSLUCENT;
-                                            }
                                             int tintColor = -1;
                                             if (quad.hasTint() && quad.tintIndex() >= 0 && tints != null && quad.tintIndex() < tints.length) {
                                                 tintColor = tints[quad.tintIndex()];
                                             }
-                                            bakedQuads.add(new BakedQuadInfo(quad, layerMatrix, quadRenderLayer, tintColor));
+                                            bakedQuads.add(new BakedQuadInfo(quad, layerMatrix, layerBlockRenderLayer, tintColor));
                                         }
                                     }
                                 }
@@ -162,10 +162,6 @@ public class ItemDisplayBakingManager {
             this.itemTransform = transform;
             this.quads = bakedQuads;
             this.matrix = ms.peek().getPositionMatrix();
-        }
-
-        public static boolean isSpriteTranslucent(net.minecraft.client.texture.Sprite sprite) {
-            return SpriteTranslucencyCache.isTranslucent(sprite);
         }
 
         public boolean matches(DisplayEntity.ItemDisplayEntity display) {
@@ -211,11 +207,9 @@ public class ItemDisplayBakingManager {
 
     private static final ConcurrentHashMap<BlockPos, CopyOnWriteArrayList<BakedEntityInfo>> STATIC_DISPLAYS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Integer, BlockPos> ENTITY_ID_TO_POS = new ConcurrentHashMap<>();
-    private static final java.util.Set<Integer> PENDING_CULLED_ENTITIES = ConcurrentHashMap.newKeySet();
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
-    private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
         int id = display.getId();
@@ -264,12 +258,6 @@ public class ItemDisplayBakingManager {
         if (client == null || client.getItemModelManager() == null) {
             return false;
         }
-        if (d.itemStack().getItem() instanceof BlockItem blockItem && !d.itemStack().isOf(net.minecraft.item.Items.BARRIER)) {
-            BlockRenderLayer blockLayer = BlockRenderLayers.getBlockLayer(blockItem.getBlock().getDefaultState());
-            if (blockLayer == BlockRenderLayer.TRANSLUCENT) {
-                return false;
-            }
-        }
         ItemRenderState itemRenderState = new ItemRenderState();
         try {
             client.getItemModelManager().updateForNonLivingEntity(itemRenderState, d.itemStack(), d.itemTransform(), display);
@@ -288,46 +276,15 @@ public class ItemDisplayBakingManager {
                         return false;
                     }
                 }
-                List<BakedQuad> layerQuads = layers[l].getQuads();
-                if (layerQuads != null) {
-                    for (BakedQuad quad : layerQuads) {
-                        if (SpriteTranslucencyCache.isTranslucent(quad.sprite())) {
-                            return false;
-                        }
-                    }
-                }
             }
         }
 
         Box box = getCachedBox(display);
         if (box == null) return false;
-        double sizeX = box.maxX - box.minX;
-        double sizeY = box.maxY - box.minY;
-        double sizeZ = box.maxZ - box.minZ;
         double maxSize = CONFIG.itemDisplayBaking.maxBakeSize;
-        if (sizeX > maxSize || sizeY > maxSize || sizeZ > maxSize) {
-            return false;
-        }
-        if (sizeX > 1.05 || sizeY > 1.05 || sizeZ > 1.05) {
-            if (itemRenderState instanceof IItemRenderStateAccessor itemAccessor) {
-                int layerCount = itemAccessor.skyblockm$getLayerCount();
-                ItemRenderState.LayerRenderState[] layers = itemAccessor.skyblockm$getLayers();
-                for (int l = 0; l < layerCount && l < layers.length; l++) {
-                    List<BakedQuad> layerQuads = layers[l].getQuads();
-                    if (layerQuads != null) {
-                        for (BakedQuad quad : layerQuads) {
-                            if (quad.sprite() != null && quad.sprite().getContents() != null) {
-                                String path = quad.sprite().getContents().getId().getPath().toLowerCase();
-                                if (path.contains("completed") || path.contains("overlay")) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return true;
+        return (box.maxX - box.minX) <= maxSize && 
+               (box.maxY - box.minY) <= maxSize && 
+               (box.maxZ - box.minZ) <= maxSize;
     }
 
     public static boolean shouldHideEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -365,14 +322,6 @@ public class ItemDisplayBakingManager {
                     if (display instanceof IBakedDisplay baked) {
                         baked.skyblockm$setBaked(true);
                     }
-                    if (PENDING_CULLED_ENTITIES.contains(display.getId())) {
-                        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
-                                && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
-                            return;
-                        }
-                        PENDING_CULLED_ENTITIES.remove(display.getId());
-                        markSectionDirty(pos);
-                    }
                     return;
                 } else {
                     list.remove(info);
@@ -387,17 +336,10 @@ public class ItemDisplayBakingManager {
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
-        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
-                && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
-            PENDING_CULLED_ENTITIES.add(display.getId());
-            return;
-        }
-        PENDING_CULLED_ENTITIES.remove(display.getId());
         markSectionDirty(pos);
     }
 
     public static void markSectionDirty(BlockPos pos) {
-        if (CONFIG == null || CONFIG.itemDisplayBaking == null) return;
         int cx = pos.getX() >> 4;
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
@@ -405,17 +347,8 @@ public class ItemDisplayBakingManager {
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
-        long cooldownMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkRebuildCooldown * 1000.0));
         
-        long lastRebuild = SECTION_LAST_REBUILD.getOrDefault(sectionLong, 0L);
-        long targetTime = Math.max(now + settleDelayMs, lastRebuild + cooldownMs);
-        
-        Long existingTarget = PENDING_SECTION_REBUILDS.get(sectionLong);
-        if (existingTarget != null) {
-            targetTime = Math.min(targetTime, existingTarget);
-        }
-        
-        PENDING_SECTION_REBUILDS.put(sectionLong, targetTime);
+        PENDING_SECTION_REBUILDS.put(sectionLong, now + settleDelayMs);
     }
 
     public static void removeEntity(DisplayEntity.ItemDisplayEntity display) {
@@ -423,7 +356,6 @@ public class ItemDisplayBakingManager {
             baked.skyblockm$setBaked(false);
         }
         int id = display.getId();
-        PENDING_CULLED_ENTITIES.remove(id);
         invalidateCache(display);
         BlockPos pos = ENTITY_ID_TO_POS.remove(id);
         if (pos == null) {
@@ -441,7 +373,6 @@ public class ItemDisplayBakingManager {
     }
 
     public static void removeEntityById(int entityId) {
-        PENDING_CULLED_ENTITIES.remove(entityId);
         BOX_CACHE.remove(entityId);
         BlockPos pos = ENTITY_ID_TO_POS.remove(entityId);
         if (pos == null) {
@@ -470,170 +401,52 @@ public class ItemDisplayBakingManager {
         if (!newState.isOf(net.minecraft.block.Blocks.BARRIER)) {
             CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.remove(pos);
             if (list != null) {
-                MinecraftClient client = MinecraftClient.getInstance();
                 for (BakedEntityInfo info : list) {
                     ENTITY_ID_TO_POS.remove(info.entityId);
-                    PENDING_CULLED_ENTITIES.remove(info.entityId);
-                    if (client != null && client.world != null) {
-                        net.minecraft.entity.Entity e = client.world.getEntityById(info.entityId);
-                        if (e instanceof IBakedDisplay baked) {
-                            baked.skyblockm$setBaked(false);
-                        }
-                    }
                 }
                 markSectionDirty(pos);
             }
         }
     }
 
-    public static void fullRebuildSection(int cx, int cy, int cz) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null || client.world == null || client.worldRenderer == null) return;
-
-        STATIC_DISPLAYS.keySet().removeIf(pos -> (pos.getX() >> 4) == cx && (pos.getY() >> 4) == cy && (pos.getZ() >> 4) == cz);
-
-        Box sectionBox = new Box(cx << 4, cy << 4, cz << 4, (cx + 1) << 4, (cy + 1) << 4, (cz + 1) << 4);
-        List<DisplayEntity.ItemDisplayEntity> entities = client.world.getEntitiesByClass(
-                DisplayEntity.ItemDisplayEntity.class, sectionBox, e -> true
-        );
-
-        for (DisplayEntity.ItemDisplayEntity display : entities) {
-            PENDING_CULLED_ENTITIES.remove(display.getId());
-            if (display instanceof IBakedDisplay baked) {
-                baked.skyblockm$setBaked(false);
-            }
-        }
-
-        for (DisplayEntity.ItemDisplayEntity display : entities) {
-            updateEntity(display);
-        }
-
-        long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
-        int bx = (cx << 4) + 8;
-        int by = (cy << 4) + 8;
-        int bz = (cz << 4) + 8;
-        client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
-        SECTION_LAST_REBUILD.put(sectionLong, System.currentTimeMillis());
-        PENDING_SECTION_REBUILDS.remove(sectionLong);
-    }
-
     public static void tickRebuilds() {
+        if (PENDING_SECTION_REBUILDS.isEmpty()) return;
+        long now = System.currentTimeMillis();
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.worldRenderer == null) return;
-
-        long now = System.currentTimeMillis();
-
-        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.enabled
-                && CONFIG.itemDisplayBaking.playerChunkRebuildInterval > 0 && client.player != null && client.world != null) {
-            long intervalMs = (long) (CONFIG.itemDisplayBaking.playerChunkRebuildInterval * 1000.0);
-            if (now - LAST_PLAYER_CHUNK_REBUILD >= intervalMs) {
-                LAST_PLAYER_CHUNK_REBUILD = now;
-                int px = ((int) Math.floor(client.player.getX())) >> 4;
-                int py = ((int) Math.floor(client.player.getY())) >> 4;
-                int pz = ((int) Math.floor(client.player.getZ())) >> 4;
-                int minY = client.world.getBottomY() >> 4;
-                int maxY = (client.world.getBottomY() + client.world.getHeight()) >> 4;
-                for (int dy = -1; dy <= 1; dy++) {
-                    int cy = py + dy;
-                    if (cy >= minY && cy <= maxY) {
-                        fullRebuildSection(px, cy, pz);
-                    }
-                }
-            }
-        }
-
-        if (!PENDING_CULLED_ENTITIES.isEmpty() && client.world != null) {
-            var culledIterator = PENDING_CULLED_ENTITIES.iterator();
-            while (culledIterator.hasNext()) {
-                int id = culledIterator.next();
-                net.minecraft.entity.Entity entity = client.world.getEntityById(id);
-                if (entity instanceof DisplayEntity.ItemDisplayEntity display) {
-                    if (display.isRemoved()) {
-                        culledIterator.remove();
-                    } else if (CONFIG == null || CONFIG.itemDisplayBaking == null || !CONFIG.itemDisplayBaking.entityCullingIntegration
-                            || !EntityCullingCompat.isCulledOrOutOfCamera(display)) {
-                        culledIterator.remove();
-                        BlockPos pos = ENTITY_ID_TO_POS.get(id);
-                        if (pos == null) pos = display.getBlockPos();
-                        markSectionDirty(pos);
-                    }
-                } else {
-                    culledIterator.remove();
-                }
-            }
-        }
-
-        if (PENDING_SECTION_REBUILDS.isEmpty()) return;
-
-        java.util.List<Long> readySections = new java.util.ArrayList<>();
-        for (var entry : PENDING_SECTION_REBUILDS.entrySet()) {
-            if (now >= entry.getValue()) {
-                readySections.add(entry.getKey());
-            }
-        }
-        if (readySections.isEmpty()) return;
-
-        if (client.player != null && readySections.size() > 1) {
-            int px = ((int) Math.floor(client.player.getX())) >> 4;
-            int py = ((int) Math.floor(client.player.getY())) >> 4;
-            int pz = ((int) Math.floor(client.player.getZ())) >> 4;
-
-            readySections.sort((s1, s2) -> {
-                int x1 = ChunkSectionPos.unpackX(s1) - px;
-                int y1 = ChunkSectionPos.unpackY(s1) - py;
-                int z1 = ChunkSectionPos.unpackZ(s1) - pz;
-                long dist1 = (long) x1 * x1 + (long) y1 * y1 + (long) z1 * z1;
-
-                int x2 = ChunkSectionPos.unpackX(s2) - px;
-                int y2 = ChunkSectionPos.unpackY(s2) - py;
-                int z2 = ChunkSectionPos.unpackZ(s2) - pz;
-                long dist2 = (long) x2 * x2 + (long) y2 * y2 + (long) z2 * z2;
-
-                return Long.compare(dist1, dist2);
-            });
-        }
-
+        
+        var iterator = PENDING_SECTION_REBUILDS.entrySet().iterator();
         int processed = 0;
         int maxPerFrame = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? Math.max(1, CONFIG.itemDisplayBaking.maxRebuildsPerFrame) : 8;
-        for (long sectionLong : readySections) {
-            if (processed >= maxPerFrame) break;
-
-            int cx = ChunkSectionPos.unpackX(sectionLong);
-            int cy = ChunkSectionPos.unpackY(sectionLong);
-            int cz = ChunkSectionPos.unpackZ(sectionLong);
-
-            int bx = (cx << 4) + 8;
-            int by = (cy << 4) + 8;
-            int bz = (cz << 4) + 8;
-            client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
-            SECTION_LAST_REBUILD.put(sectionLong, now);
-            PENDING_SECTION_REBUILDS.remove(sectionLong);
-
-            if (!PENDING_CULLED_ENTITIES.isEmpty()) {
-                PENDING_CULLED_ENTITIES.removeIf(id -> {
-                    BlockPos p = ENTITY_ID_TO_POS.get(id);
-                    if (p != null) {
-                        return (p.getX() >> 4) == cx && (p.getY() >> 4) == cy && (p.getZ() >> 4) == cz;
-                    }
-                    return false;
-                });
+        while (iterator.hasNext() && processed < maxPerFrame) {
+            var entry = iterator.next();
+            if (now >= entry.getValue()) {
+                long sectionLong = entry.getKey();
+                int cx = ChunkSectionPos.unpackX(sectionLong);
+                int cy = ChunkSectionPos.unpackY(sectionLong);
+                int cz = ChunkSectionPos.unpackZ(sectionLong);
+                
+                int bx = (cx << 4) + 8;
+                int by = (cy << 4) + 8;
+                int bz = (cz << 4) + 8;
+                client.worldRenderer.scheduleBlockRenders(bx, by, bz, bx, by, bz);
+                SECTION_LAST_REBUILD.put(sectionLong, now);
+                
+                iterator.remove();
+                processed++;
             }
-
-            processed++;
         }
     }
 
     public static void clear() {
         STATIC_DISPLAYS.clear();
         ENTITY_ID_TO_POS.clear();
-        PENDING_CULLED_ENTITIES.clear();
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
-        LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
-        SpriteTranslucencyCache.clear();
     }
+
 
     public static void onChunkReload() {
         clear();
@@ -649,7 +462,6 @@ public class ItemDisplayBakingManager {
             }
         }
     }
-
     public static void onResourceReload() {
         clear();
         MinecraftClient client = MinecraftClient.getInstance();
@@ -1040,7 +852,8 @@ public class ItemDisplayBakingManager {
                         baked.skyblockm$setBaked(true);
                     }
                     if (PENDING_CULLED_ENTITIES.contains(display.getId())) {
-                        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
+                        boolean isClassic = CONFIG == null || CONFIG.itemDisplayBaking == null || CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+                        if (!isClassic && CONFIG.itemDisplayBaking.entityCullingIntegration
                                 && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
                             return;
                         }
@@ -1061,7 +874,8 @@ public class ItemDisplayBakingManager {
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
-        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
+        boolean isClassic = CONFIG == null || CONFIG.itemDisplayBaking == null || CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+        if (!isClassic && CONFIG.itemDisplayBaking.entityCullingIntegration
                 && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
             PENDING_CULLED_ENTITIES.add(display.getId());
             return;
@@ -1076,6 +890,12 @@ public class ItemDisplayBakingManager {
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
         long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+
+        boolean isClassic = CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+        if (isClassic) {
+            PENDING_SECTION_REBUILDS.put(sectionLong, System.currentTimeMillis());
+            return;
+        }
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
@@ -1641,7 +1461,8 @@ public class ItemDisplayBakingManager {
                         baked.skyblockm$setBaked(true);
                     }
                     if (PENDING_CULLED_ENTITIES.contains(display.getId())) {
-                        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
+                        boolean isClassic = CONFIG == null || CONFIG.itemDisplayBaking == null || CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+                        if (!isClassic && CONFIG.itemDisplayBaking.entityCullingIntegration
                                 && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
                             return;
                         }
@@ -1662,7 +1483,8 @@ public class ItemDisplayBakingManager {
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
-        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
+        boolean isClassic = CONFIG == null || CONFIG.itemDisplayBaking == null || CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+        if (!isClassic && CONFIG.itemDisplayBaking.entityCullingIntegration
                 && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
             PENDING_CULLED_ENTITIES.add(display.getId());
             return;
@@ -1681,6 +1503,12 @@ public class ItemDisplayBakingManager {
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
         long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+
+        boolean isClassic = CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+        if (isClassic) {
+            PENDING_SECTION_REBUILDS.put(sectionLong, System.currentTimeMillis());
+            return;
+        }
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));
@@ -2243,7 +2071,8 @@ public class ItemDisplayBakingManager {
                         baked.skyblockm$setBaked(true);
                     }
                     if (PENDING_CULLED_ENTITIES.contains(display.getId())) {
-                        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
+                        boolean isClassic = CONFIG == null || CONFIG.itemDisplayBaking == null || CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+                        if (!isClassic && CONFIG.itemDisplayBaking.entityCullingIntegration
                                 && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
                             return;
                         }
@@ -2264,7 +2093,8 @@ public class ItemDisplayBakingManager {
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
-        if (CONFIG != null && CONFIG.itemDisplayBaking != null && CONFIG.itemDisplayBaking.entityCullingIntegration
+        boolean isClassic = CONFIG == null || CONFIG.itemDisplayBaking == null || CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+        if (!isClassic && CONFIG.itemDisplayBaking.entityCullingIntegration
                 && EntityCullingCompat.isCulledOrOutOfCamera(display)) {
             PENDING_CULLED_ENTITIES.add(display.getId());
             return;
@@ -2283,6 +2113,12 @@ public class ItemDisplayBakingManager {
         int cy = pos.getY() >> 4;
         int cz = pos.getZ() >> 4;
         long sectionLong = ChunkSectionPos.asLong(cx, cy, cz);
+
+        boolean isClassic = CONFIG.itemDisplayBaking.mode == despairscent.skyblockm.tweaks.config.ItemDisplayBakingConfig.BakingMode.CLASSIC;
+        if (isClassic) {
+            PENDING_SECTION_REBUILDS.put(sectionLong, System.currentTimeMillis());
+            return;
+        }
         
         long now = System.currentTimeMillis();
         long settleDelayMs = Math.max(0, (long) (CONFIG.itemDisplayBaking.chunkSettleTime * 1000.0));

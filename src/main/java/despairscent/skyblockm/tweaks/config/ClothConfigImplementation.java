@@ -22,155 +22,28 @@ public class ClothConfigImplementation {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
                 .setTitle(i18n("config.base.title"));
-        ConfigCategory base = builder.getOrCreateCategory(Text.empty());
-        
+
         Text moduleSetupText = i18n("config.base.moduleSetup");
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.storageTargetingFix"), CONFIG.storageTargetingFix.enabled)
-                .setTooltip(i18n("config.storageTargetingFix.tooltip"))
-                .setDefaultValue(Config.DEFAULT.storageTargetingFix.enabled)
-                .setSaveConsumer(value -> CONFIG.storageTargetingFix.enabled = value)
-                .build());
+        // ==========================================
+        // 1. ЗАПЕКАНИЕ И РЕНДЕР (Главная категория)
+        // ==========================================
+        ConfigCategory bakingCat = builder.getOrCreateCategory(i18n("config.category.baking"));
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo"), CONFIG.moreTooltipInfo.enabled)
-                .setTooltip(i18n("config.moreTooltipInfo.tooltip"))
-                .setDefaultValue(Config.DEFAULT.moreTooltipInfo.enabled)
-                .setSaveConsumer(value -> CONFIG.moreTooltipInfo.enabled = value)
-                .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo.storage"), CONFIG.moreTooltipInfo.storage)
-                        .setTooltip(i18n("config.moreTooltipInfo.storage.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.moreTooltipInfo.storage)
-                        .setSaveConsumer(value -> CONFIG.moreTooltipInfo.storage = value)
-                        .build(),
-                builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo.fluidStorage"), CONFIG.moreTooltipInfo.fluidStorage)
-                        .setTooltip(i18n("config.moreTooltipInfo.fluidStorage.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.moreTooltipInfo.fluidStorage)
-                        .setSaveConsumer(value -> CONFIG.moreTooltipInfo.fluidStorage = value)
-                        .build(),
-                builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo.crystalMemory"), CONFIG.moreTooltipInfo.crystalMemory)
-                        .setTooltip(i18n("config.moreTooltipInfo.crystalMemory.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.moreTooltipInfo.crystalMemory)
-                        .setSaveConsumer(value -> CONFIG.moreTooltipInfo.crystalMemory = value)
-                        .build()
-        )).build());
-
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.renderItemInside"), CONFIG.renderItemInside.enabled)
-                .setTooltip(i18n("config.renderItemInside.tooltip"))
-                .setDefaultValue(Config.DEFAULT.renderItemInside.enabled)
-                .setSaveConsumer(value -> CONFIG.renderItemInside.enabled = value)
-                .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startSubCategory(i18n("config.renderItemInside.item.esPattern"),
-                        prepareRenderItemInsideSetup(builder, config -> config.renderItemInside.esPattern,
-                                builder.entryBuilder().startBooleanToggle(i18n("config.renderItemInside.itemSetupEsPattern.forceRenderInsideInterface"), CONFIG.renderItemInside.esPattern.forceRenderInsideInterface)
-                                        .setDefaultValue(Config.DEFAULT.renderItemInside.esPattern.forceRenderInsideInterface)
-                                        .setSaveConsumer(value -> CONFIG.renderItemInside.esPattern.forceRenderInsideInterface = value)
-                                        .build()
-                        )).build(),
-                builder.entryBuilder().startSubCategory(i18n("config.renderItemInside.item.storage"),
-                        prepareRenderItemInsideSetup(builder, config -> config.renderItemInside.storage)).build(),
-                builder.entryBuilder().startSubCategory(i18n("config.renderItemInside.item.crystalMemory"),
-                        prepareRenderItemInsideSetup(builder, config -> config.renderItemInside.crystalMemory)).build()
-        )).build());
-
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.textInputLagFix"), CONFIG.textInputLagFix.enabled)
-                .setDefaultValue(Config.DEFAULT.textInputLagFix.enabled)
-                .setSaveConsumer(value -> CONFIG.textInputLagFix.enabled = value)
-                .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startBooleanToggle(i18n("config.textInputLagFix.recipesSearch"), CONFIG.textInputLagFix.recipesSearch)
-                        .setDefaultValue(Config.DEFAULT.textInputLagFix.recipesSearch)
-                        .setSaveConsumer(value -> CONFIG.textInputLagFix.recipesSearch = value)
-                        .build(),
-                builder.entryBuilder().startBooleanToggle(i18n("config.textInputLagFix.esTerminalSearch"), CONFIG.textInputLagFix.esTerminalSearch)
-                        .setDefaultValue(Config.DEFAULT.textInputLagFix.esTerminalSearch)
-                        .setSaveConsumer(value -> CONFIG.textInputLagFix.esTerminalSearch = value)
-                        .build()
-        )).build());
-
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.inventoryDesyncFix"), CONFIG.inventoryDesyncFix.enabled)
-                .setTooltip(i18n("config.inventoryDesyncFix.tooltip"))
-                .setDefaultValue(Config.DEFAULT.inventoryDesyncFix.enabled)
-                .setSaveConsumer(value -> CONFIG.inventoryDesyncFix.enabled = value)
-                .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startBooleanToggle(i18n("config.inventoryDesyncFix.inventoryUpdates"), CONFIG.inventoryDesyncFix.inventoryUpdates)
-                        .setDefaultValue(Config.DEFAULT.inventoryDesyncFix.inventoryUpdates)
-                        .setSaveConsumer(value -> CONFIG.inventoryDesyncFix.inventoryUpdates = value)
-                        .build(),
-                builder.entryBuilder().startBooleanToggle(i18n("config.inventoryDesyncFix.selectedSlot"), CONFIG.inventoryDesyncFix.selectedSlot)
-                        .setDefaultValue(Config.DEFAULT.inventoryDesyncFix.selectedSlot)
-                        .setSaveConsumer(value -> CONFIG.inventoryDesyncFix.selectedSlot = value)
-                        .build()
-        )).build());
-
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.esTerminalScroll"), CONFIG.esTerminalScroll.enabled)
-                .setDefaultValue(Config.DEFAULT.esTerminalScroll.enabled)
-                .setSaveConsumer(value -> CONFIG.esTerminalScroll.enabled = value)
-                .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startBooleanToggle(i18n("config.esTerminalScroll.wheel"), CONFIG.esTerminalScroll.wheel)
-                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.wheel)
-                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.wheel = value)
-                        .build(),
-                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.wheelModifier"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.wheelModifier))
-                        .setAllowModifiers(false)
-                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.wheelModifier))
-                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.wheelModifier = value.getCode())
-                        .build(),
-                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.keyUp"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.keyUp))
-                        .setAllowModifiers(false)
-                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.keyUp))
-                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.keyUp = value.getCode())
-                        .build(),
-                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.keyDown"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.keyDown))
-                        .setAllowModifiers(false)
-                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.keyDown))
-                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.keyDown = value.getCode())
-                        .build(),
-                builder.entryBuilder().startIntField(i18n("config.esTerminalScroll.actionLimitWheel"), CONFIG.esTerminalScroll.actionLimitWheel)
-                        .setTooltip(i18n("config.esTerminalScroll.actionLimitWheel.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.actionLimitWheel)
-                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.actionLimitWheel = value)
-                        .build(),
-                builder.entryBuilder().startIntField(i18n("config.esTerminalScroll.actionLimitKey"), CONFIG.esTerminalScroll.actionLimitKey)
-                        .setTooltip(i18n("config.esTerminalScroll.actionLimitKey.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.actionLimitKey)
-                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.actionLimitKey = value)
-                        .build(),
-                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.boostKey"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.boostKey))
-                        .setTooltip(i18n("config.esTerminalScroll.boostKey.tooltip"))
-                        .setAllowModifiers(false)
-                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.boostKey))
-                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.boostKey = value.getCode())
-                        .build(),
-                builder.entryBuilder().startEnumSelector(i18n("config.esTerminalScroll.boostKeyType"), Config.EsTerminalScrollBoostKeyType.class, CONFIG.esTerminalScroll.boostKeyType)
-                        .setTooltip(i18n("config.esTerminalScroll.boostKeyType.tooltip"))
-                        .setEnumNameProvider(v -> ((Config.EsTerminalScrollBoostKeyType) v).optionName)
-                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.boostKeyType)
-                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.boostKeyType = value)
-                        .build()
-        )).build());
-
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.compactGenome"), CONFIG.compactGenome.enabled)
-                .setTooltip(i18n("config.compactGenome.tooltip"))
-                .setDefaultValue(Config.DEFAULT.compactGenome.enabled)
-                .setSaveConsumer(value -> CONFIG.compactGenome.enabled = value)
-                .build());
-
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.hideHiddenArmorStands"), CONFIG.hideHiddenArmorStands.enabled)
-                .setTooltip(i18n("config.hideHiddenArmorStands.tooltip"))
-                .setDefaultValue(Config.DEFAULT.hideHiddenArmorStands.enabled)
-                .setSaveConsumer(value -> CONFIG.hideHiddenArmorStands.enabled = value)
-                .build());
-
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayBaking"), CONFIG.itemDisplayBaking.enabled)
+        bakingCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayBaking"), CONFIG.itemDisplayBaking.enabled)
                 .setTooltip(i18n("config.itemDisplayBaking.tooltip"))
                 .setDefaultValue(Config.DEFAULT.itemDisplayBaking.enabled)
                 .setSaveConsumer(value -> CONFIG.itemDisplayBaking.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+
+        bakingCat.addEntry(builder.entryBuilder().startEnumSelector(i18n("config.itemDisplayBaking.mode"), ItemDisplayBakingConfig.BakingMode.class, CONFIG.itemDisplayBaking.mode)
+                .setTooltip(i18n("config.itemDisplayBaking.mode.tooltip"))
+                .setEnumNameProvider(v -> i18n("config.itemDisplayBaking.mode." + ((ItemDisplayBakingConfig.BakingMode) v).optionName))
+                .setDefaultValue(Config.DEFAULT.itemDisplayBaking.mode)
+                .setSaveConsumer(value -> CONFIG.itemDisplayBaking.mode = value)
+                .build());
+
+        bakingCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.maxBakeSize"), CONFIG.itemDisplayBaking.maxBakeSize)
                         .setTooltip(i18n("config.itemDisplayBaking.maxBakeSize.tooltip"))
                         .setDefaultValue(Config.DEFAULT.itemDisplayBaking.maxBakeSize)
@@ -217,13 +90,14 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayHitbox"), CONFIG.itemDisplayHitbox.enabled)
+        bakingCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayHitbox"), CONFIG.itemDisplayHitbox.enabled)
                 .setTooltip(i18n("config.itemDisplayHitbox.tooltip"))
                 .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.enabled)
                 .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+        bakingCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startEnumSelector(i18n("config.itemDisplayHitbox.hitboxType"), ItemDisplayHitboxConfig.HitboxType.class, CONFIG.itemDisplayHitbox.hitboxType)
+                        .setTooltip(i18n("config.itemDisplayHitbox.hitboxType.tooltip"))
                         .setEnumNameProvider(v -> i18n("config.itemDisplayHitbox.hitboxType." + ((ItemDisplayHitboxConfig.HitboxType) v).name()))
                         .setDefaultValue(Config.DEFAULT.itemDisplayHitbox.hitboxType)
                         .setSaveConsumer(value -> CONFIG.itemDisplayHitbox.hitboxType = value)
@@ -240,27 +114,65 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
-        base.addEntry(builder.entryBuilder().startEnumSelector(i18n("config.skyblockPackOptimization.mode"), Config.AutoLoadMode.class, CONFIG.skyblockPackOptimization.mode)
-                .setTooltip(i18n("config.skyblockPackOptimization.mode.tooltip"))
-                .setEnumNameProvider(v -> ((Config.AutoLoadMode) v).optionName)
-                .setDefaultValue(Config.DEFAULT.skyblockPackOptimization.mode)
-                .setSaveConsumer(value -> {
-                    CONFIG.skyblockPackOptimization.mode = value;
-                    CONFIG.skyblockPackOptimization.enabled = value != Config.AutoLoadMode.NONE;
-                })
+        bakingCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.hideHiddenArmorStands"), CONFIG.hideHiddenArmorStands.enabled)
+                .setTooltip(i18n("config.hideHiddenArmorStands.tooltip"))
+                .setDefaultValue(Config.DEFAULT.hideHiddenArmorStands.enabled)
+                .setSaveConsumer(value -> CONFIG.hideHiddenArmorStands.enabled = value)
                 .build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.serverPackUnlocker"), CONFIG.serverPackUnlocker.enabled)
-                .setTooltip(i18n("config.serverPackUnlocker.tooltip"))
-                .setDefaultValue(Config.DEFAULT.serverPackUnlocker.enabled)
-                .setSaveConsumer(value -> CONFIG.serverPackUnlocker.enabled = value)
+        // ==========================================
+        // 2. ИНТЕРФЕЙС И ПОДСКАЗКИ
+        // ==========================================
+        ConfigCategory interfaceCat = builder.getOrCreateCategory(i18n("config.category.interface"));
+
+        interfaceCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.renderItemInside"), CONFIG.renderItemInside.enabled)
+                .setTooltip(i18n("config.renderItemInside.tooltip"))
+                .setDefaultValue(Config.DEFAULT.renderItemInside.enabled)
+                .setSaveConsumer(value -> CONFIG.renderItemInside.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.terminalStackCount"), CONFIG.terminalStackCount.enabled)
+        interfaceCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startSubCategory(i18n("config.renderItemInside.item.esPattern"),
+                        prepareRenderItemInsideSetup(builder, config -> config.renderItemInside.esPattern,
+                                builder.entryBuilder().startBooleanToggle(i18n("config.renderItemInside.itemSetupEsPattern.forceRenderInsideInterface"), CONFIG.renderItemInside.esPattern.forceRenderInsideInterface)
+                                        .setDefaultValue(Config.DEFAULT.renderItemInside.esPattern.forceRenderInsideInterface)
+                                        .setSaveConsumer(value -> CONFIG.renderItemInside.esPattern.forceRenderInsideInterface = value)
+                                        .build()
+                        )).build(),
+                builder.entryBuilder().startSubCategory(i18n("config.renderItemInside.item.storage"),
+                        prepareRenderItemInsideSetup(builder, config -> config.renderItemInside.storage)).build(),
+                builder.entryBuilder().startSubCategory(i18n("config.renderItemInside.item.crystalMemory"),
+                        prepareRenderItemInsideSetup(builder, config -> config.renderItemInside.crystalMemory)).build()
+        )).build());
+
+        interfaceCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo"), CONFIG.moreTooltipInfo.enabled)
+                .setTooltip(i18n("config.moreTooltipInfo.tooltip"))
+                .setDefaultValue(Config.DEFAULT.moreTooltipInfo.enabled)
+                .setSaveConsumer(value -> CONFIG.moreTooltipInfo.enabled = value)
+                .build());
+        interfaceCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo.storage"), CONFIG.moreTooltipInfo.storage)
+                        .setTooltip(i18n("config.moreTooltipInfo.storage.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.moreTooltipInfo.storage)
+                        .setSaveConsumer(value -> CONFIG.moreTooltipInfo.storage = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo.fluidStorage"), CONFIG.moreTooltipInfo.fluidStorage)
+                        .setTooltip(i18n("config.moreTooltipInfo.fluidStorage.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.moreTooltipInfo.fluidStorage)
+                        .setSaveConsumer(value -> CONFIG.moreTooltipInfo.fluidStorage = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.moreTooltipInfo.crystalMemory"), CONFIG.moreTooltipInfo.crystalMemory)
+                        .setTooltip(i18n("config.moreTooltipInfo.crystalMemory.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.moreTooltipInfo.crystalMemory)
+                        .setSaveConsumer(value -> CONFIG.moreTooltipInfo.crystalMemory = value)
+                        .build()
+        )).build());
+
+        interfaceCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.terminalStackCount"), CONFIG.terminalStackCount.enabled)
                 .setTooltip(i18n("config.terminalStackCount.tooltip"))
                 .setDefaultValue(Config.DEFAULT.terminalStackCount.enabled)
                 .setSaveConsumer(value -> CONFIG.terminalStackCount.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+        interfaceCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startBooleanToggle(i18n("config.terminalStackCount.cleanTitle"), CONFIG.terminalStackCount.cleanTitle)
                         .setTooltip(i18n("config.terminalStackCount.cleanTitle.tooltip"))
                         .setDefaultValue(Config.DEFAULT.terminalStackCount.cleanTitle)
@@ -282,12 +194,93 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.splashes"), CONFIG.splashes.enabled)
+        interfaceCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.esTerminalScroll"), CONFIG.esTerminalScroll.enabled)
+                .setDefaultValue(Config.DEFAULT.esTerminalScroll.enabled)
+                .setSaveConsumer(value -> CONFIG.esTerminalScroll.enabled = value)
+                .build());
+        interfaceCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.esTerminalScroll.wheel"), CONFIG.esTerminalScroll.wheel)
+                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.wheel)
+                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.wheel = value)
+                        .build(),
+                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.wheelModifier"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.wheelModifier))
+                        .setAllowModifiers(false)
+                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.wheelModifier))
+                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.wheelModifier = value.getCode())
+                        .build(),
+                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.keyUp"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.keyUp))
+                        .setAllowModifiers(false)
+                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.keyUp))
+                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.keyUp = value.getCode())
+                        .build(),
+                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.keyDown"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.keyDown))
+                        .setAllowModifiers(false)
+                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.keyDown))
+                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.keyDown = value.getCode())
+                        .build(),
+                builder.entryBuilder().startIntField(i18n("config.esTerminalScroll.actionLimitWheel"), CONFIG.esTerminalScroll.actionLimitWheel)
+                        .setTooltip(i18n("config.esTerminalScroll.actionLimitWheel.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.actionLimitWheel)
+                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.actionLimitWheel = value)
+                        .build(),
+                builder.entryBuilder().startIntField(i18n("config.esTerminalScroll.actionLimitKey"), CONFIG.esTerminalScroll.actionLimitKey)
+                        .setTooltip(i18n("config.esTerminalScroll.actionLimitKey.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.actionLimitKey)
+                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.actionLimitKey = value)
+                        .build(),
+                builder.entryBuilder().startKeyCodeField(i18n("config.esTerminalScroll.boostKey"), InputUtil.Type.KEYSYM.createFromCode(CONFIG.esTerminalScroll.boostKey))
+                        .setTooltip(i18n("config.esTerminalScroll.boostKey.tooltip"))
+                        .setAllowModifiers(false)
+                        .setDefaultValue(InputUtil.Type.KEYSYM.createFromCode(Config.DEFAULT.esTerminalScroll.boostKey))
+                        .setKeySaveConsumer(value -> CONFIG.esTerminalScroll.boostKey = value.getCode())
+                        .build(),
+                builder.entryBuilder().startEnumSelector(i18n("config.esTerminalScroll.boostKeyType"), Config.EsTerminalScrollBoostKeyType.class, CONFIG.esTerminalScroll.boostKeyType)
+                        .setTooltip(i18n("config.esTerminalScroll.boostKeyType.tooltip"))
+                        .setEnumNameProvider(v -> ((Config.EsTerminalScrollBoostKeyType) v).optionName)
+                        .setDefaultValue(Config.DEFAULT.esTerminalScroll.boostKeyType)
+                        .setSaveConsumer(value -> CONFIG.esTerminalScroll.boostKeyType = value)
+                        .build()
+        )).build());
+
+        interfaceCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.textInputLagFix"), CONFIG.textInputLagFix.enabled)
+                .setDefaultValue(Config.DEFAULT.textInputLagFix.enabled)
+                .setSaveConsumer(value -> CONFIG.textInputLagFix.enabled = value)
+                .build());
+        interfaceCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.textInputLagFix.recipesSearch"), CONFIG.textInputLagFix.recipesSearch)
+                        .setDefaultValue(Config.DEFAULT.textInputLagFix.recipesSearch)
+                        .setSaveConsumer(value -> CONFIG.textInputLagFix.recipesSearch = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.textInputLagFix.esTerminalSearch"), CONFIG.textInputLagFix.esTerminalSearch)
+                        .setDefaultValue(Config.DEFAULT.textInputLagFix.esTerminalSearch)
+                        .setSaveConsumer(value -> CONFIG.textInputLagFix.esTerminalSearch = value)
+                        .build()
+        )).build());
+
+        interfaceCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator"), CONFIG.nuclearCalculator.enabled)
+                .setTooltip(i18n("config.nuclearCalculator.tooltip"))
+                .setDefaultValue(Config.DEFAULT.nuclearCalculator.enabled)
+                .setSaveConsumer(value -> CONFIG.nuclearCalculator.enabled = value)
+                .build());
+        interfaceCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator.openCurrentReactor"), CONFIG.nuclearCalculator.openCurrentReactor)
+                        .setTooltip(i18n("config.nuclearCalculator.openCurrentReactor.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.nuclearCalculator.openCurrentReactor)
+                        .setSaveConsumer(value -> CONFIG.nuclearCalculator.openCurrentReactor = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator.showButtonInReactor"), CONFIG.nuclearCalculator.showButtonInReactor)
+                        .setTooltip(i18n("config.nuclearCalculator.showButtonInReactor.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.nuclearCalculator.showButtonInReactor)
+                        .setSaveConsumer(value -> CONFIG.nuclearCalculator.showButtonInReactor = value)
+                        .build()
+        )).build());
+
+        interfaceCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.splashes"), CONFIG.splashes.enabled)
                 .setTooltip(i18n("config.splashes.tooltip"))
                 .setDefaultValue(Config.DEFAULT.splashes.enabled)
                 .setSaveConsumer(value -> CONFIG.splashes.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+        interfaceCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startBooleanToggle(i18n("config.splashes.onlyCustomSplashes"), CONFIG.splashes.onlyCustomSplashes)
                         .setTooltip(i18n("config.splashes.onlyCustomSplashes.tooltip"))
                         .setDefaultValue(Config.DEFAULT.splashes.onlyCustomSplashes)
@@ -295,12 +288,45 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.autoReconnect"), CONFIG.autoReconnect.enabled)
+        // ==========================================
+        // 3. ГЕЙМПЛЕЙ И ФИКСЫ
+        // ==========================================
+        ConfigCategory gameplayCat = builder.getOrCreateCategory(i18n("config.category.gameplay"));
+
+        gameplayCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.storageTargetingFix"), CONFIG.storageTargetingFix.enabled)
+                .setTooltip(i18n("config.storageTargetingFix.tooltip"))
+                .setDefaultValue(Config.DEFAULT.storageTargetingFix.enabled)
+                .setSaveConsumer(value -> CONFIG.storageTargetingFix.enabled = value)
+                .build());
+
+        gameplayCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.inventoryDesyncFix"), CONFIG.inventoryDesyncFix.enabled)
+                .setTooltip(i18n("config.inventoryDesyncFix.tooltip"))
+                .setDefaultValue(Config.DEFAULT.inventoryDesyncFix.enabled)
+                .setSaveConsumer(value -> CONFIG.inventoryDesyncFix.enabled = value)
+                .build());
+        gameplayCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+                builder.entryBuilder().startBooleanToggle(i18n("config.inventoryDesyncFix.inventoryUpdates"), CONFIG.inventoryDesyncFix.inventoryUpdates)
+                        .setDefaultValue(Config.DEFAULT.inventoryDesyncFix.inventoryUpdates)
+                        .setSaveConsumer(value -> CONFIG.inventoryDesyncFix.inventoryUpdates = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.inventoryDesyncFix.selectedSlot"), CONFIG.inventoryDesyncFix.selectedSlot)
+                        .setDefaultValue(Config.DEFAULT.inventoryDesyncFix.selectedSlot)
+                        .setSaveConsumer(value -> CONFIG.inventoryDesyncFix.selectedSlot = value)
+                        .build()
+        )).build());
+
+        gameplayCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.compactGenome"), CONFIG.compactGenome.enabled)
+                .setTooltip(i18n("config.compactGenome.tooltip"))
+                .setDefaultValue(Config.DEFAULT.compactGenome.enabled)
+                .setSaveConsumer(value -> CONFIG.compactGenome.enabled = value)
+                .build());
+
+        gameplayCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.autoReconnect"), CONFIG.autoReconnect.enabled)
                 .setTooltip(i18n("config.autoReconnect.tooltip"))
                 .setDefaultValue(Config.DEFAULT.autoReconnect.enabled)
                 .setSaveConsumer(value -> CONFIG.autoReconnect.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+        gameplayCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startIntSlider(i18n("config.autoReconnect.delaySeconds"), CONFIG.autoReconnect.delaySeconds, 0, 60)
                         .setTooltip(i18n("config.autoReconnect.delaySeconds.tooltip"))
                         .setDefaultValue(Config.DEFAULT.autoReconnect.delaySeconds)
@@ -328,12 +354,12 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.automaticCaptcha"), CONFIG.automaticCaptcha.enabled)
+        gameplayCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.automaticCaptcha"), CONFIG.automaticCaptcha.enabled)
                 .setTooltip(i18n("config.automaticCaptcha.tooltip"))
                 .setDefaultValue(Config.DEFAULT.automaticCaptcha.enabled)
                 .setSaveConsumer(value -> CONFIG.automaticCaptcha.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+        gameplayCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startBooleanToggle(i18n("config.automaticCaptcha.disablePlayerInput"), CONFIG.automaticCaptcha.disablePlayerInput)
                         .setTooltip(i18n("config.automaticCaptcha.disablePlayerInput.tooltip"))
                         .setDefaultValue(Config.DEFAULT.automaticCaptcha.disablePlayerInput)
@@ -341,36 +367,39 @@ public class ClothConfigImplementation {
                         .build()
         )).build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.adBlocker"), CONFIG.adBlocker.enabled)
+        gameplayCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.adBlocker"), CONFIG.adBlocker.enabled)
                 .setTooltip(i18n("config.adBlocker.tooltip"))
                 .setDefaultValue(Config.DEFAULT.adBlocker.enabled)
                 .setSaveConsumer(value -> CONFIG.adBlocker.enabled = value)
                 .build());
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator"), CONFIG.nuclearCalculator.enabled)
-                .setTooltip(i18n("config.nuclearCalculator.tooltip"))
-                .setDefaultValue(Config.DEFAULT.nuclearCalculator.enabled)
-                .setSaveConsumer(value -> CONFIG.nuclearCalculator.enabled = value)
-                .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
-                builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator.openCurrentReactor"), CONFIG.nuclearCalculator.openCurrentReactor)
-                        .setTooltip(i18n("config.nuclearCalculator.openCurrentReactor.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.nuclearCalculator.openCurrentReactor)
-                        .setSaveConsumer(value -> CONFIG.nuclearCalculator.openCurrentReactor = value)
-                        .build(),
-                builder.entryBuilder().startBooleanToggle(i18n("config.nuclearCalculator.showButtonInReactor"), CONFIG.nuclearCalculator.showButtonInReactor)
-                        .setTooltip(i18n("config.nuclearCalculator.showButtonInReactor.tooltip"))
-                        .setDefaultValue(Config.DEFAULT.nuclearCalculator.showButtonInReactor)
-                        .setSaveConsumer(value -> CONFIG.nuclearCalculator.showButtonInReactor = value)
-                        .build()
-        )).build());
+        // ==========================================
+        // 4. СИСТЕМА И РЕСУРСПАКИ
+        // ==========================================
+        ConfigCategory systemCat = builder.getOrCreateCategory(i18n("config.category.system"));
 
-        base.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.updater"), CONFIG.updater.enabled)
+        systemCat.addEntry(builder.entryBuilder().startEnumSelector(i18n("config.skyblockPackOptimization.mode"), Config.AutoLoadMode.class, CONFIG.skyblockPackOptimization.mode)
+                .setTooltip(i18n("config.skyblockPackOptimization.mode.tooltip"))
+                .setEnumNameProvider(v -> ((Config.AutoLoadMode) v).optionName)
+                .setDefaultValue(Config.DEFAULT.skyblockPackOptimization.mode)
+                .setSaveConsumer(value -> {
+                    CONFIG.skyblockPackOptimization.mode = value;
+                    CONFIG.skyblockPackOptimization.enabled = value != Config.AutoLoadMode.NONE;
+                })
+                .build());
+
+        systemCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.serverPackUnlocker"), CONFIG.serverPackUnlocker.enabled)
+                .setTooltip(i18n("config.serverPackUnlocker.tooltip"))
+                .setDefaultValue(Config.DEFAULT.serverPackUnlocker.enabled)
+                .setSaveConsumer(value -> CONFIG.serverPackUnlocker.enabled = value)
+                .build());
+
+        systemCat.addEntry(builder.entryBuilder().startBooleanToggle(i18n("config.updater"), CONFIG.updater.enabled)
                 .setTooltip(i18n("config.updater.tooltip"))
                 .setDefaultValue(Config.DEFAULT.updater.enabled)
                 .setSaveConsumer(value -> CONFIG.updater.enabled = value)
                 .build());
-        base.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
+        systemCat.addEntry(builder.entryBuilder().startSubCategory(moduleSetupText, Arrays.asList(
                 builder.entryBuilder().startEnumSelector(i18n("config.updater.channel"), Config.UpdateChannel.class, CONFIG.updater.channel)
                         .setTooltip(i18n("config.updater.channel.tooltip"))
                         .setDefaultValue(Config.DEFAULT.updater.channel)
