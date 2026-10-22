@@ -63,6 +63,8 @@
   "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame.tooltip": "Maximum number of chunk sections scheduled for rebuilding per frame (lower = smoother fps during frequent updates, higher = faster visual updates)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Hide Entities Pending Bake",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Completely disables dynamic rendering of bakeable entities, preventing FPS drops when approaching bases",
+  "skyblockm-tweaks.config.itemDisplayBaking.entityCullingIntegration": "Entity Culling Integration",
+  "skyblockm-tweaks.config.itemDisplayBaking.entityCullingIntegration.tooltip": "Skips chunk rebaking for machines culled by Entity Culling (behind walls or outside view), saving FPS",
   "skyblockm-tweaks.config.itemDisplayHitbox": "Custom Barrier Hitboxes",
   "skyblockm-tweaks.config.itemDisplayHitbox.tooltip": "Adjusts barrier hitboxes to fit custom block shapes for easy interaction through pipes and cables",
   "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Hitbox Type",

@@ -202,6 +202,11 @@ public class ClothConfigImplementation {
                         .setTooltip(i18n("config.itemDisplayBaking.hideBakeableEntities.tooltip"))
                         .setDefaultValue(Config.DEFAULT.itemDisplayBaking.hideBakeableEntities)
                         .setSaveConsumer(value -> CONFIG.itemDisplayBaking.hideBakeableEntities = value)
+                        .build(),
+                builder.entryBuilder().startBooleanToggle(i18n("config.itemDisplayBaking.entityCullingIntegration"), CONFIG.itemDisplayBaking.entityCullingIntegration)
+                        .setTooltip(i18n("config.itemDisplayBaking.entityCullingIntegration.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.entityCullingIntegration)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.entityCullingIntegration = value)
                         .build()
         )).build());
 

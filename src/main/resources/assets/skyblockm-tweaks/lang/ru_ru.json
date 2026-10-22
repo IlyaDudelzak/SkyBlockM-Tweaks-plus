@@ -63,6 +63,8 @@
   "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame.tooltip": "Максимальное количество секций чанков, отправляемых на пересборку за один кадр (меньше - меньше фризов при частых изменениях, больше - быстрее обновляется визуально)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Скрывать сущности до запекания",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities.tooltip": "Полностью отключает динамический рендер запекаемых сущностей, устраняя просадку FPS при приближении к базе",
+  "skyblockm-tweaks.config.itemDisplayBaking.entityCullingIntegration": "Интеграция с Entity Culling",
+  "skyblockm-tweaks.config.itemDisplayBaking.entityCullingIntegration.tooltip": "Не перепекает чанки от механизмов, которые отсечены Entity Culling (скрыты за стенами или вне поля зрения), экономя FPS",
   "skyblockm-tweaks.config.itemDisplayHitbox": "Кастомные хитбоксы барьеров",
   "skyblockm-tweaks.config.itemDisplayHitbox.tooltip": "Изменяет хитбокс барьеров под форму кастомных блоков для удобного взаимодействия сквозь трубы и провода",
   "skyblockm-tweaks.config.itemDisplayHitbox.hitboxType": "Тип хитбокса",

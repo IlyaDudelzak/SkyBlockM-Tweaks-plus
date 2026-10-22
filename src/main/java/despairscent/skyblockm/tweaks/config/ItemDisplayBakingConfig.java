@@ -8,4 +8,5 @@ public class ItemDisplayBakingConfig {
     public double chunkRebuildCooldown = 1.0;
     public int maxRebuildsPerFrame = 8;
     public boolean hideBakeableEntities = true;
+    public boolean entityCullingIntegration = true;
 }
