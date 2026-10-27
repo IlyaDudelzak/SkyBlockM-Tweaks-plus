@@ -73,6 +73,7 @@ public class NuclearCalculatorScreen extends Screen {
     private ButtonWidget btnStartStop;
     private ButtonWidget btnReflector;
     private ButtonWidget btnHeatPreset;
+    private ButtonWidget btnPreheat;
     private ButtonWidget btnExtract;
     private ButtonWidget btnInsert;
     private final ButtonWidget[] btnSlots = new ButtonWidget[3];
@@ -80,6 +81,8 @@ public class NuclearCalculatorScreen extends Screen {
     private static int previosActiveSlotIndex = 0;
     private boolean isLoadingSlot = false;
     private boolean fromReactor = false;
+    private boolean isPreheating = false;
+    private int preheatTargetHeat = 9900;
 
     public static class PaletteEntry {
         public final ItemStack stack;
@@ -334,27 +337,38 @@ public class NuclearCalculatorScreen extends Screen {
         long watts = simulator.getOutputWatts();
         double heat = simulator.getHullHeatPercent();
         boolean explosion = heat >= 100.0;
+        int delta = simulator.calculateNetHeatDelta();
+
+        String deltaStr;
+        if (delta > 0) {
+            deltaStr = "§c+" + delta + "§r";
+        } else if (delta < 0) {
+            deltaStr = "§9" + delta + "§r";
+        } else {
+            deltaStr = "§70§r";
+        }
+
+        String formattedWatts;
+        if (watts >= 1_000_000) {
+            formattedWatts = String.format(java.util.Locale.ROOT, "%.2f МВт", watts / 1_000_000.0);
+        } else if (watts >= 10_000) {
+            formattedWatts = String.format(java.util.Locale.ROOT, "%.1f кВт", watts / 1_000.0);
+        } else {
+            formattedWatts = watts + " Вт";
+        }
 
         String text;
         if (explosion) {
-            text = String.format("Выход: %d Вт | §4ВЗРЫВ (%.0f%%)!", watts, heat);
+            text = String.format("Выход: %s | §4ВЗРЫВ (%.0f%%)! (%s)", formattedWatts, heat, deltaStr);
         } else {
-            text = String.format("Выход: %d Вт | Нагрев: %.0f%%", watts, heat);
+            text = String.format("Выход: %s | Нагрев: %.0f%% (%s)", formattedWatts, heat, deltaStr);
         }
 
-        if (this.textRenderer.getWidth(text) > 160) {
-            String formattedWatts;
-            if (watts >= 1_000_000) {
-                formattedWatts = String.format(java.util.Locale.ROOT, "%.2f МВт", watts / 1_000_000.0);
-            } else if (watts >= 10_000) {
-                formattedWatts = String.format(java.util.Locale.ROOT, "%.1f кВт", watts / 1_000.0);
-            } else {
-                formattedWatts = watts + " Вт";
-            }
+        if (this.textRenderer.getWidth(text) > 162) {
             if (explosion) {
-                text = String.format("Выход: %s | §4ВЗРЫВ (%.0f%%)!", formattedWatts, heat);
+                text = String.format("%s | §4ВЗРЫВ! (%s)", formattedWatts, deltaStr);
             } else {
-                text = String.format("Выход: %s | Нагрев: %.0f%%", formattedWatts, heat);
+                text = String.format("%s | %.0f%% (%s)", formattedWatts, heat, deltaStr);
             }
         }
         return text;
@@ -480,8 +494,63 @@ public class NuclearCalculatorScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(Text.literal("+10%"), btn -> adjustHeat(1000))
                 .dimensions(btnX + 40, this.guiTop + 152, 36, 18).build());
 
+        // Кнопка автоматического разогрева до 99%
+        this.btnPreheat = this.addDrawableChild(ButtonWidget.builder(
+                Text.literal("§6Разогрев"),
+                btn -> optimizeHeating()
+        ).dimensions(btnX, this.guiTop + 174, btnWidth, btnHeight).build());
+
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Назад"), btn -> this.close())
                 .dimensions(btnX, this.guiTop + 198, btnWidth, btnHeight).build());
+    }
+
+    private void optimizeHeating() {
+        int currentHeat = simulator.getHullHeat();
+        if (currentHeat >= 9900) {
+            if (this.client != null && this.client.player != null) {
+                this.client.player.sendMessage(Text.literal("§e[Калькулятор] Реактор уже разогрет до 99%!"), true);
+            }
+            return;
+        }
+
+        ReactorHeatingOptimizer.HeatingPlan plan = ReactorHeatingOptimizer.findBestHeatingPlan(
+                currentHeat,
+                this.playerInventoryStacks,
+                this.displayStacks,
+                this.fromReactor
+        );
+
+        if (!plan.success) {
+            if (this.client != null && this.client.player != null) {
+                this.client.player.sendMessage(Text.literal("§c[Калькулятор] " + plan.message), true);
+            }
+            return;
+        }
+
+        // Применяем подобранную схему в калькулятор
+        clearAll();
+        for (int i = 0; i < 54; i++) {
+            ReactorComponent comp = plan.grid[i];
+            if (comp != null) {
+                ItemStack stack = createStackForComponent(comp);
+                setSlot(i, comp.copy(), stack);
+            }
+        }
+        simulator.recalculateOutput();
+        updateHeatButtonMessage();
+
+        this.isPreheating = true;
+        this.preheatTargetHeat = plan.endHeat;
+
+        if (this.client != null && this.client.player != null) {
+            this.client.player.sendMessage(Text.literal(String.format("§a[Разогрев] Установлена схема: §e+%d тепла/с §aза §e%d сек §a(нагрев до §6%.1f%%§a)!",
+                    plan.heatPerSecond, plan.seconds, plan.endPercent)), false);
+            if (this.fromReactor) {
+                this.client.player.sendMessage(Text.literal("§7Нажмите «В реактор», чтобы загрузить стержни разогрева в реактор."), false);
+            } else {
+                this.client.player.sendMessage(Text.literal("§7Нажмите «Пуск», чтобы запустить симуляцию разогрева."), false);
+            }
+        }
     }
 
     @Override
@@ -493,8 +562,18 @@ public class NuclearCalculatorScreen extends Screen {
                 tickTimer = 0;
                 simulator.tick();
                 updateHeatButtonMessage();
-                if (simulator.getHullHeatPercent() >= 100.0) {
+                if (isPreheating && simulator.getHullHeat() >= preheatTargetHeat) {
                     isAutoTicking = false;
+                    isPreheating = false;
+                    if (btnStartStop != null) {
+                        btnStartStop.setMessage(Text.literal("Пуск"));
+                    }
+                    if (this.client != null && this.client.player != null) {
+                        this.client.player.sendMessage(Text.literal(String.format("§a[Калькулятор] Разогрев завершён! Нагрев ядра: %.1f%%.", simulator.getHullHeatPercent())), false);
+                    }
+                } else if (simulator.getHullHeatPercent() >= 100.0) {
+                    isAutoTicking = false;
+                    isPreheating = false;
                     if (btnStartStop != null) {
                         btnStartStop.setMessage(Text.literal("Пуск"));
                     }
@@ -1215,6 +1294,49 @@ public class NuclearCalculatorScreen extends Screen {
             lines.add(Text.literal("§6Отражатель нейтронов"));
             lines.add(Text.literal("§7Увеличивает выработку энергии,"));
             lines.add(Text.literal("§7а также выделение и потребление тепла в 4 раза"));
+            context.drawTooltip(this.textRenderer, lines, mouseX, mouseY);
+            return;
+        }
+
+        if (btnPreheat != null && btnPreheat.visible
+                && mouseX >= btnPreheat.getX() && mouseX < btnPreheat.getX() + btnPreheat.getWidth()
+                && mouseY >= btnPreheat.getY() && mouseY < btnPreheat.getY() + btnPreheat.getHeight()) {
+            List<Text> lines = new ArrayList<>();
+            lines.add(Text.literal("§6Авто-разогрев до 99%"));
+            lines.add(Text.literal("§7Ищет наилучший способ разогреть реактор"));
+            lines.add(Text.literal("§7с текущего нагрева до 99% без риска взрыва."));
+            lines.add(Text.literal("§8(Учитывает стержни в вашем инвентаре)"));
+            lines.add(Text.literal("§8----------------"));
+            lines.add(Text.literal("§e[ЛКМ] §7Подобрать и установить схему разогрева"));
+            context.drawTooltip(this.textRenderer, lines, mouseX, mouseY);
+            return;
+        }
+
+        // Тултип нижней планки статуса реактора
+        if (mouseX >= this.guiLeft + 7 && mouseX <= this.guiLeft + 169
+                && mouseY >= this.guiTop + 125 && mouseY <= this.guiTop + 137) {
+            List<Text> lines = new ArrayList<>();
+            lines.add(Text.literal("§6Статус ядерного реактора:"));
+            lines.add(Text.literal(String.format("§7Выходная мощность: §f%d Вт", simulator.getOutputWatts())));
+            lines.add(Text.literal(String.format(java.util.Locale.ROOT, "§7Температура корпуса: §f%d / 10000 (%.1f%%)",
+                    simulator.getHullHeat(), simulator.getHullHeatPercent())));
+            int delta = simulator.calculateNetHeatDelta();
+            if (delta > 0) {
+                lines.add(Text.literal(String.format("§7Прирост тепла: §c+%d / сек", delta)));
+                int remaining = Math.max(0, 9900 - simulator.getHullHeat());
+                if (remaining > 0) {
+                    int secTo99 = (int) Math.ceil((double) remaining / delta);
+                    lines.add(Text.literal(String.format("§7До 99%% нагрева: §e~%d сек", secTo99)));
+                }
+            } else if (delta < 0) {
+                lines.add(Text.literal(String.format("§7Охлаждение: §9%d / сек", delta)));
+                if (simulator.getHullHeat() > 0) {
+                    int secTo0 = (int) Math.ceil((double) simulator.getHullHeat() / -delta);
+                    lines.add(Text.literal(String.format("§7До полного охлаждения: §b~%d сек", secTo0)));
+                }
+            } else {
+                lines.add(Text.literal("§7Прирост тепла: §a0 / сек (тепло стабильно)"));
+            }
             context.drawTooltip(this.textRenderer, lines, mouseX, mouseY);
             return;
         }

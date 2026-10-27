@@ -13,6 +13,7 @@ import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
 
 import static despairscent.skyblockm.tweaks.ModUtils.CONFIG;
 
@@ -28,9 +29,14 @@ public class AutoReconnectManager {
     private static boolean isAutoReconnecting = false;
 
     private static boolean hubDetected = false;
+    private static boolean manualServerSwitch = false;
     private static long scheduledServerJoinTime = 0L;
     private static boolean hasLoggedIn = false;
     private static int pendingLoginTicks = -1;
+
+    private static float initialYaw = 0.0f;
+    private static float initialPitch = 0.0f;
+    private static boolean trackingRotation = false;
 
     public static void setLastConnectedServer(ServerInfo serverInfo) {
         if (serverInfo != null) {
@@ -66,11 +72,18 @@ public class AutoReconnectManager {
         // Auto Join SkyBlockM ("по первому появлению символа '⏵' в чате с ником игрока, реагировать только на первое появление")
         if (CONFIG.autoReconnect.autoJoinSkyBlock) {
             if (text.contains("⏵")) {
-                if (!hubDetected) {
+                if (!hubDetected && !manualServerSwitch) {
                     hubDetected = true;
                     int delay = Math.max(0, CONFIG.autoReconnect.hubJoinDelaySeconds);
                     scheduledServerJoinTime = System.currentTimeMillis() + (delay * 1000L);
                     MinecraftClient client = MinecraftClient.getInstance();
+                    if (client != null && client.player != null) {
+                        initialYaw = client.player.getYaw();
+                        initialPitch = client.player.getPitch();
+                        trackingRotation = true;
+                    } else {
+                        trackingRotation = false;
+                    }
                     if (client != null && client.inGameHud != null) {
                         if (delay == 0) {
                             client.inGameHud.getChatHud().addMessage(Text.literal("§7[§6SkyBlockM§7] §eОбнаружен вход в хаб. Вход на sb-1..."));
@@ -78,7 +91,19 @@ public class AutoReconnectManager {
                             client.inGameHud.getChatHud().addMessage(Text.literal("§7[§6SkyBlockM§7] §eОбнаружен вход в хаб. Вход на sb-1 через " + delay + " сек."));
                         }
                     }
-                }
+                }   
+            }
+        }
+    }
+
+    public static void onManualServerSwitch() {
+        manualServerSwitch = true;
+        if (scheduledServerJoinTime > 0) {
+            scheduledServerJoinTime = 0L;
+            trackingRotation = false;
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client != null && client.inGameHud != null) {
+                client.inGameHud.getChatHud().addMessage(Text.literal("§7[§6SkyBlockM§7] §eПереключение сервера: авто-вход на sb-1 отменён."));
             }
         }
     }
@@ -86,6 +111,7 @@ public class AutoReconnectManager {
     public static void onServerOrWorldChange() {
         if (scheduledServerJoinTime > 0) {
             scheduledServerJoinTime = 0L;
+            trackingRotation = false;
             MinecraftClient client = MinecraftClient.getInstance();
             if (client != null && client.inGameHud != null) {
                 client.inGameHud.getChatHud().addMessage(Text.literal("§7[§6SkyBlockM§7] §eПереключение сервера/мира: авто-вход на sb-1 отменён."));
@@ -93,11 +119,22 @@ public class AutoReconnectManager {
         }
     }
 
+    public static void cancelAutoJoinByPlayerAction(MinecraftClient client) {
+        scheduledServerJoinTime = 0L;
+        trackingRotation = false;
+        manualServerSwitch = true;
+        if (client != null && client.inGameHud != null) {
+            client.inGameHud.getChatHud().addMessage(Text.literal("§7[§6SkyBlockM§7] §eДействие игрока: авто-вход на sb-1 отменён."));
+        }
+    }
+
     public static void resetSessionState() {
         hubDetected = false;
+        manualServerSwitch = false;
         scheduledServerJoinTime = 0L;
         hasLoggedIn = false;
         pendingLoginTicks = -1;
+        trackingRotation = false;
     }
 
     public static void onDisconnectedScreenInit(DisconnectedScreen screen, Screen parent, TextWidget widget) {
@@ -172,16 +209,41 @@ public class AutoReconnectManager {
                 }
             }
 
-            if (scheduledServerJoinTime > 0 && System.currentTimeMillis() >= scheduledServerJoinTime) {
-                scheduledServerJoinTime = 0L;
-                if (CONFIG.autoReconnect.autoJoinSkyBlock) {
-                    if (client.inGameHud != null) {
-                        client.inGameHud.getChatHud().addMessage(Text.literal("§7[§6SkyBlockM§7] §aПереключение на sb-1 (/server sb-1)..."));
-                    }
-                    try {
-                        client.getNetworkHandler().sendChatCommand("server sb-1");
-                    } catch (Exception e) {
-                        ModUtils.LOGGER.error("Failed to send /server sb-1 command", e);
+            if (scheduledServerJoinTime > 0) {
+                if (!trackingRotation) {
+                    initialYaw = client.player.getYaw();
+                    initialPitch = client.player.getPitch();
+                    trackingRotation = true;
+                }
+
+                float deltaYaw = Math.abs(MathHelper.wrapDegrees(client.player.getYaw() - initialYaw));
+                float deltaPitch = Math.abs(MathHelper.wrapDegrees(client.player.getPitch() - initialPitch));
+                boolean turned = deltaYaw > 1.0f || deltaPitch > 1.0f;
+
+                boolean moved = client.options.forwardKey.isPressed()
+                        || client.options.backKey.isPressed()
+                        || client.options.leftKey.isPressed()
+                        || client.options.rightKey.isPressed()
+                        || client.options.jumpKey.isPressed()
+                        || client.options.sneakKey.isPressed()
+                        || client.options.sprintKey.isPressed();
+
+                boolean interacted = client.options.attackKey.isPressed() || client.options.useKey.isPressed();
+
+                if (turned || moved || interacted) {
+                    cancelAutoJoinByPlayerAction(client);
+                } else if (System.currentTimeMillis() >= scheduledServerJoinTime) {
+                    scheduledServerJoinTime = 0L;
+                    trackingRotation = false;
+                    if (CONFIG.autoReconnect.autoJoinSkyBlock) {
+                        if (client.inGameHud != null) {
+                            client.inGameHud.getChatHud().addMessage(Text.literal("§7[§6SkyBlockM§7] §aПереключение на sb-1 (/server sb-1)..."));
+                        }
+                        try {
+                            client.getNetworkHandler().sendChatCommand("server sb-1");
+                        } catch (Exception e) {
+                            ModUtils.LOGGER.error("Failed to send /server sb-1 command", e);
+                        }
                     }
                 }
             }

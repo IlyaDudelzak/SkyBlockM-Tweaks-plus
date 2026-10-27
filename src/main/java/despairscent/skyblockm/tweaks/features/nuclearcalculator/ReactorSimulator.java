@@ -258,6 +258,32 @@ public class ReactorSimulator implements Serializable {
     public long getOutputWatts() { return outputWatts; }
     public ReactorComponent[] getGrid() { return grid; }
 
+    /**
+     * Возвращает чистый прирост тепла корпуса реактора за 1 секунду (+ если греется, - если охлаждается, иначе 0).
+     */
+    public int calculateNetHeatDelta() {
+        ReactorSimulator preview = new ReactorSimulator(this.grid);
+        preview.setNeutronReflector(this.neutronReflector);
+        preview.setHullHeat(this.hullHeat);
+
+        int startHeat = preview.getHullHeat();
+        preview.tick();
+        int delta = preview.getHullHeat() - startHeat;
+
+        // Если корпус холодный (0%), но охладители корпуса готовы забирать тепло,
+        // покажем потенциал охлаждения при наличии тепла (например, -36/с), а не 0.
+        if (delta == 0 && this.hullHeat == 0) {
+            ReactorSimulator test = new ReactorSimulator(this.grid);
+            test.setNeutronReflector(this.neutronReflector);
+            test.setHullHeat(1000);
+            int testDelta = test.getHullHeat() - 1000;
+            if (testDelta < 0) {
+                return testDelta;
+            }
+        }
+        return delta;
+    }
+
     public String toJson() {
         return GSON.toJson(this);
     }

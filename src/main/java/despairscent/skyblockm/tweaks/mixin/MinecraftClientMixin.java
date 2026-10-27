@@ -63,6 +63,9 @@ public class MinecraftClientMixin implements IMinecraftClientAccessor {
             at = @At("HEAD"))
     private void setScreenInject(Screen screen, CallbackInfo ci) {
         skyblockm$checkAccountSwitch();
+        if (screen instanceof net.minecraft.client.gui.screen.TitleScreen || screen instanceof net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen) {
+            despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.resetSessionState();
+        }
         Screen previousScreen = this.currentScreen;
         if (previousScreen instanceof AnvilScreen previous && screen instanceof AnvilScreen) {
             ((IAnvilScreenMixin) screen).skyblockm_tweaks$handlePrevious(previous);

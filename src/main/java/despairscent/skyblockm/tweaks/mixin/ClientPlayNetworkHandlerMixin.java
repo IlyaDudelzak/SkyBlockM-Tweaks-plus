@@ -112,7 +112,6 @@ public class ClientPlayNetworkHandlerMixin {
     @Inject(method = "clearWorld", at = @At("HEAD"))
     private void onClearWorld(CallbackInfo ci) {
         despairscent.skyblockm.tweaks.features.itemdisplay.ItemDisplayBakingManager.clear();
-        despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.resetSessionState();
     }
 
     @Inject(method = "sendChatCommand", at = @At("HEAD"), cancellable = true)
@@ -120,8 +119,8 @@ public class ClientPlayNetworkHandlerMixin {
         if (command == null) return;
         String trimmed = command.trim();
         String lower = trimmed.toLowerCase();
-        if (lower.startsWith("server ") || lower.equals("hub") || lower.equals("lobby") || lower.equals("is") || lower.equals("island")) {
-            despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.onServerOrWorldChange();
+        if (lower.startsWith("server ") || lower.equals("hub") || lower.startsWith("hub ") || lower.equals("lobby") || lower.startsWith("lobby ") || lower.equals("is") || lower.startsWith("is ") || lower.equals("island") || lower.startsWith("island ")) {
+            despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.onManualServerSwitch();
         }
         if (trimmed.equalsIgnoreCase("ads off")) {
             if (CONFIG != null && CONFIG.adBlocker != null) {
