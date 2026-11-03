@@ -66,6 +66,12 @@ public class ClothConfigImplementation {
                         .setMin(0.0)
                         .setSaveConsumer(value -> CONFIG.itemDisplayBaking.chunkRebuildCooldown = value)
                         .build(),
+                builder.entryBuilder().startDoubleField(i18n("config.itemDisplayBaking.entityUpdateCooldown"), CONFIG.itemDisplayBaking.entityUpdateCooldown)
+                        .setTooltip(i18n("config.itemDisplayBaking.entityUpdateCooldown.tooltip"))
+                        .setDefaultValue(Config.DEFAULT.itemDisplayBaking.entityUpdateCooldown)
+                        .setMin(0.0)
+                        .setSaveConsumer(value -> CONFIG.itemDisplayBaking.entityUpdateCooldown = value)
+                        .build(),
                 builder.entryBuilder().startIntSlider(i18n("config.itemDisplayBaking.maxRebuildsPerFrame"), CONFIG.itemDisplayBaking.maxRebuildsPerFrame, 1, 64)
                         .setTooltip(i18n("config.itemDisplayBaking.maxRebuildsPerFrame.tooltip"))
                         .setDefaultValue(Config.DEFAULT.itemDisplayBaking.maxRebuildsPerFrame)

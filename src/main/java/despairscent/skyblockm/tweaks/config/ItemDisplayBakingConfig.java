@@ -18,6 +18,7 @@ public class ItemDisplayBakingConfig {
     public int bakeDelayTicks = 0;
     public double chunkSettleTime = 0.0;
     public double chunkRebuildCooldown = 1.0;
+    public double entityUpdateCooldown = 1.0;
     public int maxRebuildsPerFrame = 8;
     public boolean hideBakeableEntities = true;
     public boolean entityCullingIntegration = true;

@@ -14,8 +14,8 @@ import net.minecraft.util.math.Vec3d;
 public class SmoothTargetBot {
     private static Entity targetEntity = null;
     private static boolean shouldClickWhenFacing = false;
-    private static float speed = 0.18f; // Скорость доводки (0.0 - моментально неподвижно, 1.0 - мгновенный флик)
-    private static final float AIM_THRESHOLD = 3.0f; // Угол в градусах, при котором цель считается "наведенной"
+    private static float speed = 0.35f; // Скорость доводки (0.0 - моментально неподвижно, 1.0 - мгновенный флик)
+    private static final float AIM_THRESHOLD = 1.0f; // Угол в градусах, при котором цель считается "наведенной"
 
     private static final java.util.Queue<Entity> targetQueue = new java.util.LinkedList<>();
     private static int delayTicksRemaining = 0;

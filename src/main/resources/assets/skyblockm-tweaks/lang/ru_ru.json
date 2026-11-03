@@ -67,6 +67,8 @@
   "skyblockm-tweaks.config.itemDisplayBaking.chunkSettleTime.tooltip": "Время в секундах без новых блоков в чанке перед его пересборкой (устраняет фризы на границе)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown": "Кулдаун пересборки того же чанка (сек)",
   "skyblockm-tweaks.config.itemDisplayBaking.chunkRebuildCooldown.tooltip": "Минимальный интервал между повторными пересборками одного и того же чанка (предотвращает спам от активных механизмов)",
+  "skyblockm-tweaks.config.itemDisplayBaking.entityUpdateCooldown": "Кулдаун пересборки сущности (сек)",
+  "skyblockm-tweaks.config.itemDisplayBaking.entityUpdateCooldown.tooltip": "Минимальное время между обновлениями одной и той же сущности при изменении её состояния (например, мигающие печки/генераторы). Если состояние меняется чаще кулдауна, изменение игнорируется и пересборка не запускается.",
   "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame": "Максимум пересборок чанков в кадр",
   "skyblockm-tweaks.config.itemDisplayBaking.maxRebuildsPerFrame.tooltip": "Максимальное количество секций чанков, отправляемых на пересборку за один кадр (меньше - меньше фризов при частых изменениях, больше - быстрее обновляется визуально)",
   "skyblockm-tweaks.config.itemDisplayBaking.hideBakeableEntities": "Скрывать сущности до запекания",

@@ -295,6 +295,9 @@ public class Config {
                 if (config.itemDisplayBaking.chunkRebuildCooldown < 0.0) {
                     config.itemDisplayBaking.chunkRebuildCooldown = 0.0;
                 }
+                if (config.itemDisplayBaking.entityUpdateCooldown < 0.0) {
+                    config.itemDisplayBaking.entityUpdateCooldown = 0.0;
+                }
                 if (config.itemDisplayBaking.chunkSettleTime < 0.0) {
                     config.itemDisplayBaking.chunkSettleTime = 0.0;
                 }

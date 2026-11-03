@@ -210,6 +210,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, Long> ENTITY_LAST_UPDATE = new ConcurrentHashMap<>();
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
         int id = display.getId();
@@ -314,6 +315,9 @@ public class ItemDisplayBakingManager {
             return;
         }
 
+        int entityId = display.getId();
+        long now = System.currentTimeMillis();
+
         BlockPos pos = display.getBlockPos();
         CopyOnWriteArrayList<BakedEntityInfo> list = STATIC_DISPLAYS.computeIfAbsent(pos, k -> new CopyOnWriteArrayList<>());
         for (BakedEntityInfo info : list) {
@@ -324,6 +328,16 @@ public class ItemDisplayBakingManager {
                     }
                     return;
                 } else {
+                    double cooldownSec = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? CONFIG.itemDisplayBaking.entityUpdateCooldown : 1.0;
+                    if (cooldownSec > 0.0) {
+                        long lastUpdate = ENTITY_LAST_UPDATE.getOrDefault(entityId, 0L);
+                        if (now - lastUpdate < (long) (cooldownSec * 1000.0)) {
+                            if (display instanceof IBakedDisplay baked) {
+                                baked.skyblockm$setBaked(true);
+                            }
+                            return;
+                        }
+                    }
                     list.remove(info);
                     break;
                 }
@@ -332,7 +346,8 @@ public class ItemDisplayBakingManager {
 
         BakedEntityInfo newInfo = new BakedEntityInfo(display, pos);
         list.add(newInfo);
-        ENTITY_ID_TO_POS.put(display.getId(), pos);
+        ENTITY_ID_TO_POS.put(entityId, pos);
+        ENTITY_LAST_UPDATE.put(entityId, now);
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
@@ -357,6 +372,7 @@ public class ItemDisplayBakingManager {
         }
         int id = display.getId();
         invalidateCache(display);
+        ENTITY_LAST_UPDATE.remove(id);
         BlockPos pos = ENTITY_ID_TO_POS.remove(id);
         if (pos == null) {
             pos = display.getBlockPos();
@@ -374,6 +390,7 @@ public class ItemDisplayBakingManager {
 
     public static void removeEntityById(int entityId) {
         BOX_CACHE.remove(entityId);
+        ENTITY_LAST_UPDATE.remove(entityId);
         BlockPos pos = ENTITY_ID_TO_POS.remove(entityId);
         if (pos == null) {
             return;
@@ -444,6 +461,7 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        ENTITY_LAST_UPDATE.clear();
         ModelBoundsCache.clear();
     }
 
@@ -701,6 +719,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, Long> ENTITY_LAST_UPDATE = new ConcurrentHashMap<>();
     private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
@@ -862,6 +881,16 @@ public class ItemDisplayBakingManager {
                     }
                     return;
                 } else {
+                    double cooldownSec = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? CONFIG.itemDisplayBaking.entityUpdateCooldown : 1.0;
+                    if (cooldownSec > 0.0) {
+                        long lastUpdate = ENTITY_LAST_UPDATE.getOrDefault(display.getId(), 0L);
+                        if (System.currentTimeMillis() - lastUpdate < (long) (cooldownSec * 1000.0)) {
+                            if (display instanceof IBakedDisplay baked) {
+                                baked.skyblockm$setBaked(true);
+                            }
+                            return;
+                        }
+                    }
                     list.remove(info);
                     break;
                 }
@@ -871,6 +900,7 @@ public class ItemDisplayBakingManager {
         BakedEntityInfo newInfo = new BakedEntityInfo(display, pos);
         list.add(newInfo);
         ENTITY_ID_TO_POS.put(display.getId(), pos);
+        ENTITY_LAST_UPDATE.put(display.getId(), System.currentTimeMillis());
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
@@ -919,6 +949,7 @@ public class ItemDisplayBakingManager {
         int id = display.getId();
         PENDING_CULLED_ENTITIES.remove(id);
         invalidateCache(display);
+        ENTITY_LAST_UPDATE.remove(id);
         BlockPos pos = ENTITY_ID_TO_POS.remove(id);
         if (pos == null) {
             pos = display.getBlockPos();
@@ -937,6 +968,7 @@ public class ItemDisplayBakingManager {
     public static void removeEntityById(int entityId) {
         PENDING_CULLED_ENTITIES.remove(entityId);
         BOX_CACHE.remove(entityId);
+        ENTITY_LAST_UPDATE.remove(entityId);
         BlockPos pos = ENTITY_ID_TO_POS.remove(entityId);
         if (pos == null) {
             return;
@@ -1124,6 +1156,7 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        ENTITY_LAST_UPDATE.clear();
         LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
         SpriteTranslucencyCache.clear();
@@ -1324,6 +1357,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, Long> ENTITY_LAST_UPDATE = new ConcurrentHashMap<>();
     private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
@@ -1471,6 +1505,16 @@ public class ItemDisplayBakingManager {
                     }
                     return;
                 } else {
+                    double cooldownSec = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? CONFIG.itemDisplayBaking.entityUpdateCooldown : 1.0;
+                    if (cooldownSec > 0.0) {
+                        long lastUpdate = ENTITY_LAST_UPDATE.getOrDefault(display.getId(), 0L);
+                        if (System.currentTimeMillis() - lastUpdate < (long) (cooldownSec * 1000.0)) {
+                            if (display instanceof IBakedDisplay baked) {
+                                baked.skyblockm$setBaked(true);
+                            }
+                            return;
+                        }
+                    }
                     // Visual changed (e.g. wire connected): replace
                     list.remove(info);
                     break;
@@ -1480,6 +1524,7 @@ public class ItemDisplayBakingManager {
 
         list.add(new BakedEntityInfo(display, pos));
         ENTITY_ID_TO_POS.put(display.getId(), pos);
+        ENTITY_LAST_UPDATE.put(display.getId(), System.currentTimeMillis());
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
@@ -1532,6 +1577,7 @@ public class ItemDisplayBakingManager {
         int id = display.getId();
         PENDING_CULLED_ENTITIES.remove(id);
         invalidateCache(display);
+        ENTITY_LAST_UPDATE.remove(id);
         BlockPos pos = ENTITY_ID_TO_POS.remove(id);
         if (pos == null) {
             pos = display.getBlockPos();
@@ -1550,6 +1596,7 @@ public class ItemDisplayBakingManager {
     public static void removeEntityById(int entityId) {
         PENDING_CULLED_ENTITIES.remove(entityId);
         BOX_CACHE.remove(entityId);
+        ENTITY_LAST_UPDATE.remove(entityId);
         BlockPos pos = ENTITY_ID_TO_POS.remove(entityId);
         if (pos == null) {
             return;
@@ -1733,6 +1780,7 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        ENTITY_LAST_UPDATE.clear();
         LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
         SpriteTranslucencyCache.clear();
@@ -1934,6 +1982,7 @@ public class ItemDisplayBakingManager {
     private static final ConcurrentHashMap<Integer, BoxCacheEntry> BOX_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> PENDING_SECTION_REBUILDS = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Long, Long> SECTION_LAST_REBUILD = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, Long> ENTITY_LAST_UPDATE = new ConcurrentHashMap<>();
     private static long LAST_PLAYER_CHUNK_REBUILD = 0L;
 
     public static Box getCachedBox(DisplayEntity.ItemDisplayEntity display) {
@@ -2081,6 +2130,16 @@ public class ItemDisplayBakingManager {
                     }
                     return;
                 } else {
+                    double cooldownSec = (CONFIG != null && CONFIG.itemDisplayBaking != null) ? CONFIG.itemDisplayBaking.entityUpdateCooldown : 1.0;
+                    if (cooldownSec > 0.0) {
+                        long lastUpdate = ENTITY_LAST_UPDATE.getOrDefault(display.getId(), 0L);
+                        if (System.currentTimeMillis() - lastUpdate < (long) (cooldownSec * 1000.0)) {
+                            if (display instanceof IBakedDisplay baked) {
+                                baked.skyblockm$setBaked(true);
+                            }
+                            return;
+                        }
+                    }
                     // Visual changed (e.g. wire connected): replace
                     list.remove(info);
                     break;
@@ -2090,6 +2149,7 @@ public class ItemDisplayBakingManager {
 
         list.add(new BakedEntityInfo(display, pos));
         ENTITY_ID_TO_POS.put(display.getId(), pos);
+        ENTITY_LAST_UPDATE.put(display.getId(), System.currentTimeMillis());
         if (display instanceof IBakedDisplay baked) {
             baked.skyblockm$setBaked(true);
         }
@@ -2142,6 +2202,7 @@ public class ItemDisplayBakingManager {
         int id = display.getId();
         PENDING_CULLED_ENTITIES.remove(id);
         invalidateCache(display);
+        ENTITY_LAST_UPDATE.remove(id);
         BlockPos pos = ENTITY_ID_TO_POS.remove(id);
         if (pos == null) {
             pos = display.getBlockPos();
@@ -2160,6 +2221,7 @@ public class ItemDisplayBakingManager {
     public static void removeEntityById(int entityId) {
         PENDING_CULLED_ENTITIES.remove(entityId);
         BOX_CACHE.remove(entityId);
+        ENTITY_LAST_UPDATE.remove(entityId);
         BlockPos pos = ENTITY_ID_TO_POS.remove(entityId);
         if (pos == null) {
             return;
@@ -2343,6 +2405,7 @@ public class ItemDisplayBakingManager {
         BOX_CACHE.clear();
         PENDING_SECTION_REBUILDS.clear();
         SECTION_LAST_REBUILD.clear();
+        ENTITY_LAST_UPDATE.clear();
         LAST_PLAYER_CHUNK_REBUILD = 0L;
         ModelBoundsCache.clear();
         SpriteTranslucencyCache.clear();
