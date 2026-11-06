@@ -9,6 +9,10 @@ on:
         description: 'Tag name for release'
         required: false
         default: 'nightly'
+      build_number:
+        description: 'Custom build number (optional, defaults to git commit count)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -38,15 +42,26 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Extract mod version
-        id: mod_version
+      - name: Determine build number and version
+        id: build_info
         run: |
           VERSION=$(grep "^mod_version=" gradle.properties | cut -d'=' -f2 | tr -d ' \r\n')
+          if [ -n "${{ inputs.build_number }}" ]; then
+            BUILD_NUM="${{ inputs.build_number }}"
+          else
+            BUILD_NUM=$(git rev-list --count HEAD)
+          fi
+          FULL_VERSION="${VERSION}+build.${BUILD_NUM}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted mod version: $VERSION"
+          echo "build_number=$BUILD_NUM" >> $GITHUB_OUTPUT
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
+          echo "Build number: $BUILD_NUM"
+          echo "Full version: $FULL_VERSION"
 
       - name: Build all versions with Stonecutter
-        run: ./gradlew build -x test
+        run: ./gradlew build -x test -Pbuild_number=${{ steps.build_info.outputs.build_number }}
+        env:
+          BUILD_NUMBER: ${{ steps.build_info.outputs.build_number }}
 
       - name: Delete existing nightly release
         env:
@@ -59,7 +74,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag_name != '' && inputs.tag_name || 'nightly' }}
-          name: ${{ format('Nightly Build v{0} (Latest dev)', steps.mod_version.outputs.version) }}
+          name: ${{ format('Nightly Build v{0} (build {1})', steps.build_info.outputs.version, steps.build_info.outputs.build_number) }}
           prerelease: true
           make_latest: false
           files: versions/*/build/libs/skyblockm-tweaks-plus-*.jar
@@ -67,7 +82,8 @@ jobs:
             ### 🧪 SkyBlockM Tweaks+ Nightly Build
             Автоматическая тестовая сборка из ветки `dev`.
 
-            - **Версия мода**: `v${{ steps.mod_version.outputs.version }}`
+            - **Версия мода**: `v${{ steps.build_info.outputs.full_version }}`
+            - **Номер сборки**: `${{ steps.build_info.outputs.build_number }}`
             - **Коммит**: [`${{ github.sha }}`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
             - **Ветка**: `${{ github.ref_name }}`
             - **Дата сборки**: ${{ github.event.head_commit.timestamp || github.run_id }}

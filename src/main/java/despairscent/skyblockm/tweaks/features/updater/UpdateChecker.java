@@ -79,6 +79,30 @@ public class UpdateChecker {
                 .orElse("");
     }
 
+    public static int getCurrentBuildNumber() {
+        return FabricLoader.getInstance().getModContainer("skyblockm-tweaks")
+                .or(() -> FabricLoader.getInstance().getModContainer("skyblockm-tweaks-plus"))
+                .map(c -> {
+                    try {
+                        net.fabricmc.loader.api.metadata.CustomValue val = c.getMetadata().getCustomValue("buildNumber");
+                        if (val != null) {
+                            return parseSafeInt(val.getAsString());
+                        }
+                    } catch (Exception ignored) {}
+                    return extractBuildNumber(c.getMetadata().getVersion().getFriendlyString());
+                })
+                .orElse(0);
+    }
+
+    public static int extractBuildNumber(String text) {
+        if (text == null || text.isEmpty()) return 0;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?:[+.-]build[.-]?|[+.-]b|#|build[\\s:])(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(text);
+        if (m.find()) {
+            return parseSafeInt(m.group(1));
+        }
+        return 0;
+    }
+
     public static String extractCommitHashFromBody(String body) {
         if (body == null || body.isEmpty()) return "";
         java.util.regex.Matcher m = java.util.regex.Pattern.compile("commit/([a-f0-9]{7,40})").matcher(body);
@@ -227,20 +251,40 @@ public class UpdateChecker {
 
                 if (isNightly) {
                     boolean isUpdateAvailable = false;
-
-                    // 1. Сравнение Git Hash коммита
-                    String localCommit = getCurrentGitHash();
                     String remoteCommit = extractCommitHashFromBody(body);
 
-                    if (!localCommit.isEmpty() && !remoteCommit.isEmpty() && !localCommit.equals("unknown")) {
-                        if (remoteCommit.startsWith(localCommit) || localCommit.startsWith(remoteCommit)) {
-                            return null; // Тот же самый коммит, билд уже установлен
-                        } else {
+                    // 1. Сравнение номеров сборок (Build Number)
+                    int localBuild = getCurrentBuildNumber();
+                    int remoteBuild = extractBuildNumber(remoteVersion);
+                    if (remoteBuild == 0) {
+                        remoteBuild = extractBuildNumber(releaseName);
+                    }
+                    if (remoteBuild == 0) {
+                        remoteBuild = extractBuildNumber(body);
+                    }
+
+                    if (localBuild > 0 && remoteBuild > 0) {
+                        if (remoteBuild > localBuild) {
                             isUpdateAvailable = true;
+                        } else {
+                            return null; // Тот же или более новый номер сборки уже установлен
                         }
                     }
 
-                    // 2. Сравнение сохраненного timestamp последней загрузки
+                    // 2. Сравнение Git Hash коммита
+                    if (!isUpdateAvailable) {
+                        String localCommit = getCurrentGitHash();
+
+                        if (!localCommit.isEmpty() && !remoteCommit.isEmpty() && !localCommit.equals("unknown")) {
+                            if (remoteCommit.startsWith(localCommit) || localCommit.startsWith(remoteCommit)) {
+                                return null; // Тот же самый коммит, билд уже установлен
+                            } else {
+                                isUpdateAvailable = true;
+                            }
+                        }
+                    }
+
+                    // 3. Сравнение сохраненного timestamp последней загрузки
                     String lastTimestamp = ModUtils.CONFIG != null && ModUtils.CONFIG.updater != null
                             ? ModUtils.CONFIG.updater.lastNightlyTimestamp
                             : "";
@@ -256,7 +300,7 @@ public class UpdateChecker {
                         } catch (Exception ignored) {}
                     }
 
-                    // 3. Сравнение с датой изменения локального jar-файла
+                    // 4. Сравнение с датой изменения локального jar-файла
                     if (!isUpdateAvailable) {
                         try {
                             java.nio.file.Path currentJar = ModDownloader.getCurrentJarPath();
@@ -270,7 +314,7 @@ public class UpdateChecker {
                         } catch (Exception ignored) {}
                     }
 
-                    // 4. Проверка по SemVer (если в ночной сборке подняли версию)
+                    // 5. Проверка по SemVer (если в ночной сборке подняли версию)
                     if (isNewerVersion(remoteVersion, currentModVersion)) {
                         isUpdateAvailable = true;
                     }
@@ -279,13 +323,15 @@ public class UpdateChecker {
                         return null;
                     }
 
-                    // Для наглядности в UI добавляем краткий хэш коммита к версии
-                    if (!remoteCommit.isEmpty()) {
+                    // Для наглядности в UI добавляем номер сборки или краткий хэш коммита к версии
+                    if (remoteBuild > 0 && !remoteVersion.contains("build")) {
+                        remoteVersion = remoteVersion + " (build " + remoteBuild + ")";
+                    } else if (!remoteCommit.isEmpty() && !remoteVersion.contains("(")) {
                         String shortCommit = remoteCommit.length() > 7 ? remoteCommit.substring(0, 7) : remoteCommit;
                         remoteVersion = remoteVersion + " (" + shortCommit + ")";
                     }
                 } else {
-                    // Для стабильных релизов проверяем semver
+                    // Для стабильных релизов проверяем semver (включая build number)
                     if (!isNewerVersion(remoteVersion, currentModVersion)) {
                         return null; // Текущая версия актуальна
                     }
@@ -328,6 +374,14 @@ public class UpdateChecker {
             if (r > c) return true;
             if (r < c) return false;
         }
+
+        // Если базовые версии равны (например 10.0.0 == 10.0.0), сравниваем номера сборок
+        int rBuild = extractBuildNumber(remote);
+        int cBuild = extractBuildNumber(current);
+        if (rBuild > 0 && cBuild > 0) {
+            return rBuild > cBuild;
+        }
+
         return false;
     }
 

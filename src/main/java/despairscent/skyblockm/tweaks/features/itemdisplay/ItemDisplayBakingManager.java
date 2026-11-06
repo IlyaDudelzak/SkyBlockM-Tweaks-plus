@@ -1,5 +1,4 @@
 package despairscent.skyblockm.tweaks.features.itemdisplay;
-import despairscent.skyblockm.tweaks.ModUtils;
 
 //? if >=1.21.11 {
 

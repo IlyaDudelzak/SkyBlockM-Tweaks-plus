@@ -44,6 +44,7 @@
     "ias": "*"
   },
   "custom": {
-    "gitHash": "${git_hash}"
+    "gitHash": "${git_hash}",
+    "buildNumber": "${build_number}"
   }
 }
