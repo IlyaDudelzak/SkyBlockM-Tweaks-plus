@@ -41,8 +41,18 @@ public class CaptchaDetector {
         return awaitingOutcome;
     }
 
+    public static void clearAttackKeys(MinecraftClient client) {
+        if (client != null && client.options != null) {
+            client.options.attackKey.setPressed(false);
+            client.options.useKey.setPressed(false);
+            while (client.options.attackKey.wasPressed()) {}
+            while (client.options.useKey.wasPressed()) {}
+        }
+    }
+
     public static void init() {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            clearAttackKeys(client);
             if (awaitingOutcome && savedRoundFrames != null) {
                 completeRound(true, "Успешное решение капчи (подключение к новому миру/серверу)");
             }
@@ -66,6 +76,7 @@ public class CaptchaDetector {
         lastSubtitleText = "";
         targetCaptchaClass = CaptchaClassifier.CaptchaClass.UNKNOWN;
         SmoothTargetBot.reset();
+        clearAttackKeys(ModUtils.CLIENT != null ? ModUtils.CLIENT : MinecraftClient.getInstance());
     }
 
     public static void onDisconnectedScreen(String reasonText) {
@@ -92,6 +103,7 @@ public class CaptchaDetector {
         lastSubtitleText = "";
         targetCaptchaClass = CaptchaClassifier.CaptchaClass.UNKNOWN;
         SmoothTargetBot.reset();
+        clearAttackKeys(ModUtils.CLIENT != null ? ModUtils.CLIENT : MinecraftClient.getInstance());
     }
 
     public static boolean isCaptchaRoomActive() {
@@ -222,7 +234,13 @@ public class CaptchaDetector {
         return ModUtils.CONFIG != null 
             && ModUtils.CONFIG.automaticCaptcha.enabled 
             && ModUtils.CONFIG.automaticCaptcha.disablePlayerInput 
-            && isSolvingInProgress();
+            && (captchaRoomActive || isSolvingInProgress());
+    }
+
+    public static boolean shouldBlockPlayerAttack() {
+        return ModUtils.CONFIG != null 
+            && ModUtils.CONFIG.automaticCaptcha.enabled 
+            && (captchaRoomActive || isSolvingInProgress());
     }
 
     public static void tick(MinecraftClient client) {
@@ -251,24 +269,32 @@ public class CaptchaDetector {
             }
         }
 
-        // Проверяем наличие комнаты капчи каждые 5 тиков
-        if (client.player.age % 5 == 0) {
-            boolean inRoom = isCaptchaRoom(client.player, client.world);
-            if (inRoom && !captchaRoomActive) {
+        // Быстрая проверка наличия комнаты капчи каждые 2 тика, пока комната еще не активна
+        if (!captchaRoomActive) {
+            if (client.player.age % 2 == 0 && isCaptchaRoom(client.player, client.world)) {
                 captchaRoomActive = true;
                 captchaSolved = false;
                 captchaGridLogged = false;
                 solvingInProgress = false;
+                clearAttackKeys(client);
                 onCaptchaRoomDetected(client.player, client.world);
-            } else if (!inRoom && captchaRoomActive) {
-                if (awaitingOutcome) {
-                    completeRound(true, "Успешное решение капчи (выход из комнаты / смена сервера/измерения)");
+            }
+        } else {
+            // Если комната активна, проверяем выход каждые 5 тиков
+            if (client.player.age % 5 == 0) {
+                boolean inRoom = isCaptchaRoom(client.player, client.world);
+                if (!inRoom) {
+                    if (awaitingOutcome) {
+                        completeRound(true, "Успешное решение капчи (выход из комнаты / смена сервера/измерения)");
+                    }
+                    captchaRoomActive = false;
+                    captchaSolved = false;
+                    captchaGridLogged = false;
+                    solvingInProgress = false;
+                    targetCaptchaClass = CaptchaClassifier.CaptchaClass.UNKNOWN;
+                    SmoothTargetBot.reset();
+                    clearAttackKeys(client);
                 }
-                captchaRoomActive = false;
-                captchaSolved = false;
-                captchaGridLogged = false;
-                solvingInProgress = false;
-                targetCaptchaClass = CaptchaClassifier.CaptchaClass.UNKNOWN;
             }
         }
 

@@ -2,6 +2,7 @@ package despairscent.skyblockm.tweaks.mixin;
 import despairscent.skyblockm.tweaks.ModUtils;
 
 import despairscent.skyblockm.tweaks.config.ItemDisplayHitboxConfig;
+import despairscent.skyblockm.tweaks.features.captcha.CaptchaDetector;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.util.hit.BlockHitResult;
@@ -23,8 +24,13 @@ public class MinecraftClientInteractionMixin {
 
     @Shadow public HitResult crosshairTarget;
 
-    @Inject(method = "doAttack", at = @At("HEAD"))
+    @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
     private void redirectAttackToBlock(CallbackInfoReturnable<Boolean> cir) {
+        if (CaptchaDetector.shouldBlockPlayerAttack()) {
+            cir.setReturnValue(false);
+            cir.cancel();
+            return;
+        }
         if (CONFIG.itemDisplayHitbox.enabled && CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.ENTITY_AABB) {
             if (this.crosshairTarget instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof DisplayEntity.ItemDisplayEntity display) {
                 BlockPos pos = display.getBlockPos();
@@ -33,8 +39,12 @@ public class MinecraftClientInteractionMixin {
         }
     }
 
-    @Inject(method = "doItemUse", at = @At("HEAD"))
+    @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
     private void redirectInteractToBlock(CallbackInfo ci) {
+        if (CaptchaDetector.shouldBlockPlayerAttack()) {
+            ci.cancel();
+            return;
+        }
         if (CONFIG.itemDisplayHitbox.enabled && CONFIG.itemDisplayHitbox.hitboxType == ItemDisplayHitboxConfig.HitboxType.ENTITY_AABB) {
             if (this.crosshairTarget instanceof EntityHitResult entityHit && entityHit.getEntity() instanceof DisplayEntity.ItemDisplayEntity display) {
                 BlockPos pos = display.getBlockPos();

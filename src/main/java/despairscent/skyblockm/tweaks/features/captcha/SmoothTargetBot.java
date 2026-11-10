@@ -57,8 +57,8 @@ public class SmoothTargetBot {
             // 1. Вычисляем целевые углы
             ClientPlayerEntity player = client.player;
             Vec3d eyePos = player.getEyePos();
-            // Нацеливаемся в центр хитбокса сущности (высота / 2)
-            Vec3d targetPos = new Vec3d(targetEntity.getX(), targetEntity.getY() + targetEntity.getHeight() / 2.0, targetEntity.getZ());
+            // Нацеливаемся в центр хитбокса сущности
+            Vec3d targetPos = targetEntity.getBoundingBox().getCenter();
 
             double diffX = targetPos.x - eyePos.x;
             double diffY = targetPos.y - eyePos.y;
@@ -86,7 +86,7 @@ public class SmoothTargetBot {
 
             // 3. Логика клика при достижении цели
             if (shouldClickWhenFacing) {
-                // Если разница между взглядом и целью минимальна — стреляем/бьем
+                // Если разница между взглядом и целью минимальна — стреляем/бьем как игрок
                 if (Math.abs(deltaYaw) < AIM_THRESHOLD && Math.abs(deltaPitch) < AIM_THRESHOLD) {
                     executePlayerClick(client);
                     shouldClickWhenFacing = false; // Сбрасываем триггер клика
@@ -116,6 +116,8 @@ public class SmoothTargetBot {
         }
         speed = MathHelper.clamp(interpolationSpeed, 0.01f, 1.0f);
         delayBetweenTargets = Math.max(0, delayTicks);
+        // Небольшая задержка перед первой целью (~0.3-0.5 сек), чтобы не было моментального клика в нулевой тик
+        delayTicksRemaining = Math.max(6, delayBetweenTargets / 2);
         onFinishedCallback = onComplete;
     }
 
@@ -178,3 +180,4 @@ public class SmoothTargetBot {
         return targetEntity != null || !targetQueue.isEmpty();
     }
 }
+

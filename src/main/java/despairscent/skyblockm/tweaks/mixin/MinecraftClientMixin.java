@@ -63,6 +63,10 @@ public class MinecraftClientMixin implements IMinecraftClientAccessor {
             at = @At("HEAD"))
     private void setScreenInject(Screen screen, CallbackInfo ci) {
         skyblockm$checkAccountSwitch();
+        if (screen == null) {
+            MinecraftClient mc = (MinecraftClient) (Object) this;
+            despairscent.skyblockm.tweaks.features.captcha.CaptchaDetector.clearAttackKeys(mc);
+        }
         if (screen instanceof net.minecraft.client.gui.screen.TitleScreen || screen instanceof net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen) {
             despairscent.skyblockm.tweaks.features.autoreconnect.AutoReconnectManager.resetSessionState();
         }
